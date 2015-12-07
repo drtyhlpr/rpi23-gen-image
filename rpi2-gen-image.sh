@@ -61,6 +61,7 @@ ENABLE_XORG=${ENABLE_XORG:=false}
 ENABLE_FLUXBOX=${ENABLE_FLUXBOX:=false}
 
 # Advanced settings
+ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 
@@ -68,7 +69,7 @@ ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 R=${BUILDDIR}/chroot
 
 # Packages required for bootstrapping
-REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static dosfstools rsync bmap-tools whois"
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static dosfstools rsync bmap-tools whois git-core"
 
 # Packages required in the chroot build enviroment
 APT_INCLUDES="apt-transport-https,ca-certificates,debian-archive-keyring,dialog,locales,apt-utils,vim-tiny"
@@ -235,10 +236,6 @@ LANG=C chroot $R usermod -a -G sudo -p "${ENCRYPTED_PASSWORD}" pi
 # Set up root password
 LANG=C chroot $R usermod -p "${ENCRYPTED_PASSWORD}" root
 
-# Clean cached downloads
-LANG=C chroot $R apt-get -y clean
-LANG=C chroot $R apt-get -y autoclean
-LANG=C chroot $R apt-get -y autoremove
 
 # Set up interfaces
 cat <<EOM >$R/etc/network/interfaces
@@ -631,6 +628,48 @@ EOM
 
   fi
 fi
+
+if [ "$ENABLE_UBOOT" = true ] ; then
+  # Fetch u-boot github
+  git -C $R/tmp clone git://git.denx.de/u-boot.git
+
+  # Install minimal gcc/g++ build enviroment and build u-boot inside chroot
+  LANG=C chroot $R apt-get install -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
+  LANG=C chroot $R make -C /tmp/u-boot/ rpi_2_defconfig all
+
+  # Copy compiled bootloader binary and set config.txt to load it
+  cp $R/tmp/u-boot/u-boot.bin $R/boot/firmware/
+  printf "\n# boot u-boot kernel\nkernel=u-boot.bin\n" >> $R/boot/firmware/config.txt
+
+  # Set u-boot command file
+  cat <<EOM >$R/boot/firmware/uboot.mkimage
+# Tell Linux that it is booting on a Raspberry Pi2
+setenv machid 0x00000c42
+
+# Set the kernel boot command line
+setenv bootargs "earlyprintk ${CMDLINE}"
+
+# Save these changes to u-boot's environment
+saveenv
+
+# Load the existing Linux kernel into RAM
+fatload mmc 0:1 \${kernel_addr_r} kernel7.img
+
+# Boot the kernel we have just loaded
+bootz \${kernel_addr_r}
+EOM
+
+  # Generate u-boot image from command file
+  LANG=C chroot $R mkimage -A arm -O linux -T script -C none -a 0x00000000 -e 0x00000000 -n "RPi2 Boot Script" -d /boot/firmware/uboot.mkimage /boot/firmware/boot.scr
+
+  # Remove gcc/c++ build enviroment
+  LANG=C chroot $R apt-get purge -y bc binutils cpp cpp-4.9 g++ g++-4.9 gcc gcc-4.9 libasan1 libatomic1 libc-dev-bin libc6-dev libcloog-isl4 libgcc-4.9-dev libgomp1 libisl10 libmpc3 libmpfr4 libstdc++-4.9-dev libubsan0 linux-compiler-gcc-4.9-arm linux-libc-dev make
+fi
+
+# Clean cached downloads
+LANG=C chroot $R apt-get -y clean
+LANG=C chroot $R apt-get -y autoclean
+LANG=C chroot $R apt-get -y autoremove
 
 # Unmount mounted filesystems
 umount -l $R/proc
