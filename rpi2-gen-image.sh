@@ -137,7 +137,7 @@ fi
 debootstrap --arch=armhf --foreign --include=${APT_INCLUDES} $RELEASE $R ${APT_PROXY}${APT_SERVER}/debian
 cp /usr/bin/qemu-arm-static $R/usr/bin
 
-# Remove systemd releated packages from list of packages to be bootsrapped
+# Remove systemd related packages from list of packages to be bootstrapped
 if [ "$ENABLE_SYSTEMD" = false ] ; then
   chroot $R sed -i -e 's/systemd systemd-sysv //g' /debootstrap/required
 fi
@@ -310,7 +310,7 @@ cat <<EOM >$R/boot/firmware/config.txt
 # uncomment for composite PAL
 #sdtv_mode=2
 
-#uncomment to overclock the arm. 700 MHz is the default.
+# uncomment to overclock the arm. 700 MHz is the default.
 #arm_freq=800
 EOM
 
@@ -633,7 +633,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   # Fetch u-boot github
   git -C $R/tmp clone git://git.denx.de/u-boot.git
 
-  # Install minimal gcc/g++ build enviroment and build u-boot inside chroot
+  # Install minimal gcc/g++ build environment and build u-boot inside chroot
   LANG=C chroot $R apt-get install -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
   LANG=C chroot $R make -C /tmp/u-boot/ rpi_2_defconfig all
 
