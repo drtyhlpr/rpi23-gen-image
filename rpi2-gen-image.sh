@@ -106,7 +106,6 @@ fi
 
 # Make sure all required packages are installed 
 apt-get -qq -y install ${REQUIRED_PACKAGES}
-exit
 
 # Don't clobber an old build
 if [ -e "$BUILDDIR" ]; then
