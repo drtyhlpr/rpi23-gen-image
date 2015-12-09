@@ -71,6 +71,9 @@ R=${BUILDDIR}/chroot
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static dosfstools rsync bmap-tools whois git-core"
 
+# Missing packages that need to be installed
+MISSING_PACKAGES=""
+
 # Packages required in the chroot build enviroment
 APT_INCLUDES="apt-transport-https,ca-certificates,debian-archive-keyring,dialog,locales,apt-utils,vim-tiny"
 
@@ -81,6 +84,29 @@ if [ "$(id -u)" -ne "0" ] ; then
   echo "this script must be executed with root privileges"
   exit 1
 fi
+
+# Check if all required packages are installed
+for package in $REQUIRED_PACKAGES ; do
+  if [ "`dpkg-query -W -f='${Status}' $package`" != "install ok installed" ] ; then
+    MISSING_PACKAGES="$MISSING_PACKAGES $package"
+  fi
+done
+
+# Ask if missing packages should get installed right now 
+if [ -n "$MISSING_PACKAGES" ] ; then
+  echo "the following packages needed by this script are not installed:"
+  echo "$MISSING_PACKAGES"
+
+  echo -n "\ndo you want to install the missing packages right now? [y/n] "
+  read confirm
+  if [ "$confirm" != "y" ] ; then
+    exit 1
+  fi
+fi
+
+# Make sure all required packages are installed 
+apt-get -qq -y install ${REQUIRED_PACKAGES}
+exit
 
 # Don't clobber an old build
 if [ -e "$BUILDDIR" ]; then
@@ -95,9 +121,6 @@ trap cleanup 0 1 2 3 6
 
 # Set up chroot directory
 mkdir -p $R
-
-# Install dependencies
-apt-get -q -y install ${REQUIRED_PACKAGES}
 
 # Use traditional SystemV init instead of systemd services
 if [ "$ENABLE_SYSTEMD" = false ] ; then
