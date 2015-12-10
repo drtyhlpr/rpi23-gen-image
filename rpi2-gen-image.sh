@@ -92,7 +92,7 @@ for package in $REQUIRED_PACKAGES ; do
   fi
 done
 
-# Ask if missing packages should get installed right now 
+# Ask if missing packages should get installed right now
 if [ -n "$MISSING_PACKAGES" ] ; then
   echo "the following packages needed by this script are not installed:"
   echo "$MISSING_PACKAGES"
@@ -104,7 +104,7 @@ if [ -n "$MISSING_PACKAGES" ] ; then
   fi
 fi
 
-# Make sure all required packages are installed 
+# Make sure all required packages are installed
 apt-get -qq -y install ${REQUIRED_PACKAGES}
 
 # Don't clobber an old build
@@ -176,20 +176,6 @@ mount -t proc none $R/proc
 mount -t sysfs none $R/sys
 mount --bind /dev/pts $R/dev/pts
 
-# Set up initial sources.list
-cat <<EOM >$R/etc/apt/sources.list
-deb http://${APT_SERVER}/debian ${RELEASE} main contrib
-#deb-src http://${APT_SERVER}/debian ${RELEASE} main contrib
-
-deb http://${APT_SERVER}/debian/ ${RELEASE}-updates main contrib
-#deb-src http://${APT_SERVER}/debian/ ${RELEASE}-updates main contrib
-
-deb http://security.debian.org/ ${RELEASE}/updates main contrib
-#deb-src http://security.debian.org/ ${RELEASE}/updates main contrib
-
-deb https://repositories.collabora.co.uk/debian ${RELEASE} rpi2
-EOM
-
 # Pin package flash-kernel to repositories.collabora.co.uk
 cat <<EOM >$R/etc/apt/preferences.d/flash-kernel
 Package: flash-kernel
@@ -205,18 +191,33 @@ LANG=C chroot $R dpkg-reconfigure -f noninteractive tzdata
 LANG=C chroot $R sed -i '/${DEFLOCAL}/s/^#//' /etc/locale.gen
 LANG=C chroot $R locale-gen ${DEFLOCAL}
 
-# Fetch APT public key "Collabora Raspbian Archive Signing Key <daniels@collabora.com>"
-LANG=C chroot $R apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-keys ED4BF9140C50B1C5
+# Upgrade collabora package index and install collabora keyring
+echo "deb https://repositories.collabora.co.uk/debian ${RELEASE} rpi2" >$R/etc/apt/sources.list
+LANG=C chroot $R apt-get -qq -y update
+LANG=C chroot $R apt-get -qq -y --force-yes install collabora-obs-archive-keyring
+
+# Set up initial sources.list
+cat <<EOM >$R/etc/apt/sources.list
+deb http://${APT_SERVER}/debian ${RELEASE} main contrib
+#deb-src http://${APT_SERVER}/debian ${RELEASE} main contrib
+
+deb http://${APT_SERVER}/debian/ ${RELEASE}-updates main contrib
+#deb-src http://${APT_SERVER}/debian/ ${RELEASE}-updates main contrib
+
+deb http://security.debian.org/ ${RELEASE}/updates main contrib
+#deb-src http://security.debian.org/ ${RELEASE}/updates main contrib
+
+deb https://repositories.collabora.co.uk/debian ${RELEASE} rpi2
+EOM
 
 # Upgrade package index and update all installed packages and changed dependencies
-LANG=C chroot $R apt-get -q -y update
-LANG=C chroot $R apt-get -q -y -u dist-upgrade
+LANG=C chroot $R apt-get -qq -y update
+LANG=C chroot $R apt-get -qq -y -u dist-upgrade
 
 # Kernel installation
 # Install flash-kernel last so it doesn't try (and fail) to detect the platform in the chroot
-
-LANG=C chroot $R apt-get -q -y --force-yes --no-install-recommends install linux-image-3.18.0-trunk-rpi2
-LANG=C chroot $R apt-get -q -y --force-yes install flash-kernel
+LANG=C chroot $R apt-get -qq -y --no-install-recommends install linux-image-3.18.0-trunk-rpi2
+LANG=C chroot $R apt-get -qq -y install flash-kernel
 
 VMLINUZ="$(ls -1 $R/boot/vmlinuz-* | sort | tail -n 1)"
 [ -z "$VMLINUZ" ] && exit 1
@@ -257,7 +258,6 @@ LANG=C chroot $R usermod -a -G sudo -p "${ENCRYPTED_PASSWORD}" pi
 
 # Set up root password
 LANG=C chroot $R usermod -p "${ENCRYPTED_PASSWORD}" root
-
 
 # Set up interfaces
 cat <<EOM >$R/etc/network/interfaces
@@ -656,7 +656,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   git -C $R/tmp clone git://git.denx.de/u-boot.git
 
   # Install minimal gcc/g++ build environment and build u-boot inside chroot
-  LANG=C chroot $R apt-get install -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
+  LANG=C chroot $R apt-get install -qq -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
   LANG=C chroot $R make -C /tmp/u-boot/ rpi_2_defconfig all
 
   # Copy compiled bootloader binary and set config.txt to load it
