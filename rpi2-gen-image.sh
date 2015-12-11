@@ -176,6 +176,11 @@ mount -t proc none $R/proc
 mount -t sysfs none $R/sys
 mount --bind /dev/pts $R/dev/pts
 
+# Use proxy inside chroot
+if [ -z "$APT_PROXY" ] ; then
+  echo "Acquire::http::Proxy \"$APT_PROXY\"" >> $R/etc/apt/apt.conf.d/10proxy
+fi
+
 # Pin package flash-kernel to repositories.collabora.co.uk
 cat <<EOM >$R/etc/apt/preferences.d/flash-kernel
 Package: flash-kernel
@@ -708,6 +713,7 @@ rm -rf $R/tmp/*
 rm -f $R/var/lib/urandom/random-seed
 [ -L $R/var/lib/dbus/machine-id ] || rm -f $R/var/lib/dbus/machine-id
 rm -f $R/etc/machine-id
+rm -fr $R/etc/apt/apt.conf.d/10proxy
 
 # Calculate size of the chroot directory
 CHROOT_SIZE=$(expr `du -s $R | awk '{ print $1 }'` / 1024)
