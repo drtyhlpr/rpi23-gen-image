@@ -76,11 +76,18 @@ Enable iptables IPv4/IPv6 firewall
 ##### `ENABLE_HARDNET`=false
 Enable IPv4/IPv6 network stack hardening settings
 
+## Logging of the bootstrapping process
+All information related to the bootstrapping process and the commands executed by the `rpi2-gen-image.sh` script can easily be saved into a logfile. The common shell command `script` can be used for this purpose:
+
+```shell
+script -c 'APT_SERVER=ftp.de.debian.org ./rpi2-gen-image.sh' ./build.log
+```
+
 ## Flashing the image file
 After the image file was succesfully created by the `rpi2-gen-image.sh` script it can be copied to the microSD card that will be used by the RPi2 computer. This can be performed by using the tools `bmaptool` or `dd`. Using `bmaptool` will probably speed-up the copy process because `bmaptool` copies more wisely than `dd`.
 
 #####Flashing examples:
 ```shell
 bmaptool copy ./images/jessie/2015-12-13-debian-jessie.img /dev/mmcblk0
-dd bs=4M if=./images/jessie/2015-12-13-debian-jessie.img of=/dev/mmcblk
+dd bs=4M if=./images/jessie/2015-12-13-debian-jessie.img of=/dev/mmcblk0
 ```
