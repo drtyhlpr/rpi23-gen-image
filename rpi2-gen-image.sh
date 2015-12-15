@@ -53,7 +53,6 @@ ENABLE_CONSOLE=${ENABLE_CONSOLE:=true}
 ENABLE_IPV6=${ENABLE_IPV6:=true}
 ENABLE_SSHD=${ENABLE_SSHD:=true}
 ENABLE_SOUND=${ENABLE_SOUND:=true}
-ENABLE_SYSTEMD=${ENABLE_SYSTEMD:=true}
 ENABLE_DBUS=${ENABLE_DBUS:=true}
 ENABLE_HWRANDOM=${ENABLE_HWRANDOM:=true}
 ENABLE_MINGPU=${ENABLE_MINGPU:=false}
@@ -75,7 +74,7 @@ REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static dosfstool
 MISSING_PACKAGES=""
 
 # Packages required in the chroot build enviroment
-APT_INCLUDES="apt-transport-https,ca-certificates,debian-archive-keyring,dialog,locales,apt-utils,vim-tiny"
+APT_INCLUDES="apt-transport-https,ca-certificates,debian-archive-keyring,dialog,locales"
 
 set +x
 
@@ -121,11 +120,6 @@ trap cleanup 0 1 2 3 6
 # Set up chroot directory
 mkdir -p $R
 
-# Use traditional SystemV init instead of systemd services
-if [ "$ENABLE_SYSTEMD" = false ] ; then
-  APT_INCLUDES="${APT_INCLUDES},sysvinit-core"
-fi
-
 # Add dbus package, recommended if using systemd
 if [ "$ENABLE_DBUS" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},dbus"
@@ -158,11 +152,6 @@ fi
 # Base debootstrap (unpack only)
 debootstrap --arch=armhf --foreign --include=${APT_INCLUDES} $RELEASE $R ${APT_PROXY}${APT_SERVER}/debian
 cp /usr/bin/qemu-arm-static $R/usr/bin
-
-# Remove systemd related packages from list of packages to be bootstrapped
-if [ "$ENABLE_SYSTEMD" = false ] ; then
-  chroot $R sed -i -e 's/systemd systemd-sysv //g' /debootstrap/required
-fi
 
 # Copy debian-archive-keyring.pgp
 chroot $R mkdir -p /usr/share/keyrings
