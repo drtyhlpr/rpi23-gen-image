@@ -60,6 +60,7 @@ ENABLE_XORG=${ENABLE_XORG:=false}
 ENABLE_FLUXBOX=${ENABLE_FLUXBOX:=false}
 
 # Advanced settings
+ENABLE_MINBASE=${ENABLE_MINBASE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
@@ -74,7 +75,7 @@ REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static dosfstool
 MISSING_PACKAGES=""
 
 # Packages required in the chroot build enviroment
-APT_INCLUDES="apt-transport-https,ca-certificates,debian-archive-keyring,dialog,locales"
+APT_INCLUDES="apt-transport-https,ca-certificates,debian-archive-keyring,dialog,sudo"
 
 set +x
 
@@ -120,6 +121,13 @@ trap cleanup 0 1 2 3 6
 # Set up chroot directory
 mkdir -p $R
 
+# Add required packages for the minbase installation
+if [ "$ENABLE_MINBASE" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},vim-tiny,net-tools"
+else
+  APT_INCLUDES="${APT_INCLUDES},locales"
+fi
+
 # Add dbus package, recommended if using systemd
 if [ "$ENABLE_DBUS" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},dbus"
@@ -145,12 +153,19 @@ if [ "$ENABLE_FLUXBOX" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},fluxbox,eterm"
 fi
 
+# Set empty proxy string
 if [ -z "$APT_PROXY" ] ; then
   APT_PROXY="http://"
 fi
 
 # Base debootstrap (unpack only)
-debootstrap --arch=armhf --foreign --include=${APT_INCLUDES} $RELEASE $R ${APT_PROXY}${APT_SERVER}/debian
+if [ "$ENABLE_MINBASE" = true ] ; then
+  debootstrap --arch=armhf --variant=minbase --foreign --include=${APT_INCLUDES} $RELEASE $R ${APT_PROXY}${APT_SERVER}/debian
+else
+  debootstrap --arch=armhf --foreign --include=${APT_INCLUDES} $RELEASE $R ${APT_PROXY}${APT_SERVER}/debian
+fi
+
+# Copy qemu emulator binary to chroot
 cp /usr/bin/qemu-arm-static $R/usr/bin
 
 # Copy debian-archive-keyring.pgp
@@ -182,8 +197,10 @@ echo ${TIMEZONE} >$R/etc/timezone
 LANG=C chroot $R dpkg-reconfigure -f noninteractive tzdata
 
 # Set up default locales to "en_US.UTF-8" default
-LANG=C chroot $R sed -i '/${DEFLOCAL}/s/^#//' /etc/locale.gen
-LANG=C chroot $R locale-gen ${DEFLOCAL}
+if [ "$ENABLE_MINBASE" = false ] ; then
+  LANG=C chroot $R sed -i '/${DEFLOCAL}/s/^#//' /etc/locale.gen
+  LANG=C chroot $R locale-gen ${DEFLOCAL}
+fi
 
 # Upgrade collabora package index and install collabora keyring
 echo "deb https://repositories.collabora.co.uk/debian ${RELEASE} rpi2" >$R/etc/apt/sources.list
@@ -679,8 +696,25 @@ EOM
   LANG=C chroot $R mkimage -A arm -O linux -T script -C none -a 0x00000000 -e 0x00000000 -n "RPi2 Boot Script" -d /boot/firmware/uboot.mkimage /boot/firmware/boot.scr
 
   # Remove gcc/c++ build enviroment
-  LANG=C chroot $R apt-get purge -y bc binutils cpp cpp-4.9 g++ g++-4.9 gcc gcc-4.9 libasan1 libatomic1 libc-dev-bin libc6-dev libcloog-isl4 libgcc-4.9-dev libgomp1 libisl10 libmpc3 libmpfr4 libstdc++-4.9-dev libubsan0 linux-compiler-gcc-4.9-arm linux-libc-dev make
+  LANG=C chroot $R apt-get -y -q purge --auto-remove bc binutils cpp cpp-4.9 g++ g++-4.9 gcc gcc-4.9 libasan1 libatomic1 libc-dev-bin libc6-dev libcloog-isl4 libgcc-4.9-dev libgomp1 libisl10 libmpc3 libmpfr4 libstdc++-4.9-dev libubsan0 linux-compiler-gcc-4.9-arm linux-libc-dev make
 fi
+
+# Enable systemd-networkd DHCP configuration for the eth0 interface
+printf "[Match]\nName=eth0\n\n[Network]\nDHCP=yes\n" > $R/etc/systemd/network/eth.network
+
+# Set DHCP configuration to IPv4 only
+if [ "$ENABLE_IPV6" = false ] ; then
+  sed -i "s/=yes/=v4/" $R/etc/systemd/network/eth.network
+fi
+
+# Enable systemd-networkd service
+LANG=C chroot $R systemctl enable systemd-networkd
+
+# Place hint about netowrk configuration
+cat <<EOM >$R/etc/network/interfaces
+# Debian switched to systemd-networkd configuration files.
+# please configure your networks in '/etc/systemd/network/'
+EOM
 
 # Clean cached downloads
 LANG=C chroot $R apt-get -y clean

@@ -16,6 +16,7 @@ ENABLE_UBOOT=true ./rpi2-gen-image.sh
 ENABLE_CONSOLE=false ENABLE_IPV6=false ./rpi2-gen-image.sh
 ENABLE_HARDNET=true ENABLE_IPTABLES=true /rpi2-gen-image.sh
 APT_SERVER=ftp.de.debian.org APT_PROXY="http://127.0.0.1:3142/" ./rpi2-gen-image.sh
+ENABLE_MINBASE=true ./rpi2-gen-image.sh
  ```
 
 #### APT settings:
@@ -27,54 +28,57 @@ Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will sp
 
 #### General system settings:
 ##### `HOSTNAME`="rpi2-jessie"
-Set system host name. It is recommended that the host name is unique in the corresponding subnet.  
+Set system host name. It's recommended that the host name is unique in the corresponding subnet.
 
 ##### `PASSWORD`="raspberry"
-Set system root password. It is **STRONGLY** recommended that you choose a custom password. 
+Set system `root` password. The same password is used for the created user `pi`. It's **STRONGLY** recommended that you choose a custom password.
 
 ##### `DEFLOCAL`="en_US.UTF-8"
-Set default system locale and keyboard layout. This setting can also be changed inside the running OS using the `dpkg-reconfigure locales` command.  
+Set default system locale and keyboard layout. This setting can also be changed inside the running OS using the `dpkg-reconfigure locales` command. The script variant `minbase` (ENABLE_MINBASE=true) doesn't install `locales`.
 
 ##### `TIMEZONE`="Europe/Berlin"
 Set default system timezone. All available timezones can be found in the `/usr/share/zoneinfo/` directory. This setting can also be changed inside the running OS using the `dpkg-reconfigure tzdata` command.
 
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
-Enable console output
+Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
 
 ##### `ENABLE_IPV6`=true
-Enable IPv6 support
+Enable IPv6 support. The network interface configuration is managed via systemd-networkd.
 
 ##### `ENABLE_SSHD`=true
-Install and enable OpenSSH service
+Install and enable OpenSSH service. The default configuration of the service doesn't allow `root` to login. Please use the user `pi` instead and `su -` or `sudo` to execute commands as root.
 
 ##### `ENABLE_SOUND`=true
-Enable sound hardware and install Advanced Linux Sound Architecture
+Enable sound hardware and install Advanced Linux Sound Architecture.
 
 ##### `ENABLE_HWRANDOM`=true
-Enable Hardware Random Number Generator
+Enable Hardware Random Number Generator. Strong random numbers are important for most network based communications that use encryption. It's recommended to be enabled.
 
 ##### `ENABLE_MINGPU`=false
-Minimize the amount of shared memory reserverd for the GPU
+Minimize the amount of shared memory reserverd for the GPU. It doesn't seem to be possible to fully disable the GPU.
 
 ##### `ENABLE_DBUS`=true
-Install and enable D-Bus message bus
+Install and enable D-Bus message bus. Please note that systemd should work without D-bus but it's recommended to be enabled.
 
 ##### `ENABLE_XORG`=false
-Install Xorg open-source X Window System
+Install Xorg open-source X Window System.
 
 ##### `ENABLE_FLUXBOX`=false
-Install Fluxbox window manager for the X Window System
+Install Fluxbox window manager for the X Window System.
 
 #### Advanced sytem features:
+##### `ENABLE_MINBASE`=false
+Use debootstrap script variant `minbase` which only includes essential packages and apt. This will reduce the disk usage by about 65 MB.
+
 ##### `ENABLE_UBOOT`=false
-Replace default RPi bootloader with U-Boot bootloader
+Replace default RPi bootloader with U-Boot bootloader. U-Boot can boot images via the network using the BOOTP/TFTP protocol.
 
 ##### `ENABLE_IPTABLES`=false
-Enable iptables IPv4/IPv6 firewall
+Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
 
 ##### `ENABLE_HARDNET`=false
-Enable IPv4/IPv6 network stack hardening settings
+Enable IPv4/IPv6 network stack hardening settings.
 
 ## Logging of the bootstrapping process
 All information related to the bootstrapping process and the commands executed by the `rpi2-gen-image.sh` script can easily be saved into a logfile. The common shell command `script` can be used for this purpose:
