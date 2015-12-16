@@ -65,14 +65,14 @@ Install and enable D-Bus message bus. Please note that systemd should work witho
 Install Xorg open-source X Window System.
 
 ##### `ENABLE_FLUXBOX`=false
-Install Fluxbox window manager for the X Window System.
+Install Fluxbox window manager for the X Window System. To make sure all X releated package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_FLUXBOX` is used.
 
 #### Advanced sytem features:
 ##### `ENABLE_MINBASE`=false
 Use debootstrap script variant `minbase` which only includes essential packages and apt. This will reduce the disk usage by about 65 MB.
 
 ##### `ENABLE_UBOOT`=false
-Replace default RPi bootloader with U-Boot bootloader. U-Boot can boot images via the network using the BOOTP/TFTP protocol.
+Replace default RPi2 second stage bootloader (bootcode.bin) with U-Boot bootloader. U-Boot can boot images via the network using the BOOTP/TFTP protocol.
 
 ##### `ENABLE_IPTABLES`=false
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
