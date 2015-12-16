@@ -123,7 +123,7 @@ mkdir -p $R
 
 # Add required packages for the minbase installation
 if [ "$ENABLE_MINBASE" = true ] ; then
-  APT_INCLUDES="${APT_INCLUDES},vim-tiny,net-tools"
+  APT_INCLUDES="${APT_INCLUDES},vim-tiny,netbase,net-tools"
 else
   APT_INCLUDES="${APT_INCLUDES},locales"
 fi
@@ -131,6 +131,11 @@ fi
 # Add dbus package, recommended if using systemd
 if [ "$ENABLE_DBUS" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},dbus"
+fi
+
+# Add iptables IPv4/IPv6 package
+if [ "$ENABLE_IPTABLES" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},iptables"
 fi
 
 # Add openssh server package
@@ -143,14 +148,17 @@ if [ "$ENABLE_HWRANDOM" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},rng-tools"
 fi
 
-# Add xorg package
-if [ "$ENABLE_XORG" = true ] ; then
-  APT_INCLUDES="${APT_INCLUDES},xorg"
-fi
-
 # Add fluxbox package with eterm
 if [ "$ENABLE_FLUXBOX" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},fluxbox,eterm"
+
+  # Enable xorg package dependency
+  ENABLE_XORG=true
+fi
+
+# Add xorg package
+if [ "$ENABLE_XORG" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},xorg"
 fi
 
 # Set empty proxy string
@@ -293,7 +301,7 @@ if [ "$ENABLE_CONSOLE" = true ] ; then
   CMDLINE="${CMDLINE} console=ttyAMA0,115200 kgdboc=ttyAMA0,115200"
 fi
 
-# Set up ipv6 support (if requested)
+# Set up IPv6 networking support
 if [ "$ENABLE_IPV6" = false ] ; then
   CMDLINE="${CMDLINE} ipv6.disable=1"
 fi
@@ -658,8 +666,13 @@ EOM
   # Reload systemd configuration and enable iptables service
   LANG=C chroot $R systemctl daemon-reload
   LANG=C chroot $R systemctl enable ip6tables.service
-
   fi
+fi
+
+# Remove SSHD related iptables rules
+if [ "$ENABLE_SSHD" = false ] ; then
+ sed -e '/^#/! {/SSH/ s/^/# /}' -i $R/etc/iptables/iptables.rules 2> /dev/null
+ sed -e '/^#/! {/SSH/ s/^/# /}' -i $R/etc/iptables/ip6tables.rules 2> /dev/null
 fi
 
 if [ "$ENABLE_UBOOT" = true ] ; then
