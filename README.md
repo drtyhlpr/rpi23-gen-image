@@ -8,7 +8,7 @@ The following list of Debian packages must be installed on the build system beca
   ```debootstrap debian-archive-keyring qemu-user-static dosfstools rsync bmap-tools whois git-core```
 
 ## Command-line parameters
-The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi2-gen-image.sh` script via (simple) shell-variables. Unlike enviroment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi2-gen-image.sh` script.
+The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi2-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi2-gen-image.sh` script.
 
 #####Command-line examples:
 ```shell
@@ -21,7 +21,7 @@ ENABLE_MINBASE=true ./rpi2-gen-image.sh
 
 #### APT settings:
 ##### `APT_SERVER`="ftp.debian.org"
-Set Debian packages server address. Choose a server from the list of Debian wordwide [mirror sites](https://www.debian.org/mirror/list). Using a nearby server will probably speed-up all required downloads within the bootstrapping process.
+Set Debian packages server address. Choose a server from the list of Debian worldwide [mirror sites](https://www.debian.org/mirror/list). Using a nearby server will probably speed-up all required downloads within the bootstrapping process.
 
 ##### `APT_PROXY`=""
 Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once.
@@ -56,7 +56,7 @@ Enable sound hardware and install Advanced Linux Sound Architecture.
 Enable Hardware Random Number Generator. Strong random numbers are important for most network based communications that use encryption. It's recommended to be enabled.
 
 ##### `ENABLE_MINGPU`=false
-Minimize the amount of shared memory reserverd for the GPU. It doesn't seem to be possible to fully disable the GPU.
+Minimize the amount of shared memory reserved for the GPU. It doesn't seem to be possible to fully disable the GPU.
 
 ##### `ENABLE_DBUS`=true
 Install and enable D-Bus message bus. Please note that systemd should work without D-bus but it's recommended to be enabled.
@@ -65,7 +65,7 @@ Install and enable D-Bus message bus. Please note that systemd should work witho
 Install Xorg open-source X Window System.
 
 ##### `ENABLE_FLUXBOX`=false
-Install Fluxbox window manager for the X Window System. To make sure all X releated package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_FLUXBOX` is used.
+Install Fluxbox window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_FLUXBOX` is used.
 
 #### Advanced sytem features:
 ##### `ENABLE_MINBASE`=false
@@ -88,7 +88,7 @@ script -c 'APT_SERVER=ftp.de.debian.org ./rpi2-gen-image.sh' ./build.log
 ```
 
 ## Flashing the image file
-After the image file was succesfully created by the `rpi2-gen-image.sh` script it can be copied to the microSD card that will be used by the RPi2 computer. This can be performed by using the tools `bmaptool` or `dd`. Using `bmaptool` will probably speed-up the copy process because `bmaptool` copies more wisely than `dd`.
+After the image file was successfully created by the `rpi2-gen-image.sh` script it can be copied to the microSD card that will be used by the RPi2 computer. This can be performed by using the tools `bmaptool` or `dd`. Using `bmaptool` will probably speed-up the copy process because `bmaptool` copies more wisely than `dd`.
 
 #####Flashing examples:
 ```shell
