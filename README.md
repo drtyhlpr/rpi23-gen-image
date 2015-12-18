@@ -74,6 +74,9 @@ Use debootstrap script variant `minbase` which only includes essential packages 
 ##### `ENABLE_UBOOT`=false
 Replace default RPi2 second stage bootloader (bootcode.bin) with U-Boot bootloader. U-Boot can boot images via the network using the BOOTP/TFTP protocol.
 
+##### `ENABLE_FBTURBO`=false
+Install and enable the hardware accelerated Xorg video driver `fbturbo`. Please note that this driver is currently limited to hardware accelerated window moving and scrolling.
+
 ##### `ENABLE_IPTABLES`=false
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
 

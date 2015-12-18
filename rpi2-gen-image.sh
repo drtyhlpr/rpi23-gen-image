@@ -62,6 +62,7 @@ ENABLE_FLUXBOX=${ENABLE_FLUXBOX:=false}
 # Advanced settings
 ENABLE_MINBASE=${ENABLE_MINBASE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
+ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 
@@ -74,7 +75,7 @@ REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static dosfstool
 # Missing packages that need to be installed
 MISSING_PACKAGES=""
 
-# Packages required in the chroot build enviroment
+# Packages required in the chroot build environment
 APT_INCLUDES="apt-transport-https,ca-certificates,debian-archive-keyring,dialog,sudo"
 
 set +x
@@ -148,11 +149,17 @@ if [ "$ENABLE_HWRANDOM" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},rng-tools"
 fi
 
+# Add fbturbo video driver
+if [ "$ENABLE_FBTURBO" = true ] ; then
+  # Enable xorg package dependencies
+  ENABLE_XORG=true
+fi
+
 # Add fluxbox package with eterm
 if [ "$ENABLE_FLUXBOX" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},fluxbox,eterm"
 
-  # Enable xorg package dependency
+  # Enable xorg package dependencies
   ENABLE_XORG=true
 fi
 
@@ -180,7 +187,7 @@ cp /usr/bin/qemu-arm-static $R/usr/bin
 chroot $R mkdir -p /usr/share/keyrings
 cp /usr/share/keyrings/debian-archive-keyring.gpg $R/usr/share/keyrings/debian-archive-keyring.gpg
 
-# Complete the bootstrapping proccess
+# Complete the bootstrapping process
 chroot $R /debootstrap/debootstrap --second-stage
 
 # Mount required filesystems
@@ -675,19 +682,25 @@ if [ "$ENABLE_SSHD" = false ] ; then
  sed -e '/^#/! {/SSH/ s/^/# /}' -i $R/etc/iptables/ip6tables.rules 2> /dev/null
 fi
 
+# Install gcc/c++ build environment inside the chroot
+if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ]; then
+  # Install minimal gcc/g++ build environment
+  LANG=C chroot $R apt-get install -q -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
+fi
+
+# Fetch and build U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
-  # Fetch u-boot github
+  # Fetch U-Boot bootloader sources
   git -C $R/tmp clone git://git.denx.de/u-boot.git
 
-  # Install minimal gcc/g++ build environment and build u-boot inside chroot
-  LANG=C chroot $R apt-get install -qq -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
+  # Build and install U-Boot inside chroot
   LANG=C chroot $R make -C /tmp/u-boot/ rpi_2_defconfig all
 
   # Copy compiled bootloader binary and set config.txt to load it
   cp $R/tmp/u-boot/u-boot.bin $R/boot/firmware/
   printf "\n# boot u-boot kernel\nkernel=u-boot.bin\n" >> $R/boot/firmware/config.txt
 
-  # Set u-boot command file
+  # Set U-Boot command file
   cat <<EOM >$R/boot/firmware/uboot.mkimage
 # Tell Linux that it is booting on a Raspberry Pi2
 setenv machid 0x00000c42
@@ -705,10 +718,39 @@ fatload mmc 0:1 \${kernel_addr_r} kernel7.img
 bootz \${kernel_addr_r}
 EOM
 
-  # Generate u-boot image from command file
+  # Generate U-Boot image from command file
   LANG=C chroot $R mkimage -A arm -O linux -T script -C none -a 0x00000000 -e 0x00000000 -n "RPi2 Boot Script" -d /boot/firmware/uboot.mkimage /boot/firmware/boot.scr
+fi
 
-  # Remove gcc/c++ build enviroment
+
+# Fetch and build fbturbo Xorg driver
+if [ "$ENABLE_FBTURBO" = true ] ; then
+  # Fetch fbturbo driver sources
+  git -C $R/tmp clone https://github.com/ssvb/xf86-video-fbturbo.git
+
+  # Install Xorg build dependencies
+  LANG=C chroot $R apt-get install -q -y --no-install-recommends xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
+
+  # Build and install fbturbo driver inside chroot
+  LANG=C chroot $R /bin/bash -c "cd /tmp/xf86-video-fbturbo; autoreconf -vi; ./configure --prefix=/usr; make; make install"
+
+  # Add fbturbo driver to Xorg configuration
+  cat <<EOM >$R/usr/share/X11/xorg.conf.d/99-fbturbo.conf
+Section "Device"
+        Identifier "Allwinner A10/A13 FBDEV"
+        Driver "fbturbo"
+        Option "fbdev" "/dev/fb0"
+        Option "SwapbuffersWait" "true"
+EndSection
+EOM
+
+  # Remove Xorg build dependencies
+  LANG=C chroot $R apt-get -q -y purge --auto-remove xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
+fi
+
+# Remove gcc/c++ build environment from the chroot
+if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ]; then
+  # Remove minimal gcc/c++ build environment
   LANG=C chroot $R apt-get -y -q purge --auto-remove bc binutils cpp cpp-4.9 g++ g++-4.9 gcc gcc-4.9 libasan1 libatomic1 libc-dev-bin libc6-dev libcloog-isl4 libgcc-4.9-dev libgomp1 libisl10 libmpc3 libmpfr4 libstdc++-4.9-dev libubsan0 linux-compiler-gcc-4.9-arm linux-libc-dev make
 fi
 
