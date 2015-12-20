@@ -15,6 +15,7 @@
 # Copyright (C) 2015 Luca Falavigna <dktrkranz@debian.org>
 ########################################################################
 
+# Clean up all temporary mount points
 cleanup (){
   set +x
   set +e
@@ -32,6 +33,7 @@ cleanup (){
 set -e
 set -x
 
+# Debian release
 RELEASE=${RELEASE:=jessie}
 
 # Build settings
@@ -142,6 +144,11 @@ fi
 # Add openssh server package
 if [ "$ENABLE_SSHD" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},openssh-server"
+fi
+
+# Add alsa-utils package
+if [ "$ENABLE_SOUND" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},alsa-utils"
 fi
 
 # Add rng-tools package
@@ -259,13 +266,14 @@ wget -q -O $R/boot/firmware/start.elf https://github.com/raspberrypi/firmware/ra
 wget -q -O $R/boot/firmware/start_x.elf https://github.com/raspberrypi/firmware/raw/cd355a9dd4f1f4de2e79b0c8e102840885cdf1de/boot/start_x.elf
 cp $VMLINUZ $R/boot/firmware/kernel7.img
 
-# Set up hosts
+# Set up IPv4 hosts
 echo ${HOSTNAME} >$R/etc/hostname
 cat <<EOM >$R/etc/hosts
 127.0.0.1       localhost
 127.0.1.1       ${HOSTNAME}
 EOM
 
+# Set up IPv6 hosts
 if [ "$ENABLE_IPV6" = true ] ; then
 cat <<EOM >>$R/etc/hosts
 
@@ -274,6 +282,29 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOM
 fi
+
+# Place hint about network configuration
+cat <<EOM >$R/etc/network/interfaces
+# Debian switched to systemd-networkd configuration files.
+# please configure your networks in '/etc/systemd/network/'
+EOM
+
+# Enable systemd-networkd DHCP configuration for interface eth0
+cat <<EOM >$R/etc/systemd/network/eth.network
+[Match]
+Name=eth0
+
+[Network]
+DHCP=yes
+EOM
+
+# Set DHCP configuration to IPv4 only
+if [ "$ENABLE_IPV6" = false ] ; then
+  sed -i "s/=yes/=v4/" $R/etc/systemd/network/eth.network
+fi
+
+# Enable systemd-networkd service
+LANG=C chroot $R systemctl enable systemd-networkd
 
 # Generate crypt(3) password string
 ENCRYPTED_PASSWORD=`mkpasswd -m sha-512 ${PASSWORD}`
@@ -284,21 +315,6 @@ LANG=C chroot $R usermod -a -G sudo -p "${ENCRYPTED_PASSWORD}" pi
 
 # Set up root password
 LANG=C chroot $R usermod -p "${ENCRYPTED_PASSWORD}" root
-
-# Set up interfaces
-cat <<EOM >$R/etc/network/interfaces
-# interfaces(5) file used by ifup(8) and ifdown(8)
-# Include files from /etc/network/interfaces.d:
-source-directory /etc/network/interfaces.d
-
-# The loopback network interface
-auto lo
-iface lo inet loopback
-
-# The primary network interface
-allow-hotplug eth0
-iface eth0 inet dhcp
-EOM
 
 # Set up firmware boot cmdline
 CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1"
@@ -361,6 +377,11 @@ cat <<EOM >$R/boot/firmware/config.txt
 # uncomment to overclock the arm. 700 MHz is the default.
 #arm_freq=800
 EOM
+
+# Load snd_bcm2835 kernel module at boot time
+if [ "$ENABLE_SOUND" = true ] ; then
+  echo "snd_bcm2835" >>$R/etc/modules
+fi
 
 # Set smallest possible GPU memory allocation size: 16MB (no X)
 if [ "$ENABLE_MINGPU" = true ] ; then
@@ -684,7 +705,6 @@ fi
 
 # Install gcc/c++ build environment inside the chroot
 if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ]; then
-  # Install minimal gcc/g++ build environment
   LANG=C chroot $R apt-get install -q -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
 fi
 
@@ -722,7 +742,6 @@ EOM
   LANG=C chroot $R mkimage -A arm -O linux -T script -C none -a 0x00000000 -e 0x00000000 -n "RPi2 Boot Script" -d /boot/firmware/uboot.mkimage /boot/firmware/boot.scr
 fi
 
-
 # Fetch and build fbturbo Xorg driver
 if [ "$ENABLE_FBTURBO" = true ] ; then
   # Fetch fbturbo driver sources
@@ -750,26 +769,8 @@ fi
 
 # Remove gcc/c++ build environment from the chroot
 if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ]; then
-  # Remove minimal gcc/c++ build environment
   LANG=C chroot $R apt-get -y -q purge --auto-remove bc binutils cpp cpp-4.9 g++ g++-4.9 gcc gcc-4.9 libasan1 libatomic1 libc-dev-bin libc6-dev libcloog-isl4 libgcc-4.9-dev libgomp1 libisl10 libmpc3 libmpfr4 libstdc++-4.9-dev libubsan0 linux-compiler-gcc-4.9-arm linux-libc-dev make
 fi
-
-# Enable systemd-networkd DHCP configuration for the eth0 interface
-printf "[Match]\nName=eth0\n\n[Network]\nDHCP=yes\n" > $R/etc/systemd/network/eth.network
-
-# Set DHCP configuration to IPv4 only
-if [ "$ENABLE_IPV6" = false ] ; then
-  sed -i "s/=yes/=v4/" $R/etc/systemd/network/eth.network
-fi
-
-# Enable systemd-networkd service
-LANG=C chroot $R systemctl enable systemd-networkd
-
-# Place hint about netowrk configuration
-cat <<EOM >$R/etc/network/interfaces
-# Debian switched to systemd-networkd configuration files.
-# please configure your networks in '/etc/systemd/network/'
-EOM
 
 # Clean cached downloads
 LANG=C chroot $R apt-get -y clean
