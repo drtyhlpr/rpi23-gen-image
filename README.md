@@ -14,6 +14,7 @@ The script accepts certain command-line parameters to enable or disable specific
 ```shell
 ENABLE_UBOOT=true ./rpi2-gen-image.sh
 ENABLE_CONSOLE=false ENABLE_IPV6=false ./rpi2-gen-image.sh
+ENABLE_WM=xfce4 ENABLE_FBTURBO=true ENABLE_MINBASE=true ./rpi2-gen-image.sh
 ENABLE_HARDNET=true ENABLE_IPTABLES=true /rpi2-gen-image.sh
 APT_SERVER=ftp.de.debian.org APT_PROXY="http://127.0.0.1:3142/" ./rpi2-gen-image.sh
 ENABLE_MINBASE=true ./rpi2-gen-image.sh
@@ -64,8 +65,8 @@ Install and enable D-Bus message bus. Please note that systemd should work witho
 ##### `ENABLE_XORG`=false
 Install Xorg open-source X Window System.
 
-##### `ENABLE_FLUXBOX`=false
-Install Fluxbox window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_FLUXBOX` is used.
+##### `ENABLE_WM`=""
+Install a user defined window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_WM` is used. The `rpi2-gen-image.sh` script has been tested with the following list of window managers: `blackbox`, `openbox`, `fluxbox`, `jwm`, `dwm`, `xfce4`, `awesome`.
 
 #### Advanced sytem features:
 ##### `ENABLE_MINBASE`=false

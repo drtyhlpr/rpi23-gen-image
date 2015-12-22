@@ -59,7 +59,7 @@ ENABLE_DBUS=${ENABLE_DBUS:=true}
 ENABLE_HWRANDOM=${ENABLE_HWRANDOM:=true}
 ENABLE_MINGPU=${ENABLE_MINGPU:=false}
 ENABLE_XORG=${ENABLE_XORG:=false}
-ENABLE_FLUXBOX=${ENABLE_FLUXBOX:=false}
+ENABLE_WM=${ENABLE_WM:=""}
 
 # Advanced settings
 ENABLE_MINBASE=${ENABLE_MINBASE:=false}
@@ -162,9 +162,9 @@ if [ "$ENABLE_FBTURBO" = true ] ; then
   ENABLE_XORG=true
 fi
 
-# Add fluxbox package with eterm
-if [ "$ENABLE_FLUXBOX" = true ] ; then
-  APT_INCLUDES="${APT_INCLUDES},fluxbox,eterm"
+# Add user defined window manager package
+if [ -n "$ENABLE_WM" ] ; then
+  APT_INCLUDES="${APT_INCLUDES},${ENABLE_WM}"
 
   # Enable xorg package dependencies
   ENABLE_XORG=true
