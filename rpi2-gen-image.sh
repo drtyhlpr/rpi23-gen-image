@@ -220,7 +220,7 @@ LANG=C chroot $R dpkg-reconfigure -f noninteractive tzdata
 
 # Set up default locales to "en_US.UTF-8" default
 if [ "$ENABLE_MINBASE" = false ] ; then
-  LANG=C chroot $R sed -i '/${DEFLOCAL}/s/^#//' /etc/locale.gen
+  LANG=C chroot $R sed -i "/${DEFLOCAL}/s/^#//" /etc/locale.gen
   LANG=C chroot $R locale-gen ${DEFLOCAL}
 fi
 
