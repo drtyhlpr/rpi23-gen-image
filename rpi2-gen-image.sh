@@ -45,6 +45,7 @@ HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
 PASSWORD=${PASSWORD:=raspberry}
 DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
 TIMEZONE=${TIMEZONE:="Europe/Berlin"}
+EXPANDROOT=${EXPANDROOT:=true}
 
 # APT settings
 APT_PROXY=${APT_PROXY:=""}
@@ -123,6 +124,11 @@ trap cleanup 0 1 2 3 6
 
 # Set up chroot directory
 mkdir -p $R
+
+# Add parted package, required to get partprobe utility
+if [ "$EXPANDROOT" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},parted"
+fi
 
 # Add required packages for the minbase installation
 if [ "$ENABLE_MINBASE" = true ] ; then
@@ -701,6 +707,70 @@ fi
 if [ "$ENABLE_SSHD" = false ] ; then
  sed -e '/^#/! {/SSH/ s/^/# /}' -i $R/etc/iptables/iptables.rules 2> /dev/null
  sed -e '/^#/! {/SSH/ s/^/# /}' -i $R/etc/iptables/ip6tables.rules 2> /dev/null
+fi
+
+# Set up /etc/rc.local script to expand root partition and filesystem, based on raspi-config
+if [ "$EXPANDROOT" = true ] ; then
+  cat <<EOF > $R/tmp/rc.local.resize2fs
+#cut start#
+ROOT_PART=\$(mount | sed -n 's|^/dev/\(.*\) on / .*|\1|p')
+PART_NUM=\${ROOT_PART#mmcblk0p}
+if [ "\$PART_NUM" = "\$ROOT_PART" ]; then
+  logger -t "rpi2-gen-image" "\$ROOT_PART is not an SD card. Don't know how to expand"
+  return 0
+fi
+# NOTE: the NOOBS partition layout confuses parted. For now, let's only
+# agree to work with a sufficiently simple partition layout
+if [ "\$PART_NUM" -ne 2 ]; then
+  logger -t "rpi2-gen-image" "Your partition layout is not currently supported by this tool."
+  return 0
+fi
+
+LAST_PART_NUM=\$(parted /dev/mmcblk0 -ms unit s p | tail -n 1 | cut -f 1 -d:)
+if [ \$LAST_PART_NUM -ne \$PART_NUM ]; then
+  logger -t "rpi2-gen-image" "\$ROOT_PART is not the last partition. Don't know how to expand"
+  return 0
+fi
+
+# Get the starting offset of the root partition
+PART_START=\$(parted /dev/mmcblk0 -ms unit s p | grep "^\${PART_NUM}" | cut -f 2 -d: | sed 's/[^0-9]//g')
+[ "\$PART_START" ] || return 1
+
+# Get the possible last sector for the root partition
+PART_LAST=\$(fdisk -l /dev/mmcblk0 | grep '^Disk.*sectors' | awk '{ print \$7 - 1 }')
+[ "\$PART_LAST" ] || return 1
+
+# Return value will likely be error for fdisk as it fails to reload the
+# partition table because the root fs is mounted
+### Since rc.local is run with "sh -e", let's add "|| true" to prevent premature exit
+fdisk /dev/mmcblk0 <<EOF2 || true
+p
+d
+\$PART_NUM
+n
+p
+\$PART_NUM
+\$PART_START
+\$PART_LAST
+p
+w
+EOF2
+
+  # Reload the partition table, resize root filesystem then remove resizing code from this file
+  partprobe &&
+    resize2fs /dev/\${ROOT_PART} &&
+    logger -t "rpi2-gen-image" "Root partition successfuly resized." &&
+    sed -i '/^#cut start#$/,/^#cut end#$/d' /etc/rc.local
+#cut end#
+
+exit 0
+EOF
+  # Insert the resizing code in /etc/rc.local
+  sed -i "/^exit 0$/ {
+    r $R/tmp/rc.local.resize2fs
+    d
+    }" $R/etc/rc.local
+  rm $R/tmp/rc.local.resize2fs
 fi
 
 # Install gcc/c++ build environment inside the chroot
