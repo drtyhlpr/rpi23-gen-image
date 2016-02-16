@@ -40,6 +40,33 @@ Set default system locale and keyboard layout. This setting can also be changed 
 ##### `TIMEZONE`="Europe/Berlin"
 Set default system timezone. All available timezones can be found in the `/usr/share/zoneinfo/` directory. This setting can also be changed inside the running OS using the `dpkg-reconfigure tzdata` command.
 
+#### Networking settings
+These settings are used to set up networking configuration in `/etc/systemd/network/eth.network`.
+
+#####`ENABLE_DHCP`=true
+Set the system to use DHCP. When set to "true", the following `NET_*` settings (used for static configuration) are ignored.
+
+#####`NET_ADDRESS`=""
+Set a static IPv4 or IPv6 address and its prefix, separated by "/", eg. "192.169.0.3/24".
+
+#####`NET_GATEWAY`=""
+Set the IP address for the default gateway.
+
+#####`NET_DNS_1`=""
+Set the IP address for the first DNS server.
+
+#####`NET_DNS_2`=""
+Set the IP address for the second DNS server.
+
+#####`NET_DNS_DOMAINS`=""
+Set the default DNS search domains to use for non fully qualified host names.
+
+#####`NET_NTP_1`=""
+Set the IP address for the first NTP server.
+
+#####`NET_NTP_2`=""
+Set the IP address for the second NTP server.
+
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
 Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
