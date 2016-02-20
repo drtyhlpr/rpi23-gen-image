@@ -218,12 +218,6 @@ EOM
 echo ${TIMEZONE} >$R/etc/timezone
 LANG=C chroot $R dpkg-reconfigure -f noninteractive tzdata
 
-# Set up default locales to "en_US.UTF-8" default
-if [ "$ENABLE_MINBASE" = false ] ; then
-  LANG=C chroot $R sed -i "/${DEFLOCAL}/s/^#//" /etc/locale.gen
-  LANG=C chroot $R locale-gen ${DEFLOCAL}
-fi
-
 # Upgrade collabora package index and install collabora keyring
 echo "deb https://repositories.collabora.co.uk/debian ${RELEASE} rpi2" >$R/etc/apt/sources.list
 LANG=C chroot $R apt-get -qq -y update
@@ -246,6 +240,24 @@ EOM
 # Upgrade package index and update all installed packages and changed dependencies
 LANG=C chroot $R apt-get -qq -y update
 LANG=C chroot $R apt-get -qq -y -u dist-upgrade
+
+# Set up default locales to "en_US.UTF-8" default
+if [ "$ENABLE_MINBASE" = false ] ; then
+  # Set locale choice in debconf db, even though dpkg-reconfigure ignores and overwrites them due to some bug
+  # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=684134 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=685957
+  # ... so we have to set locales manually
+  if [ "$DEFLOCAL" = "en_US.UTF-8" ] ; then
+    LANG=C chroot $R echo "locales locales/locales_to_be_generated multiselect ${DEFLOCAL} UTF-8" | debconf-set-selections
+  else
+    # en_US.UTF-8 should be available anyway : https://www.debian.org/doc/manuals/debian-reference/ch08.en.html#_the_reconfiguration_of_the_locale
+    LANG=C chroot $R echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8, ${DEFLOCAL} UTF-8" | debconf-set-selections
+    LANG=C chroot $R sed -i "/en_US.UTF-8/s/^#//" /etc/locale.gen
+  fi
+  LANG=C chroot $R sed -i "/${DEFLOCAL}/s/^#//" /etc/locale.gen
+  LANG=C chroot $R echo "locales locales/default_environment_locale select ${DEFLOCAL}" | debconf-set-selections
+  LANG=C chroot $R locale-gen
+  LANG=C chroot $R update-locale LANG=${DEFLOCAL}
+fi
 
 # Kernel installation
 # Install flash-kernel last so it doesn't try (and fail) to detect the platform in the chroot
