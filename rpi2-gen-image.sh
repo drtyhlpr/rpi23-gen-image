@@ -45,6 +45,10 @@ HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
 PASSWORD=${PASSWORD:=raspberry}
 DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
 TIMEZONE=${TIMEZONE:="Europe/Berlin"}
+XKBMODEL=${XKBMODEL:=""}
+XKBLAYOUT=${XKBLAYOUT:=""}
+XKBVARIANT=${XKBVARIANT:=""}
+XKBOPTIONS=${XKBOPTIONS:=""}
 
 # APT settings
 APT_PROXY=${APT_PROXY:=""}
@@ -128,7 +132,7 @@ mkdir -p $R
 if [ "$ENABLE_MINBASE" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},vim-tiny,netbase,net-tools"
 else
-  APT_INCLUDES="${APT_INCLUDES},locales"
+  APT_INCLUDES="${APT_INCLUDES},locales,keyboard-configuration,console-setup"
 fi
 
 # Add dbus package, recommended if using systemd
@@ -241,7 +245,7 @@ EOM
 LANG=C chroot $R apt-get -qq -y update
 LANG=C chroot $R apt-get -qq -y -u dist-upgrade
 
-# Set up default locales to "en_US.UTF-8" default
+# Set up default locale and keyboard configuration
 if [ "$ENABLE_MINBASE" = false ] ; then
   # Set locale choice in debconf db, even though dpkg-reconfigure ignores and overwrites them due to some bug
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=684134 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=685957
@@ -257,6 +261,31 @@ if [ "$ENABLE_MINBASE" = false ] ; then
   LANG=C chroot $R echo "locales locales/default_environment_locale select ${DEFLOCAL}" | debconf-set-selections
   LANG=C chroot $R locale-gen
   LANG=C chroot $R update-locale LANG=${DEFLOCAL}
+
+  # Keyboard configuration, if requested
+  if [ "$XKBMODEL" != "" ] ; then
+    LANG=C chroot $R sed -i "s/^XKBMODEL.*/XKBMODEL=\"${XKBMODEL}\"/" /etc/default/keyboard
+  fi
+  if [ "$XKBLAYOUT" != "" ] ; then
+    LANG=C chroot $R sed -i "s/^XKBLAYOUT.*/XKBLAYOUT=\"${XKBLAYOUT}\"/" /etc/default/keyboard
+  fi
+  if [ "$XKBVARIANT" != "" ] ; then
+    LANG=C chroot $R sed -i "s/^XKBVARIANT.*/XKBVARIANT=\"${XKBVARIANT}\"/" /etc/default/keyboard
+  fi
+  if [ "$XKBOPTIONS" != "" ] ; then
+    LANG=C chroot $R sed -i "s/^XKBOPTIONS.*/XKBOPTIONS=\"${XKBOPTIONS}\"/" /etc/default/keyboard
+  fi
+  LANG=C chroot $R dpkg-reconfigure -f noninteractive keyboard-configuration
+  # Set up font console
+  case "${DEFLOCAL}" in
+    *UTF-8)
+      LANG=C chroot $R sed -i 's/^CHARMAP.*/CHARMAP="UTF-8"/' /etc/default/console-setup
+      ;;
+    *)
+      LANG=C chroot $R sed -i 's/^CHARMAP.*/CHARMAP="guess"/' /etc/default/console-setup
+      ;;
+  esac
+  LANG=C chroot $R dpkg-reconfigure -f noninteractive console-setup
 fi
 
 # Kernel installation

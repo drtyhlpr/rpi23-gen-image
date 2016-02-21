@@ -35,10 +35,18 @@ Set system host name. It's recommended that the host name is unique in the corre
 Set system `root` password. The same password is used for the created user `pi`. It's **STRONGLY** recommended that you choose a custom password.
 
 ##### `DEFLOCAL`="en_US.UTF-8"
-Set default system locale and keyboard layout. This setting can also be changed inside the running OS using the `dpkg-reconfigure locales` command. The script variant `minbase` (ENABLE_MINBASE=true) doesn't install `locales`.
+Set default system locale. This setting can also be changed inside the running OS using the `dpkg-reconfigure locales` command. The script variant `minbase` (ENABLE_MINBASE=true) doesn't install `locales`.
+
 
 ##### `TIMEZONE`="Europe/Berlin"
 Set default system timezone. All available timezones can be found in the `/usr/share/zoneinfo/` directory. This setting can also be changed inside the running OS using the `dpkg-reconfigure tzdata` command.
+
+#### Keyboard settings:
+These options are used to configure keyboard layout in `/etc/default/keyboard` for console and Xorg. These settings can also be changed inside the running OS using the `dpkg-reconfigure keyboard-configuration` command.
+##### `XKBMODEL`=""
+##### `XKBLAYOUT`=""
+##### `XKBVARIANT`=""
+##### `XKBOPTIONS`=""
 
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
