@@ -40,6 +40,9 @@ Set default system locale and keyboard layout. This setting can also be changed 
 ##### `TIMEZONE`="Europe/Berlin"
 Set default system timezone. All available timezones can be found in the `/usr/share/zoneinfo/` directory. This setting can also be changed inside the running OS using the `dpkg-reconfigure tzdata` command.
 
+##### `EXPANDROOT`=true
+Expand the root partition and filesystem automatically on first boot.
+
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
 Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
