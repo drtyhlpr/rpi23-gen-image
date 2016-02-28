@@ -714,10 +714,10 @@ if [ "$EXPANDROOT" = true ] ; then
   cat <<EOF > $R/tmp/rc.local.resize2fs
 #cut start#
 ROOT_PART=\$(mount | sed -n 's|^/dev/\(.*\) on / .*|\1|p')
-PART_NUM=\$(echo \{ROOT_PART} | grep -o '[1-9][0-9]*$')
-switch "\${ROOT_PART}"
-case mmcblk0*) ROOT_DEV=mmcblk0 ;;
-case sda*)     ROOT_DEV=sda ;;
+PART_NUM=\$(echo \${ROOT_PART} | grep -o '[1-9][0-9]*$')
+case "\${ROOT_PART}" in
+  mmcblk0*) ROOT_DEV=mmcblk0 ;;
+  sda*)     ROOT_DEV=sda ;;
 esac
 if [ "\$PART_NUM" = "\$ROOT_PART" ]; then
   logger -t "rpi2-gen-image" "\$ROOT_PART is not an SD card. Don't know how to expand"
