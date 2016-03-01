@@ -179,11 +179,6 @@ if [ "$ENABLE_XORG" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},xorg"
 fi
 
-# Set empty proxy string
-if [ -z "$APT_PROXY" ] ; then
-  APT_PROXY="http://"
-fi
-
 # Base debootstrap (unpack only)
 if [ "$ENABLE_MINBASE" = true ] ; then
   http_proxy=${APT_PROXY} debootstrap --arch=armhf --variant=minbase --foreign --include=${APT_INCLUDES} $RELEASE $R http://${APT_SERVER}/debian
