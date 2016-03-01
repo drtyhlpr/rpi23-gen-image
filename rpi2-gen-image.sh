@@ -182,9 +182,9 @@ fi
 
 # Base debootstrap (unpack only)
 if [ "$ENABLE_MINBASE" = true ] ; then
-  debootstrap --arch=armhf --variant=minbase --foreign --include=${APT_INCLUDES} $RELEASE $R ${APT_PROXY}${APT_SERVER}/debian
+  http_proxy=${APT_PROXY} debootstrap --arch=armhf --variant=minbase --foreign --include=${APT_INCLUDES} $RELEASE $R http://${APT_SERVER}/debian
 else
-  debootstrap --arch=armhf --foreign --include=${APT_INCLUDES} $RELEASE $R ${APT_PROXY}${APT_SERVER}/debian
+  http_proxy=${APT_PROXY} debootstrap --arch=armhf --foreign --include=${APT_INCLUDES} $RELEASE $R http://${APT_SERVER}/debian
 fi
 
 # Copy qemu emulator binary to chroot
