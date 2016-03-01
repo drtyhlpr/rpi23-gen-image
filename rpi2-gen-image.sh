@@ -44,7 +44,7 @@ BUILDDIR=${BASEDIR}/build
 HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
 PASSWORD=${PASSWORD:=raspberry}
 DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
-TIMEZONE=${TIMEZONE:="Europe/Berlin"}
+TIMEZONE=${TIMEZONE:="`cat /etc/timezone`"}
 
 # APT settings
 APT_PROXY=${APT_PROXY:=""}
