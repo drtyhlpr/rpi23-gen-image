@@ -72,7 +72,7 @@ ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 R=${BUILDDIR}/chroot
 
 # Packages required for bootstrapping
-REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static dosfstools rsync bmap-tools whois git-core"
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git-core"
 
 # Missing packages that need to be installed
 MISSING_PACKAGES=""
