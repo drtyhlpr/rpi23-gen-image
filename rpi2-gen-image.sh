@@ -203,7 +203,7 @@ mount --bind /dev/pts $R/dev/pts
 
 # Use proxy inside chroot
 if [ -z "$APT_PROXY" ] ; then
-  echo "Acquire::http::Proxy \"$APT_PROXY\"" >> $R/etc/apt/apt.conf.d/10proxy
+  echo "Acquire::http::Proxy \"$APT_PROXY\";" >> $R/etc/apt/apt.conf.d/10proxy
 fi
 
 # Pin package flash-kernel to repositories.collabora.co.uk
