@@ -43,6 +43,9 @@ Set default system locale. This setting can also be changed inside the running O
 ##### `TIMEZONE`="Europe/Berlin"
 Set default system timezone. All available timezones can be found in the `/usr/share/zoneinfo/` directory. This setting can also be changed inside the running OS using the `dpkg-reconfigure tzdata` command.
 
+##### `EXPANDROOT`=true
+Expand the root partition and filesystem automatically on first boot.
+
 #### Keyboard settings:
 These options are used to configure keyboard layout in `/etc/default/keyboard` for console and Xorg. These settings can also be changed inside the running OS using the `dpkg-reconfigure keyboard-configuration` command.
 ##### `XKBMODEL`=""
