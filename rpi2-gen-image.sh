@@ -422,51 +422,7 @@ fi
 echo "${CMDLINE}" >$R/boot/firmware/cmdline.txt
 
 # Set up firmware config
-cat <<EOM >$R/boot/firmware/config.txt
-# For more options and information see
-# http://www.raspberrypi.org/documentation/configuration/config-txt.md
-# Some settings may impact device functionality. See link above for details
-
-# uncomment if you get no picture on HDMI for a default "safe" mode
-#hdmi_safe=1
-
-# uncomment this if your display has a black border of unused pixels visible
-# and your display can output without overscan
-#disable_overscan=1
-
-# uncomment the following to adjust overscan. Use positive numbers if console
-# goes off screen, and negative if there is too much border
-#overscan_left=16
-#overscan_right=16
-#overscan_top=16
-#overscan_bottom=16
-
-# uncomment to force a console size. By default it will be display's size minus
-# overscan.
-#framebuffer_width=1280
-#framebuffer_height=720
-
-# uncomment if hdmi display is not detected and composite is being output
-#hdmi_force_hotplug=1
-
-# uncomment to force a specific HDMI mode (this will force VGA)
-#hdmi_group=1
-#hdmi_mode=1
-
-# uncomment to force a HDMI mode rather than DVI. This can make audio work in
-# DMT (computer monitor) modes
-#hdmi_drive=2
-
-# uncomment to increase signal to HDMI, if you have interference, blanking, or
-# no display
-#config_hdmi_boost=4
-
-# uncomment for composite PAL
-#sdtv_mode=2
-
-# uncomment to overclock the arm. 700 MHz is the default.
-#arm_freq=800
-EOM
+install -o root -g root -m 644 files/config.txt $R/boot/firmware/config.txt
 
 # Load snd_bcm2835 kernel module at boot time
 if [ "$ENABLE_SOUND" = true ] ; then
@@ -496,99 +452,17 @@ fi
 mkdir -p $R/etc/modprobe.d/
 
 # Blacklist sound modules
-cat <<EOM >$R/etc/modprobe.d/raspi-blacklist.conf
-blacklist snd_soc_core
-blacklist snd_pcm
-blacklist snd_pcm_dmaengine
-blacklist snd_timer
-blacklist snd_compress
-blacklist snd_soc_pcm512x_i2c
-blacklist snd_soc_pcm512x
-blacklist snd_soc_tas5713
-blacklist snd_soc_wm8804
-EOM
+install -o root -g root -m 644 files/modprobe.d/raspi-blacklist.conf $R/etc/modprobe.d/raspi-blacklist.conf
 
 # Create default fstab
-cat <<EOM >$R/etc/fstab
-/dev/mmcblk0p2 / ext4 noatime,nodiratime,errors=remount-ro,discard,data=writeback,commit=100 0 1
-/dev/mmcblk0p1 /boot/firmware vfat defaults,noatime,nodiratime 0 2
-EOM
+install -o root -g root -m 644 files/fstab $R/etc/fstab
 
 # Avoid swapping and increase cache sizes
-cat <<EOM >>$R/etc/sysctl.d/99-sysctl.conf
-
-# Avoid swapping and increase cache sizes
-vm.swappiness=1
-vm.dirty_background_ratio=20
-vm.dirty_ratio=40
-vm.dirty_writeback_centisecs=500
-vm.dirty_expire_centisecs=6000
-EOM
+install -o root -g root -m 644 files/sysctl.d/81-rpi-vm.conf $R/etc/sysctl.d/81-rpi-vm.conf
 
 # Enable network stack hardening
 if [ "$ENABLE_HARDNET" = true ] ; then
-  cat <<EOM >>$R/etc/sysctl.d/99-sysctl.conf
-
-# Enable network stack hardening
-net.ipv4.tcp_timestamps=0
-net.ipv4.tcp_syncookies=1
-net.ipv4.conf.all.rp_filter=1
-net.ipv4.conf.all.accept_redirects=0
-net.ipv4.conf.all.send_redirects=0
-net.ipv4.conf.all.accept_source_route=0
-net.ipv4.conf.default.rp_filter=1
-net.ipv4.conf.default.accept_redirects=0
-net.ipv4.conf.default.send_redirects=0
-net.ipv4.conf.default.accept_source_route=0
-net.ipv4.conf.lo.accept_redirects=0
-net.ipv4.conf.lo.send_redirects=0
-net.ipv4.conf.lo.accept_source_route=0
-net.ipv4.conf.eth0.accept_redirects=0
-net.ipv4.conf.eth0.send_redirects=0
-net.ipv4.conf.eth0.accept_source_route=0
-net.ipv4.icmp_echo_ignore_broadcasts=1
-net.ipv4.icmp_ignore_bogus_error_responses=1
-
-net.ipv6.conf.all.accept_redirects=0
-net.ipv6.conf.all.accept_source_route=0
-net.ipv6.conf.all.router_solicitations=0
-net.ipv6.conf.all.accept_ra_rtr_pref=0
-net.ipv6.conf.all.accept_ra_pinfo=0
-net.ipv6.conf.all.accept_ra_defrtr=0
-net.ipv6.conf.all.autoconf=0
-net.ipv6.conf.all.dad_transmits=0
-net.ipv6.conf.all.max_addresses=1
-
-net.ipv6.conf.default.accept_redirects=0
-net.ipv6.conf.default.accept_source_route=0
-net.ipv6.conf.default.router_solicitations=0
-net.ipv6.conf.default.accept_ra_rtr_pref=0
-net.ipv6.conf.default.accept_ra_pinfo=0
-net.ipv6.conf.default.accept_ra_defrtr=0
-net.ipv6.conf.default.autoconf=0
-net.ipv6.conf.default.dad_transmits=0
-net.ipv6.conf.default.max_addresses=1
-
-net.ipv6.conf.lo.accept_redirects=0
-net.ipv6.conf.lo.accept_source_route=0
-net.ipv6.conf.lo.router_solicitations=0
-net.ipv6.conf.lo.accept_ra_rtr_pref=0
-net.ipv6.conf.lo.accept_ra_pinfo=0
-net.ipv6.conf.lo.accept_ra_defrtr=0
-net.ipv6.conf.lo.autoconf=0
-net.ipv6.conf.lo.dad_transmits=0
-net.ipv6.conf.lo.max_addresses=1
-
-net.ipv6.conf.eth0.accept_redirects=0
-net.ipv6.conf.eth0.accept_source_route=0
-net.ipv6.conf.eth0.router_solicitations=0
-net.ipv6.conf.eth0.accept_ra_rtr_pref=0
-net.ipv6.conf.eth0.accept_ra_pinfo=0
-net.ipv6.conf.eth0.accept_ra_defrtr=0
-net.ipv6.conf.eth0.autoconf=0
-net.ipv6.conf.eth0.dad_transmits=0
-net.ipv6.conf.eth0.max_addresses=1
-EOM
+  install -o root -g root -m 644 files/sysctl.d/81-rpi-net-hardening.conf $R/etc/sysctl.d/81-rpi-net-hardening.conf
 
 # Enable resolver warnings about spoofed addresses
   cat <<EOM >>$R/etc/host.conf
@@ -596,84 +470,25 @@ spoof warn
 EOM
 fi
 
+# First boot actions
+cat files/firstboot/10-begin.sh > $R/etc/rc.firstboot
+
 # Ensure openssh server host keys are regenerated on first boot
 if [ "$ENABLE_SSHD" = true ] ; then
-  cat <<EOM >>$R/etc/rc.firstboot
-#!/bin/sh
-rm -f /etc/ssh/ssh_host_*
-ssh-keygen -q -t rsa -N "" -f /etc/ssh/ssh_host_rsa_key
-ssh-keygen -q -t dsa -N "" -f /etc/ssh/ssh_host_dsa_key
-ssh-keygen -q -t ecdsa -N "" -f /etc/ssh/ssh_host_ecdsa_key
-ssh-keygen -q -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key
-sync
-
-systemctl restart sshd
-sed -i '/.*rc.firstboot/d' /etc/rc.local
-rm -f /etc/rc.firstboot
-EOM
-  chmod +x $R/etc/rc.firstboot
-  sed -i '/exit 0/d' $R/etc/rc.local
-  echo /etc/rc.firstboot >> $R/etc/rc.local
+  cat files/firstboot/21-generate-ssh-keys.sh >> $R/etc/rc.firstboot
   rm -f $R/etc/ssh/ssh_host_*
 fi
 
 if [ "$EXPANDROOT" = true ] ; then
-  cat <<EOF > $R/etc/rc.expandroot
-#!/bin/sh
+  cat files/firstboot/22-expandroot.sh >> $R/etc/rc.firstboot
+fi
 
-ROOT_PART=\$(mount | sed -n 's|^/dev/\(.*\) on / .*|\1|p')
-PART_NUM=\$(echo \${ROOT_PART} | grep -o '[1-9][0-9]*$')
-case "\${ROOT_PART}" in
-  mmcblk0*) ROOT_DEV=mmcblk0 ;;
-  sda*)     ROOT_DEV=sda ;;
-esac
-if [ "\$PART_NUM" = "\$ROOT_PART" ]; then
-  logger -t "rc.expandroot" "\$ROOT_PART is not an SD card. Don't know how to expand"
-  return 0
-fi
-# NOTE: the NOOBS partition layout confuses parted. For now, let's only
-# agree to work with a sufficiently simple partition layout
-if [ "\$PART_NUM" -gt 2 ]; then
-  logger -t "rc.expandroot" "Your partition layout is not currently supported by this tool."
-  return 0
-fi
-LAST_PART_NUM=\$(parted /dev/\${ROOT_DEV} -ms unit s p | tail -n 1 | cut -f 1 -d:)
-if [ \$LAST_PART_NUM -ne \$PART_NUM ]; then
-  logger -t "rc.expandroot" "\$ROOT_PART is not the last partition. Don't know how to expand"
-  return 0
-fi
-# Get the starting offset of the root partition
-PART_START=\$(parted /dev/\${ROOT_DEV} -ms unit s p | grep "^\${PART_NUM}" | cut -f 2 -d: | sed 's/[^0-9]//g')
-[ "\$PART_START" ] || return 1
-# Get the possible last sector for the root partition
-PART_LAST=\$(fdisk -l /dev/\${ROOT_DEV} | grep '^Disk.*sectors' | awk '{ print \$7 - 1 }')
-[ "\$PART_LAST" ] || return 1
-# Return value will likely be error for fdisk as it fails to reload the
-# partition table because the root fs is mounted
-### Since rc.local is run with "sh -e", let's add "|| true" to prevent premature exit
-fdisk /dev/\${ROOT_DEV} <<EOF2 || true
-p
-d
-\$PART_NUM
-n
-p
-\$PART_NUM
-\$PART_START
-\$PART_LAST
-p
-w
-EOF2
-  # Reload the partition table, resize root filesystem then remove resizing code from this file
-  partprobe &&
-    resize2fs /dev/\${ROOT_PART} &&
-    logger -t "rc.expandroot" "Root partition successfuly resized." &&
-    sed -i '/.*rc.expandroot/d' /etc/rc.local
-    rm -f /etc/rc.expandroot
-EOF
-  chmod +x $R/etc/rc.expandroot
-  sed -i '/exit 0/d' $R/etc/rc.local
-  echo /etc/rc.expandroot >> $R/etc/rc.local
-fi
+cat files/firstboot/99-finish.sh >> $R/etc/rc.firstboot
+chmod +x $R/etc/rc.firstboot
+
+sed -i '/exit 0/d' $R/etc/rc.local
+echo /etc/rc.firstboot >> $R/etc/rc.local
+echo exit 0 >> $R/etc/rc.local
 
 # Disable rsyslog
 if [ "$ENABLE_RSYSLOG" = false ]; then
@@ -693,82 +508,13 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
   mkdir -p "$R/etc/iptables"
 
   # Create iptables systemd service
-  cat <<EOM >$R/etc/systemd/system/iptables.service
-[Unit]
-Description=Packet Filtering Framework
-DefaultDependencies=no
-After=systemd-sysctl.service
-Before=sysinit.target
-[Service]
-Type=oneshot
-ExecStart=/sbin/iptables-restore /etc/iptables/iptables.rules
-ExecReload=/sbin/iptables-restore /etc/iptables/iptables.rules
-ExecStop=/etc/iptables/flush-iptables.sh
-RemainAfterExit=yes
-[Install]
-WantedBy=multi-user.target
-EOM
+  install -o root -g root -m 644 files/iptables/iptables.service $R/etc/systemd/system/iptables.service
 
   # Create flush-table script called by iptables service
-  cat <<EOM >$R/etc/iptables/flush-iptables.sh
-#!/bin/sh
-iptables -F
-iptables -X
-iptables -t nat -F
-iptables -t nat -X
-iptables -t mangle -F
-iptables -t mangle -X
-iptables -P INPUT ACCEPT
-iptables -P FORWARD ACCEPT
-iptables -P OUTPUT ACCEPT
-EOM
+  install -o root -g root -m 755 files/iptables/flush-iptables.sh $R/etc/iptables/flush-iptables.sh
 
   # Create iptables rule file
-  cat <<EOM >$R/etc/iptables/iptables.rules
-*filter
-:INPUT DROP [0:0]
-:FORWARD DROP [0:0]
-:OUTPUT ACCEPT [0:0]
-:TCP - [0:0]
-:UDP - [0:0]
-:SSH - [0:0]
-
-# Rate limit ping requests
--A INPUT -p icmp --icmp-type echo-request -m limit --limit 30/min --limit-burst 8 -j ACCEPT
--A INPUT -p icmp --icmp-type echo-request -j DROP
-
-# Accept established connections
--A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-
-# Accept all traffic on loopback interface
--A INPUT -i lo -j ACCEPT
-
-# Drop packets declared invalid
--A INPUT -m conntrack --ctstate INVALID -j DROP
-
-# SSH rate limiting
--A INPUT -p tcp --dport ssh -m conntrack --ctstate NEW -j SSH
--A SSH -m recent --name sshbf --rttl --rcheck --hitcount 3 --seconds 10 -j DROP
--A SSH -m recent --name sshbf --rttl --rcheck --hitcount 20 --seconds 1800 -j DROP
--A SSH -m recent --name sshbf --set -j ACCEPT
-
-# Send TCP and UDP connections to their respective rules chain
--A INPUT -p udp -m conntrack --ctstate NEW -j UDP
--A INPUT -p tcp --syn -m conntrack --ctstate NEW -j TCP
-
-# Reject dropped packets with a RFC compliant responce
--A INPUT -p udp -j REJECT --reject-with icmp-port-unreachable
--A INPUT -p tcp -j REJECT --reject-with tcp-rst
--A INPUT -j REJECT --reject-with icmp-proto-unreachable
-
-## TCP PORT RULES
-# -A TCP -p tcp -j LOG
-
-## UDP PORT RULES
-# -A UDP -p udp -j LOG
-
-COMMIT
-EOM
+  install -o root -g root -m 644 files/iptables/iptables.rules $R/etc/iptables/iptables.rules
 
   # Reload systemd configuration and enable iptables service
   chroot_exec systemctl daemon-reload
@@ -776,94 +522,16 @@ EOM
 
   if [ "$ENABLE_IPV6" = true ] ; then
     # Create ip6tables systemd service
-    cat <<EOM >$R/etc/systemd/system/ip6tables.service
-[Unit]
-Description=Packet Filtering Framework
-DefaultDependencies=no
-After=systemd-sysctl.service
-Before=sysinit.target
-[Service]
-Type=oneshot
-ExecStart=/sbin/ip6tables-restore /etc/iptables/ip6tables.rules
-ExecReload=/sbin/ip6tables-restore /etc/iptables/ip6tables.rules
-ExecStop=/etc/iptables/flush-ip6tables.sh
-RemainAfterExit=yes
-[Install]
-WantedBy=multi-user.target
-EOM
+    install -o root -g root -m 644 files/iptables/ip6tables.service $R/etc/systemd/system/ip6tables.service
 
     # Create ip6tables file
-    cat <<EOM >$R/etc/iptables/flush-ip6tables.sh
-#!/bin/sh
-ip6tables -F
-ip6tables -X
-ip6tables -Z
-for table in $(</proc/net/ip6_tables_names)
-do
-        ip6tables -t \$table -F
-        ip6tables -t \$table -X
-        ip6tables -t \$table -Z
-done
-ip6tables -P INPUT ACCEPT
-ip6tables -P OUTPUT ACCEPT
-ip6tables -P FORWARD ACCEPT
-EOM
+    install -o root -g root -m 755 files/iptables/flush-ip6tables.sh $R/etc/iptables/flush-ip6tables.sh
 
-    # Create ip6tables rule file
-    cat <<EOM >$R/etc/iptables/ip6tables.rules
-*filter
-:INPUT DROP [0:0]
-:FORWARD DROP [0:0]
-:OUTPUT ACCEPT [0:0]
-:TCP - [0:0]
-:UDP - [0:0]
-:SSH - [0:0]
+    install -o root -g root -m 644 files/iptables/ip6tables.rules $R/etc/iptables/ip6tables.rules
 
-# Drop packets with RH0 headers
--A INPUT -m rt --rt-type 0 -j DROP
--A OUTPUT -m rt --rt-type 0 -j DROP
--A FORWARD -m rt --rt-type 0 -j DROP
-
-# Rate limit ping requests
--A INPUT -p icmpv6 --icmpv6-type echo-request -m limit --limit 30/min --limit-burst 8 -j ACCEPT
--A INPUT -p icmpv6 --icmpv6-type echo-request -j DROP
-
-# Accept established connections
--A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-
-# Accept all traffic on loopback interface
--A INPUT -i lo -j ACCEPT
-
-# Drop packets declared invalid
--A INPUT -m conntrack --ctstate INVALID -j DROP
-
-# SSH rate limiting
--A INPUT -p tcp --dport ssh -m conntrack --ctstate NEW -j SSH
--A SSH -m recent --name sshbf --rttl --rcheck --hitcount 3 --seconds 10 -j DROP
--A SSH -m recent --name sshbf --rttl --rcheck --hitcount 20 --seconds 1800 -j DROP
--A SSH -m recent --name sshbf --set -j ACCEPT
-
-# Send TCP and UDP connections to their respective rules chain
--A INPUT -p udp -m conntrack --ctstate NEW -j UDP
--A INPUT -p tcp --syn -m conntrack --ctstate NEW -j TCP
-
-# Reject dropped packets with a RFC compliant responce
--A INPUT -p udp -j REJECT --reject-with icmp6-adm-prohibited
--A INPUT -p tcp -j REJECT --reject-with icmp6-adm-prohibited
--A INPUT -j REJECT --reject-with icmp6-adm-prohibited
-
-## TCP PORT RULES
-# -A TCP -p tcp -j LOG
-
-## UDP PORT RULES
-# -A UDP -p udp -j LOG
-
-COMMIT
-EOM
-
-  # Reload systemd configuration and enable iptables service
-  chroot_exec systemctl daemon-reload
-  chroot_exec systemctl enable ip6tables.service
+    # Reload systemd configuration and enable iptables service
+    chroot_exec systemctl daemon-reload
+    chroot_exec systemctl enable ip6tables.service
   fi
 fi
 
