@@ -30,11 +30,17 @@ cleanup (){
   trap - 0 1 2 3 6
 }
 
+# Exec command in chroot
+chroot_exec() {
+  LANG=C LC_ALL=C chroot $R $*
+}
+
 set -e
 set -x
 
 # Debian release
 RELEASE=${RELEASE:=jessie}
+KERNEL=${KERNEL:=3.18.0-trunk-rpi2}
 
 # Build settings
 BASEDIR=./images/${RELEASE}
@@ -76,6 +82,10 @@ ENABLE_HWRANDOM=${ENABLE_HWRANDOM:=true}
 ENABLE_MINGPU=${ENABLE_MINGPU:=false}
 ENABLE_XORG=${ENABLE_XORG:=false}
 ENABLE_WM=${ENABLE_WM:=""}
+ENABLE_RSYSLOG=${ENABLE_RSYSLOG:=true}
+ENABLE_USER=${ENABLE_USER:=true}
+ENABLE_ROOT=${ENABLE_ROOT:=false}
+ENABLE_ROOT_SSH=${ENABLE_ROOT_SSH:=false}
 
 # Advanced settings
 ENABLE_MINBASE=${ENABLE_MINBASE:=false}
@@ -173,6 +183,10 @@ if [ "$ENABLE_HWRANDOM" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},rng-tools"
 fi
 
+if [ "$ENABLE_USER" = true ]; then
+  APT_INCLUDES="${APT_INCLUDES},sudo"
+fi
+
 # Add fbturbo video driver
 if [ "$ENABLE_FBTURBO" = true ] ; then
   # Enable xorg package dependencies
@@ -228,12 +242,12 @@ EOM
 
 # Set up timezone
 echo ${TIMEZONE} >$R/etc/timezone
-LANG=C chroot $R dpkg-reconfigure -f noninteractive tzdata
+chroot_exec dpkg-reconfigure -f noninteractive tzdata
 
 # Upgrade collabora package index and install collabora keyring
 echo "deb https://repositories.collabora.co.uk/debian ${RELEASE} rpi2" >$R/etc/apt/sources.list
-LANG=C chroot $R apt-get -qq -y update
-LANG=C chroot $R apt-get -qq -y --force-yes install collabora-obs-archive-keyring
+chroot_exec apt-get -qq -y update
+chroot_exec apt-get -qq -y --force-yes install collabora-obs-archive-keyring
 
 # Set up initial sources.list
 cat <<EOM >$R/etc/apt/sources.list
@@ -250,8 +264,8 @@ deb https://repositories.collabora.co.uk/debian ${RELEASE} rpi2
 EOM
 
 # Upgrade package index and update all installed packages and changed dependencies
-LANG=C chroot $R apt-get -qq -y update
-LANG=C chroot $R apt-get -qq -y -u dist-upgrade
+chroot_exec apt-get -qq -y update
+chroot_exec apt-get -qq -y -u dist-upgrade
 
 # Set up default locale and keyboard configuration
 if [ "$ENABLE_MINBASE" = false ] ; then
@@ -259,60 +273,50 @@ if [ "$ENABLE_MINBASE" = false ] ; then
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=684134 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=685957
   # ... so we have to set locales manually
   if [ "$DEFLOCAL" = "en_US.UTF-8" ] ; then
-    LANG=C chroot $R echo "locales locales/locales_to_be_generated multiselect ${DEFLOCAL} UTF-8" | debconf-set-selections
+    chroot_exec echo "locales locales/locales_to_be_generated multiselect ${DEFLOCAL} UTF-8" | debconf-set-selections
   else
     # en_US.UTF-8 should be available anyway : https://www.debian.org/doc/manuals/debian-reference/ch08.en.html#_the_reconfiguration_of_the_locale
-    LANG=C chroot $R echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8, ${DEFLOCAL} UTF-8" | debconf-set-selections
-    LANG=C chroot $R sed -i "/en_US.UTF-8/s/^#//" /etc/locale.gen
+    chroot_exec echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8, ${DEFLOCAL} UTF-8" | debconf-set-selections
+    chroot_exec sed -i "/en_US.UTF-8/s/^#//" /etc/locale.gen
   fi
-  LANG=C chroot $R sed -i "/${DEFLOCAL}/s/^#//" /etc/locale.gen
-  LANG=C chroot $R echo "locales locales/default_environment_locale select ${DEFLOCAL}" | debconf-set-selections
-  LANG=C chroot $R locale-gen
-  LANG=C chroot $R update-locale LANG=${DEFLOCAL}
+  chroot_exec sed -i "/${DEFLOCAL}/s/^#//" /etc/locale.gen
+  chroot_exec echo "locales locales/default_environment_locale select ${DEFLOCAL}" | debconf-set-selections
+  chroot_exec locale-gen
+  chroot_exec update-locale LANG=${DEFLOCAL}
 
   # Keyboard configuration, if requested
   if [ "$XKBMODEL" != "" ] ; then
-    LANG=C chroot $R sed -i "s/^XKBMODEL.*/XKBMODEL=\"${XKBMODEL}\"/" /etc/default/keyboard
+    chroot_exec sed -i "s/^XKBMODEL.*/XKBMODEL=\"${XKBMODEL}\"/" /etc/default/keyboard
   fi
   if [ "$XKBLAYOUT" != "" ] ; then
-    LANG=C chroot $R sed -i "s/^XKBLAYOUT.*/XKBLAYOUT=\"${XKBLAYOUT}\"/" /etc/default/keyboard
+    chroot_exec sed -i "s/^XKBLAYOUT.*/XKBLAYOUT=\"${XKBLAYOUT}\"/" /etc/default/keyboard
   fi
   if [ "$XKBVARIANT" != "" ] ; then
-    LANG=C chroot $R sed -i "s/^XKBVARIANT.*/XKBVARIANT=\"${XKBVARIANT}\"/" /etc/default/keyboard
+    chroot_exec sed -i "s/^XKBVARIANT.*/XKBVARIANT=\"${XKBVARIANT}\"/" /etc/default/keyboard
   fi
   if [ "$XKBOPTIONS" != "" ] ; then
-    LANG=C chroot $R sed -i "s/^XKBOPTIONS.*/XKBOPTIONS=\"${XKBOPTIONS}\"/" /etc/default/keyboard
+    chroot_exec sed -i "s/^XKBOPTIONS.*/XKBOPTIONS=\"${XKBOPTIONS}\"/" /etc/default/keyboard
   fi
-  LANG=C chroot $R dpkg-reconfigure -f noninteractive keyboard-configuration
+  chroot_exec dpkg-reconfigure -f noninteractive keyboard-configuration
   # Set up font console
   case "${DEFLOCAL}" in
     *UTF-8)
-      LANG=C chroot $R sed -i 's/^CHARMAP.*/CHARMAP="UTF-8"/' /etc/default/console-setup
+      chroot_exec sed -i 's/^CHARMAP.*/CHARMAP="UTF-8"/' /etc/default/console-setup
       ;;
     *)
-      LANG=C chroot $R sed -i 's/^CHARMAP.*/CHARMAP="guess"/' /etc/default/console-setup
+      chroot_exec sed -i 's/^CHARMAP.*/CHARMAP="guess"/' /etc/default/console-setup
       ;;
   esac
-  LANG=C chroot $R dpkg-reconfigure -f noninteractive console-setup
+  chroot_exec dpkg-reconfigure -f noninteractive console-setup
 fi
 
 # Kernel installation
 # Install flash-kernel last so it doesn't try (and fail) to detect the platform in the chroot
-LANG=C chroot $R apt-get -qq -y --no-install-recommends install linux-image-3.18.0-trunk-rpi2
-LANG=C chroot $R apt-get -qq -y install flash-kernel
+chroot_exec apt-get -qq -y --no-install-recommends install linux-image-${KERNEL} raspberrypi-bootloader-nokernel
+chroot_exec apt-get -qq -y install flash-kernel
 
 VMLINUZ="$(ls -1 $R/boot/vmlinuz-* | sort | tail -n 1)"
 [ -z "$VMLINUZ" ] && exit 1
-mkdir -p $R/boot/firmware
-
-# required boot binaries from raspberry/firmware github (commit: "kernel: Bump to 3.18.10")
-wget -q -O $R/boot/firmware/bootcode.bin https://github.com/raspberrypi/firmware/raw/cd355a9dd4f1f4de2e79b0c8e102840885cdf1de/boot/bootcode.bin
-wget -q -O $R/boot/firmware/fixup_cd.dat https://github.com/raspberrypi/firmware/raw/cd355a9dd4f1f4de2e79b0c8e102840885cdf1de/boot/fixup_cd.dat
-wget -q -O $R/boot/firmware/fixup.dat https://github.com/raspberrypi/firmware/raw/cd355a9dd4f1f4de2e79b0c8e102840885cdf1de/boot/fixup.dat
-wget -q -O $R/boot/firmware/fixup_x.dat https://github.com/raspberrypi/firmware/raw/cd355a9dd4f1f4de2e79b0c8e102840885cdf1de/boot/fixup_x.dat
-wget -q -O $R/boot/firmware/start_cd.elf https://github.com/raspberrypi/firmware/raw/cd355a9dd4f1f4de2e79b0c8e102840885cdf1de/boot/start_cd.elf
-wget -q -O $R/boot/firmware/start.elf https://github.com/raspberrypi/firmware/raw/cd355a9dd4f1f4de2e79b0c8e102840885cdf1de/boot/start.elf
-wget -q -O $R/boot/firmware/start_x.elf https://github.com/raspberrypi/firmware/raw/cd355a9dd4f1f4de2e79b0c8e102840885cdf1de/boot/start_x.elf
 cp $VMLINUZ $R/boot/firmware/kernel7.img
 
 # Set up IPv4 hosts
@@ -374,17 +378,27 @@ EOM
 fi
 
 # Enable systemd-networkd service
-LANG=C chroot $R systemctl enable systemd-networkd
+chroot_exec systemctl enable systemd-networkd
 
 # Generate crypt(3) password string
 ENCRYPTED_PASSWORD=`mkpasswd -m sha-512 ${PASSWORD}`
 
 # Set up default user
-LANG=C chroot $R adduser --gecos "Raspberry PI user" --add_extra_groups --disabled-password pi
-LANG=C chroot $R usermod -a -G sudo -p "${ENCRYPTED_PASSWORD}" pi
+if [ "$ENABLE_USER" = true ] ; then
+  chroot_exec adduser --gecos \"Raspberry PI user\" --add_extra_groups --disabled-password pi
+  chroot_exec usermod -a -G sudo -p "${ENCRYPTED_PASSWORD}" pi
+fi
 
-# Set up root password
-LANG=C chroot $R usermod -p "${ENCRYPTED_PASSWORD}" root
+# Set up root password or not
+if [ "$ENABLE_ROOT" = true ]; then
+  chroot_exec usermod -p "${ENCRYPTED_PASSWORD}" root
+
+  if [ "$ENABLE_ROOT_SSH" = true ]; then
+    sed -i 's|[#]*PermitRootLogin.*|PermitRootLogin yes|g' $R/etc/ssh/sshd_config
+  fi
+else
+  chroot_exec usermod -p \'!\' root
+fi
 
 # Set up firmware boot cmdline
 CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1"
@@ -576,15 +590,36 @@ spoof warn
 EOM
 fi
 
-# Regenerate openssh server host keys
+# Ensure openssh server host keys are regenerated on first boot
 if [ "$ENABLE_SSHD" = true ] ; then
-  rm -fr $R/etc/ssh/ssh_host_*
-  LANG=C chroot $R dpkg-reconfigure openssh-server
+  cat <<EOM >>$R/etc/rc.firstboot
+#!/bin/sh
+rm -f /etc/ssh/ssh_host_*
+ssh-keygen -q -t rsa -N "" -f /etc/ssh/ssh_host_rsa_key
+ssh-keygen -q -t dsa -N "" -f /etc/ssh/ssh_host_dsa_key
+ssh-keygen -q -t ecdsa -N "" -f /etc/ssh/ssh_host_ecdsa_key
+ssh-keygen -q -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key
+sync
+
+systemctl restart sshd
+sed -i 's/.*rc.firstboot.*/exit 0/g' /etc/rc.local
+rm -f /etc/rc.firstboot
+EOM
+  chmod +x $R/etc/rc.firstboot
+  sed -i 's,exit 0,/etc/rc.firstboot,g' $R/etc/rc.local
+  rm -f $R/etc/ssh/ssh_host_*
+fi
+
+# Disable rsyslog
+if [ "$ENABLE_RSYSLOG" = false ]; then
+  sed -i 's|[#]*ForwardToSyslog=yes|ForwardToSyslog=no|g' $R/etc/systemd/journald.conf
+  chroot_exec systemctl disable rsyslog
+  chroot_exec apt-get purge -q -y --force-yes rsyslog
 fi
 
 # Enable serial console systemd style
 if [ "$ENABLE_CONSOLE" = true ] ; then
-  LANG=C chroot $R systemctl enable serial-getty\@ttyAMA0.service
+  chroot_exec systemctl enable serial-getty\@ttyAMA0.service
 fi
 
 # Enable firewall based on iptables started by systemd service
@@ -671,8 +706,8 @@ COMMIT
 EOM
 
   # Reload systemd configuration and enable iptables service
-  LANG=C chroot $R systemctl daemon-reload
-  LANG=C chroot $R systemctl enable iptables.service
+  chroot_exec systemctl daemon-reload
+  chroot_exec systemctl enable iptables.service
 
   if [ "$ENABLE_IPV6" = true ] ; then
     # Create ip6tables systemd service
@@ -762,8 +797,8 @@ COMMIT
 EOM
 
   # Reload systemd configuration and enable iptables service
-  LANG=C chroot $R systemctl daemon-reload
-  LANG=C chroot $R systemctl enable ip6tables.service
+  chroot_exec systemctl daemon-reload
+  chroot_exec systemctl enable ip6tables.service
   fi
 fi
 
@@ -775,7 +810,7 @@ fi
 
 # Install gcc/c++ build environment inside the chroot
 if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ]; then
-  LANG=C chroot $R apt-get install -q -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
+  chroot_exec apt-get install -q -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
 fi
 
 # Fetch and build U-Boot bootloader
@@ -784,7 +819,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   git -C $R/tmp clone git://git.denx.de/u-boot.git
 
   # Build and install U-Boot inside chroot
-  LANG=C chroot $R make -C /tmp/u-boot/ rpi_2_defconfig all
+  chroot_exec make -C /tmp/u-boot/ rpi_2_defconfig all
 
   # Copy compiled bootloader binary and set config.txt to load it
   cp $R/tmp/u-boot/u-boot.bin $R/boot/firmware/
@@ -809,7 +844,7 @@ bootz \${kernel_addr_r}
 EOM
 
   # Generate U-Boot image from command file
-  LANG=C chroot $R mkimage -A arm -O linux -T script -C none -a 0x00000000 -e 0x00000000 -n "RPi2 Boot Script" -d /boot/firmware/uboot.mkimage /boot/firmware/boot.scr
+  chroot_exec mkimage -A arm -O linux -T script -C none -a 0x00000000 -e 0x00000000 -n "RPi2 Boot Script" -d /boot/firmware/uboot.mkimage /boot/firmware/boot.scr
 fi
 
 # Fetch and build fbturbo Xorg driver
@@ -818,10 +853,10 @@ if [ "$ENABLE_FBTURBO" = true ] ; then
   git -C $R/tmp clone https://github.com/ssvb/xf86-video-fbturbo.git
 
   # Install Xorg build dependencies
-  LANG=C chroot $R apt-get install -q -y --no-install-recommends xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
+  chroot_exec apt-get install -q -y --no-install-recommends xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
 
   # Build and install fbturbo driver inside chroot
-  LANG=C chroot $R /bin/bash -c "cd /tmp/xf86-video-fbturbo; autoreconf -vi; ./configure --prefix=/usr; make; make install"
+  chroot_exec /bin/bash -c "cd /tmp/xf86-video-fbturbo; autoreconf -vi; ./configure --prefix=/usr; make; make install"
 
   # Add fbturbo driver to Xorg configuration
   cat <<EOM >$R/usr/share/X11/xorg.conf.d/99-fbturbo.conf
@@ -834,18 +869,18 @@ EndSection
 EOM
 
   # Remove Xorg build dependencies
-  LANG=C chroot $R apt-get -q -y purge --auto-remove xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
+  chroot_exec apt-get -q -y purge --auto-remove xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
 fi
 
 # Remove gcc/c++ build environment from the chroot
 if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ]; then
-  LANG=C chroot $R apt-get -y -q purge --auto-remove bc binutils cpp cpp-4.9 g++ g++-4.9 gcc gcc-4.9 libasan1 libatomic1 libc-dev-bin libc6-dev libcloog-isl4 libgcc-4.9-dev libgomp1 libisl10 libmpc3 libmpfr4 libstdc++-4.9-dev libubsan0 linux-compiler-gcc-4.9-arm linux-libc-dev make
+  chroot_exec apt-get -y -q purge --auto-remove bc binutils cpp cpp-4.9 g++ g++-4.9 gcc gcc-4.9 libasan1 libatomic1 libc-dev-bin libc6-dev libcloog-isl4 libgcc-4.9-dev libgomp1 libisl10 libmpc3 libmpfr4 libstdc++-4.9-dev libubsan0 linux-compiler-gcc-4.9-arm linux-libc-dev make
 fi
 
 # Clean cached downloads
-LANG=C chroot $R apt-get -y clean
-LANG=C chroot $R apt-get -y autoclean
-LANG=C chroot $R apt-get -y autoremove
+chroot_exec apt-get -y clean
+chroot_exec apt-get -y autoclean
+chroot_exec apt-get -y autoremove
 
 # Unmount mounted filesystems
 umount -l $R/proc
