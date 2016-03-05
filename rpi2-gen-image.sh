@@ -82,7 +82,8 @@ REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-su
 MISSING_PACKAGES=""
 
 # Packages required in the chroot build environment
-APT_INCLUDES="apt-transport-https,ca-certificates,debian-archive-keyring,dialog,sudo"
+APT_INCLUDES=${APT_INCLUDES:=""}
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,ca-certificates,debian-archive-keyring,dialog,sudo"
 
 set +x
 
