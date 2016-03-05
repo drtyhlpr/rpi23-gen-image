@@ -74,6 +74,7 @@ ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 
 # Image chroot path
 R=${BUILDDIR}/chroot
+CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git-core"
@@ -812,6 +813,13 @@ fi
 LANG=C chroot $R apt-get -y clean
 LANG=C chroot $R apt-get -y autoclean
 LANG=C chroot $R apt-get -y autoremove
+
+# Invoke custom scripts
+if [ -n "${CHROOT_SCRIPTS}" ]; then
+  cp -r "${CHROOT_SCRIPTS}" "${R}/chroot_scripts"
+  LANG=C chroot $R bash -c 'for SCRIPT in /chroot_scripts/*; do if [ -f $SCRIPT -a -x $SCRIPT ]; then $SCRIPT; fi done;'
+  rm -rf "${R}/chroot_scripts"
+fi
 
 # Unmount mounted filesystems
 umount -l $R/proc

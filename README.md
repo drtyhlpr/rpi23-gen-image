@@ -92,6 +92,9 @@ Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing conne
 ##### `ENABLE_HARDNET`=false
 Enable IPv4/IPv6 network stack hardening settings.
 
+##### `CHROOT_SCRIPTS`=""
+Path to a directory with scripts that should be run in the chroot before the image is finally built. Every executable file in this direcory is run in lexicographical order.
+
 ## Logging of the bootstrapping process
 All information related to the bootstrapping process and the commands executed by the `rpi2-gen-image.sh` script can easily be saved into a logfile. The common shell command `script` can be used for this purpose:
 
