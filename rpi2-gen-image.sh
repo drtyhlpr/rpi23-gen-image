@@ -830,35 +830,42 @@ rm -f $R/var/lib/urandom/random-seed
 rm -f $R/etc/machine-id
 rm -fr $R/etc/apt/apt.conf.d/10proxy
 
-# Calculate size of the chroot directory
-CHROOT_SIZE=$(expr `du -s $R | awk '{ print $1 }'` / 1024)
+# Calculate size of the chroot directory in KB
+CHROOT_SIZE=$(expr `du -s $R | awk '{ print $1 }'`)
 
-# Calculate required image size
-IMAGE_SIZE=`expr $(expr ${CHROOT_SIZE} / 1024 + 1) \* 1024`
+# Calculate the amount of needed 512 Byte sectors
+TABLE_SECTORS=$(expr 1 \* 1024 \* 1024 \/ 512)
+BOOT_SECTORS=$(expr 64 \* 1024 \* 1024 \/ 512)
+ROOT_OFFSET=$(expr ${TABLE_SECTORS} + ${BOOT_SECTORS})
 
-# Calculate number of sectors for the partition
-IMAGE_SECTORS=`expr $(expr ${IMAGE_SIZE} \* 1048576) / 512 - 133120`
+# The root partition is EXT4
+# This means more space than the actual used space of the chroot is used.
+# As overhead for journaling and reserved blocks 20% are added.
+ROOT_SECTORS=$(expr $(expr ${CHROOT_SIZE} + ${CHROOT_SIZE} \/ 100 \* 20) \* 1024 \/ 512)
+
+# Calculate required image size in 512 Byte sectors
+IMAGE_SECTORS=$(expr ${TABLE_SECTORS} + ${BOOT_SECTORS} + ${ROOT_SECTORS})
 
 # Prepare date string for image file name
 DATE="$(date +%Y-%m-%d)"
 
 # Prepare image file
-dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=1M count=1
-dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=1M count=0 seek=${IMAGE_SIZE}
+dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=${TABLE_SECTORS}
+dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=0 seek=${IMAGE_SECTORS}
 
 # Write partition table
-sfdisk -q -L -f "$BASEDIR/${DATE}-debian-${RELEASE}.img" <<EOM
+sfdisk -q -f "$BASEDIR/${DATE}-debian-${RELEASE}.img" <<EOM
 unit: sectors
 
-1 : start=     2048, size=   131072, Id= c, bootable
-2 : start=   133120, size=  ${IMAGE_SECTORS}, Id=83
-3 : start=        0, size=        0, Id= 0
-4 : start=        0, size=        0, Id= 0
+1 : start=   ${TABLE_SECTORS}, size=   ${BOOT_SECTORS}, Id= c, bootable
+2 : start=     ${ROOT_OFFSET}, size=   ${ROOT_SECTORS}, Id=83
+3 : start=                  0, size=                 0, Id= 0
+4 : start=                  0, size=                 0, Id= 0
 EOM
 
 # Set up temporary loop devices and build filesystems
 VFAT_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
-EXT4_LOOP="$(losetup -o 65M --sizelimit `expr ${IMAGE_SIZE} - 64`M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
+EXT4_LOOP="$(losetup -o 65M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
 mkfs.vfat "$VFAT_LOOP"
 mkfs.ext4 "$EXT4_LOOP"
 
