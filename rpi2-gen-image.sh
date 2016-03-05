@@ -50,6 +50,18 @@ XKBLAYOUT=${XKBLAYOUT:=""}
 XKBVARIANT=${XKBVARIANT:=""}
 XKBOPTIONS=${XKBOPTIONS:=""}
 
+# Network settings
+ENABLE_DHCP=${ENABLE_DHCP:=true}
+# NET_* settings are ignored when ENABLE_DHCP=true
+# NET_ADDRESS is an IPv4 or IPv6 address and its prefix, separated by "/"
+NET_ADDRESS=${NET_ADDRESS:=""}
+NET_GATEWAY=${NET_GATEWAY:=""}
+NET_DNS_1=${NET_DNS_1:=""}
+NET_DNS_2=${NET_DNS_2:=""}
+NET_DNS_DOMAINS=${NET_DNS_DOMAINS:=""}
+NET_NTP_1=${NET_NTP_1:=""}
+NET_NTP_2=${NET_NTP_2:=""}
+
 # APT settings
 APT_PROXY=${APT_PROXY:=""}
 APT_SERVER=${APT_SERVER:="ftp.debian.org"}
@@ -308,6 +320,10 @@ cat <<EOM >$R/etc/hosts
 127.0.0.1       localhost
 127.0.1.1       ${HOSTNAME}
 EOM
+if [ "$NET_ADDRESS" != "" ] ; then
+NET_IP=$(echo ${NET_ADDRESS} | cut -f 1 -d'/')
+sed -i "s/^127.0.1.1/${NET_IP}/" $R/etc/hosts
+fi
 
 # Set up IPv6 hosts
 if [ "$ENABLE_IPV6" = true ] ; then
@@ -325,6 +341,7 @@ cat <<EOM >$R/etc/network/interfaces
 # please configure your networks in '/etc/systemd/network/'
 EOM
 
+if [ "$ENABLE_DHCP" = true ] ; then
 # Enable systemd-networkd DHCP configuration for interface eth0
 cat <<EOM >$R/etc/systemd/network/eth.network
 [Match]
@@ -336,7 +353,23 @@ EOM
 
 # Set DHCP configuration to IPv4 only
 if [ "$ENABLE_IPV6" = false ] ; then
-  sed -i "s/=yes/=v4/" $R/etc/systemd/network/eth.network
+  sed -i "s/^DHCP=yes/DHCP=v4/" $R/etc/systemd/network/eth.network
+fi
+else # ENABLE_DHCP=false
+cat <<EOM >$R/etc/systemd/network/eth.network
+[Match]
+Name=eth0
+
+[Network]
+DHCP=no
+Address=${NET_ADDRESS}
+Gateway=${NET_GATEWAY}
+DNS=${NET_DNS_1}
+DNS=${NET_DNS_2}
+Domains=${NET_DNS_DOMAINS}
+NTP=${NET_NTP_1}
+NTP=${NET_NTP_2}
+EOM
 fi
 
 # Enable systemd-networkd service
