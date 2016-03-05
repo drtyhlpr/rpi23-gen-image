@@ -37,7 +37,6 @@ Set system `root` password. The same password is used for the created user `pi`.
 ##### `DEFLOCAL`="en_US.UTF-8"
 Set default system locale. This setting can also be changed inside the running OS using the `dpkg-reconfigure locales` command. The script variant `minbase` (ENABLE_MINBASE=true) doesn't install `locales`.
 
-
 ##### `TIMEZONE`="Europe/Berlin"
 Set default system timezone. All available timezones can be found in the `/usr/share/zoneinfo/` directory. This setting can also be changed inside the running OS using the `dpkg-reconfigure tzdata` command.
 
@@ -47,6 +46,33 @@ These options are used to configure keyboard layout in `/etc/default/keyboard` f
 ##### `XKBLAYOUT`=""
 ##### `XKBVARIANT`=""
 ##### `XKBOPTIONS`=""
+
+#### Networking settings
+These settings are used to set up networking configuration in `/etc/systemd/network/eth.network`.
+
+#####`ENABLE_DHCP`=true
+Set the system to use DHCP. When set to "true", the following `NET_*` settings (used for static configuration) are ignored.
+
+#####`NET_ADDRESS`=""
+Set a static IPv4 or IPv6 address and its prefix, separated by "/", eg. "192.169.0.3/24".
+
+#####`NET_GATEWAY`=""
+Set the IP address for the default gateway.
+
+#####`NET_DNS_1`=""
+Set the IP address for the first DNS server.
+
+#####`NET_DNS_2`=""
+Set the IP address for the second DNS server.
+
+#####`NET_DNS_DOMAINS`=""
+Set the default DNS search domains to use for non fully qualified host names.
+
+#####`NET_NTP_1`=""
+Set the IP address for the first NTP server.
+
+#####`NET_NTP_2`=""
+Set the IP address for the second NTP server.
 
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
