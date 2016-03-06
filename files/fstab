@@ -1,0 +1,2 @@
+/dev/mmcblk0p2 / ext4 noatime,nodiratime,errors=remount-ro,discard,data=writeback,commit=100 0 1
+/dev/mmcblk0p1 /boot/firmware vfat defaults,noatime,nodiratime 0 2
