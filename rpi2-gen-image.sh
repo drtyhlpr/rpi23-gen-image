@@ -391,7 +391,7 @@ ENCRYPTED_PASSWORD=`mkpasswd -m sha-512 ${PASSWORD}`
 
 # Set up default user
 if [ "$ENABLE_USER" = true ] ; then
-  chroot_exec adduser --gecos \"Raspberry\ PI\ user\" --add_extra_groups --disabled-password pi
+  chroot_exec adduser --gecos pi --add_extra_groups --disabled-password pi
   chroot_exec usermod -a -G sudo -p "${ENCRYPTED_PASSWORD}" pi
 fi
 
