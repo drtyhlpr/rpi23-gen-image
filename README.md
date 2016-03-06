@@ -48,16 +48,27 @@ Expand the root partition and filesystem automatically on first boot.
 
 #### Keyboard settings:
 These options are used to configure keyboard layout in `/etc/default/keyboard` for console and Xorg. These settings can also be changed inside the running OS using the `dpkg-reconfigure keyboard-configuration` command.
-##### `XKBMODEL`=""
-##### `XKBLAYOUT`=""
-##### `XKBVARIANT`=""
-##### `XKBOPTIONS`=""
 
-#### Networking settings
-These settings are used to set up networking configuration in `/etc/systemd/network/eth.network`.
+##### `XKBMODEL`=""
+Set the name of the model of your keyboard type.
+
+##### `XKBLAYOUT`=""
+Set the supported keyboard layout(s).
+
+##### `XKBVARIANT`=""
+Set the supported variant(s) of the keyboard layout(s).
+
+##### `XKBOPTIONS`=""
+Set extra xkb configuration options.
+
+#### Networking settings (DHCP)
+This setting is used to set up networking auto configuration in `/etc/systemd/network/eth.network`.
 
 #####`ENABLE_DHCP`=true
-Set the system to use DHCP. When set to "true", the following `NET_*` settings (used for static configuration) are ignored.
+Set the system to use DHCP. This requires an DHCP server.
+
+#### Networking settings (static)
+These settings are used to set up a static networking configuration in /etc/systemd/network/eth.network. The following static networking settings are only supported if `ENABLE_DHCP` was set to `false`.
 
 #####`NET_ADDRESS`=""
 Set a static IPv4 or IPv6 address and its prefix, separated by "/", eg. "192.169.0.3/24".
