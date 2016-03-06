@@ -43,6 +43,9 @@ Set default system locale. This setting can also be changed inside the running O
 ##### `TIMEZONE`="Europe/Berlin"
 Set default system timezone. All available timezones can be found in the `/usr/share/zoneinfo/` directory. This setting can also be changed inside the running OS using the `dpkg-reconfigure tzdata` command.
 
+##### `EXPANDROOT`=true
+Expand the root partition and filesystem automatically on first boot.
+
 #### Keyboard settings:
 These options are used to configure keyboard layout in `/etc/default/keyboard` for console and Xorg. These settings can also be changed inside the running OS using the `dpkg-reconfigure keyboard-configuration` command.
 ##### `XKBMODEL`=""
@@ -87,6 +90,10 @@ Enable IPv6 support. The network interface configuration is managed via systemd-
 ##### `ENABLE_SSHD`=true
 Install and enable OpenSSH service. The default configuration of the service doesn't allow `root` to login. Please use the user `pi` instead and `su -` or `sudo` to execute commands as root.
 
+##### `ENABLE_RSYSLOG`=true
+If set to false, disable and uninstall rsyslog (so logs will be available only
+in journal files)
+
 ##### `ENABLE_SOUND`=true
 Enable sound hardware and install Advanced Linux Sound Architecture.
 
@@ -117,6 +124,16 @@ Install and enable the hardware accelerated Xorg video driver `fbturbo`. Please 
 
 ##### `ENABLE_IPTABLES`=false
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
+
+##### `ENABLE_USER`=true
+Create pi user with password raspberry
+
+##### `ENABLE_ROOT`=true
+Set root user password so root login will be enabled
+
+##### `ENABLE_ROOT_SSH`=true
+Enable password root login via SSH. May be a security risk with default
+password, use only in trusted environments.
 
 ##### `ENABLE_HARDNET`=false
 Enable IPv4/IPv6 network stack hardening settings.
