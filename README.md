@@ -27,6 +27,9 @@ Set Debian packages server address. Choose a server from the list of Debian worl
 ##### `APT_PROXY`=""
 Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once.
 
+##### `APT_INCLUDES`=""
+A comma seperated list of additional packages to be installed during bootstrapping.
+
 #### General system settings:
 ##### `HOSTNAME`="rpi2-jessie"
 Set system host name. It's recommended that the host name is unique in the corresponding subnet.
