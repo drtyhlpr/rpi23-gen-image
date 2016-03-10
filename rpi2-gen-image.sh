@@ -240,6 +240,7 @@ rm -f $R/var/lib/urandom/random-seed
 [ -L $R/var/lib/dbus/machine-id ] || rm -f $R/var/lib/dbus/machine-id
 rm -f $R/etc/machine-id
 rm -fr $R/etc/apt/apt.conf.d/10proxy
+rm -f $R/etc/resolv.conf
 
 # Calculate size of the chroot directory in KB
 CHROOT_SIZE=$(expr `du -s $R | awk '{ print $1 }'`)
