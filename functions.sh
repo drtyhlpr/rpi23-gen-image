@@ -2,6 +2,10 @@ cleanup (){
   # Clean up all temporary mount points
   set +x
   set +e
+  echo "killing processes using mount point ..."
+  fuser -k $R
+  sleep 3
+  fuser -9 -k -v $R
   echo "removing temporary mount points ..."
   umount -l $R/proc 2> /dev/null
   umount -l $R/sys 2> /dev/null
