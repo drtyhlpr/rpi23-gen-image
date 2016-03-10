@@ -15,5 +15,5 @@ cleanup (){
 
 chroot_exec() {
   # Exec command in chroot
-  LANG=C LC_ALL=C chroot $R $*
+  LANG=C LC_ALL=C DEBIAN_FRONTEND=noninteractive chroot $R $*
 }
