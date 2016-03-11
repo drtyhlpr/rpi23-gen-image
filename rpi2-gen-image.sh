@@ -25,8 +25,8 @@ cleanup (){
   umount -l $R/dev/pts 2> /dev/null
   umount "$BUILDDIR/mount/boot/firmware" 2> /dev/null
   umount "$BUILDDIR/mount" 2> /dev/null
-  losetup -d "$EXT4_LOOP" 2> /dev/null
-  losetup -d "$VFAT_LOOP" 2> /dev/null
+  losetup -d "$ROOT_LOOP" 2> /dev/null
+  losetup -d "$FRMW_LOOP" 2> /dev/null
   trap - 0 1 2 3 6
 }
 
@@ -94,6 +94,7 @@ ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
+ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 
 # Image chroot path
 R=${BUILDDIR}/chroot
@@ -408,7 +409,11 @@ else
 fi
 
 # Set up firmware boot cmdline
-CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1"
+if [ "$ENABLE_SPLITFS" = true ] ; then
+  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1"
+else
+  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1"
+fi
 
 # Set up serial console support (if requested)
 if [ "$ENABLE_CONSOLE" = true ] ; then
@@ -457,6 +462,9 @@ install -o root -g root -m 644 files/modprobe.d/raspi-blacklist.conf $R/etc/modp
 
 # Create default fstab
 install -o root -g root -m 644 files/fstab $R/etc/fstab
+if [ "$ENABLE_SPLITFS" = true ] ; then
+  sed -i '/mmcblk0p2/sda1/' $R/etc/fstab
+fi
 
 # Avoid swapping and increase cache sizes
 install -o root -g root -m 644 files/sysctl.d/81-rpi-vm.conf $R/etc/sysctl.d/81-rpi-vm.conf
@@ -645,8 +653,8 @@ CHROOT_SIZE=$(expr `du -s $R | awk '{ print $1 }'`)
 
 # Calculate the amount of needed 512 Byte sectors
 TABLE_SECTORS=$(expr 1 \* 1024 \* 1024 \/ 512)
-BOOT_SECTORS=$(expr 64 \* 1024 \* 1024 \/ 512)
-ROOT_OFFSET=$(expr ${TABLE_SECTORS} + ${BOOT_SECTORS})
+FRMW_SECTORS=$(expr 64 \* 1024 \* 1024 \/ 512)
+ROOT_OFFSET=$(expr ${TABLE_SECTORS} + ${FRMW_SECTORS})
 
 # The root partition is EXT4
 # This means more space than the actual used space of the chroot is used.
@@ -654,37 +662,63 @@ ROOT_OFFSET=$(expr ${TABLE_SECTORS} + ${BOOT_SECTORS})
 ROOT_SECTORS=$(expr $(expr ${CHROOT_SIZE} + ${CHROOT_SIZE} \/ 100 \* 20) \* 1024 \/ 512)
 
 # Calculate required image size in 512 Byte sectors
-IMAGE_SECTORS=$(expr ${TABLE_SECTORS} + ${BOOT_SECTORS} + ${ROOT_SECTORS})
+IMAGE_SECTORS=$(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS})
 
 # Prepare date string for image file name
 DATE="$(date +%Y-%m-%d)"
 
 # Prepare image file
-dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=${TABLE_SECTORS}
-dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=0 seek=${IMAGE_SECTORS}
-
-# Write partition table
-sfdisk -q -f "$BASEDIR/${DATE}-debian-${RELEASE}.img" <<EOM
+if [ "$ENABLE_SPLITFS" = true ] ; then
+  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" bs=512 count=${TABLE_SECTORS}
+  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" bs=512 count=0 seek=${FRMW_SECTORS}
+  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-root.img" bs=512 count=${TABLE_SECTORS}
+  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-root.img" bs=512 count=0 seek=${ROOT_SECTORS}
+  # Write partition tables
+  sfdisk -q -L -f "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" <<EOM
 unit: sectors
 
-1 : start=   ${TABLE_SECTORS}, size=   ${BOOT_SECTORS}, Id= c, bootable
+1 : start=   ${TABLE_SECTORS}, size=   ${FRMW_SECTORS}, Id= c, bootable
+2 : start=                  0, size=                 0, Id= 0
+3 : start=                  0, size=                 0, Id= 0
+4 : start=                  0, size=                 0, Id= 0
+EOM
+  sfdisk -q -L -f "$BASEDIR/${DATE}-debian-${RELEASE}-root.img" <<EOM
+unit: sectors
+
+1 : start=   ${TABLE_SECTORS}, size=   ${ROOT_SECTORS}, Id=83
+2 : start=                  0, size=                 0, Id= 0
+3 : start=                  0, size=                 0, Id= 0
+4 : start=                  0, size=                 0, Id= 0
+EOM
+  # Set up temporary loop devices and build filesystems
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-frmw.img)"
+  ROOT_LOOP="$(losetup -o 1M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-root.img)"
+else
+  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=${TABLE_SECTORS}
+  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=0 seek=${IMAGE_SECTORS}
+  # Write partition table
+  sfdisk -q -f "$BASEDIR/${DATE}-debian-${RELEASE}.img" <<EOM
+unit: sectors
+
+1 : start=   ${TABLE_SECTORS}, size=   ${FRMW_SECTORS}, Id= c, bootable
 2 : start=     ${ROOT_OFFSET}, size=   ${ROOT_SECTORS}, Id=83
 3 : start=                  0, size=                 0, Id= 0
 4 : start=                  0, size=                 0, Id= 0
 EOM
+  # Set up temporary loop devices and build filesystems
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
+  ROOT_LOOP="$(losetup -o 65M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
+fi
 
-# Set up temporary loop devices and build filesystems
-VFAT_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
-EXT4_LOOP="$(losetup -o 65M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
-mkfs.vfat "$VFAT_LOOP"
-mkfs.ext4 "$EXT4_LOOP"
+mkfs.vfat "$FRMW_LOOP"
+mkfs.ext4 "$ROOT_LOOP"
 
 # Mount the temporary loop devices
 mkdir -p "$BUILDDIR/mount"
-mount "$EXT4_LOOP" "$BUILDDIR/mount"
+mount "$ROOT_LOOP" "$BUILDDIR/mount"
 
 mkdir -p "$BUILDDIR/mount/boot/firmware"
-mount "$VFAT_LOOP" "$BUILDDIR/mount/boot/firmware"
+mount "$FRMW_LOOP" "$BUILDDIR/mount/boot/firmware"
 
 # Copy all files from the chroot to the loop device mount point directory
 rsync -a "$R/" "$BUILDDIR/mount/"
@@ -692,8 +726,18 @@ rsync -a "$R/" "$BUILDDIR/mount/"
 # Unmount all temporary loop devices and mount points
 cleanup
 
-# (optinal) create block map file for "bmaptool"
-bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}.img"
+if [ "$ENABLE_SPLITFS" = true ] ; then
+  # (optional) create block map file for "bmaptool"
+  bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img"
+  bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}-root.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}-root.img"
 
-# Image was successfully created
-echo "$BASEDIR/${DATE}-debian-${RELEASE}.img (${IMAGE_SIZE})" ": successfully created"
+  # Image was successfully created
+  echo "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img ($(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} \* 512 \/ 1024)M)" ": successfully created"
+  echo "$BASEDIR/${DATE}-debian-${RELEASE}-root.img ($(expr ${TABLE_SECTORS} + ${ROOT_SECTORS} \* 512 \/ 1024)M)" ": successfully created"
+else
+  # (optional) create block map file for "bmaptool"
+  bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}.img"
+
+  # Image was successfully created
+  echo "$BASEDIR/${DATE}-debian-${RELEASE}.img ($(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \* 512 \/ 1024)M)" ": successfully created"
+fi

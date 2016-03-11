@@ -149,6 +149,9 @@ password, use only in trusted environments.
 ##### `ENABLE_HARDNET`=false
 Enable IPv4/IPv6 network stack hardening settings.
 
+##### `ENABLE_SPLITFS`=false
+Enable having root partition on an USB drive by creating two image files: one for the `/boot/firmware` mount point, and another for `/`.
+
 ##### `CHROOT_SCRIPTS`=""
 Path to a directory with scripts that should be run in the chroot before the image is finally built. Every executable file in this direcory is run in lexicographical order.
 
@@ -166,4 +169,9 @@ After the image file was successfully created by the `rpi2-gen-image.sh` script 
 ```shell
 bmaptool copy ./images/jessie/2015-12-13-debian-jessie.img /dev/mmcblk0
 dd bs=4M if=./images/jessie/2015-12-13-debian-jessie.img of=/dev/mmcblk0
+```
+If you have set `ENABLE_SPLITFS`, copy the `-frmw` image on the microSD card, then the `-root` one on the USB drive:
+```shell
+bmaptool copy ./images/jessie/2015-12-13-debian-jessie-frmw.img /dev/mmcblk0
+bmaptool copy ./images/jessie/2015-12-13-debian-jessie-root.img /dev/sdc
 ```
