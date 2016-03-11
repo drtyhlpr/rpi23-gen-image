@@ -51,7 +51,7 @@ else
 fi
 
 # Set up firmware boot cmdline
-CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1"
+CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1 ${CMDLINE}"
 
 # Set up serial console support (if requested)
 if [ "$ENABLE_CONSOLE" = true ] ; then
