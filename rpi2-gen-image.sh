@@ -15,25 +15,7 @@
 # Copyright (C) 2015 Luca Falavigna <dktrkranz@debian.org>
 ########################################################################
 
-# Clean up all temporary mount points
-cleanup (){
-  set +x
-  set +e
-  echo "removing temporary mount points ..."
-  umount -l $R/proc 2> /dev/null
-  umount -l $R/sys 2> /dev/null
-  umount -l $R/dev/pts 2> /dev/null
-  umount "$BUILDDIR/mount/boot/firmware" 2> /dev/null
-  umount "$BUILDDIR/mount" 2> /dev/null
-  losetup -d "$ROOT_LOOP" 2> /dev/null
-  losetup -d "$FRMW_LOOP" 2> /dev/null
-  trap - 0 1 2 3 6
-}
-
-# Exec command in chroot
-chroot_exec() {
-  LANG=C LC_ALL=C chroot $R $*
-}
+source ./functions.sh
 
 set -e
 set -x
@@ -43,7 +25,7 @@ RELEASE=${RELEASE:=jessie}
 KERNEL=${KERNEL:=3.18.0-trunk-rpi2}
 
 # Build settings
-BASEDIR=./images/${RELEASE}
+BASEDIR=$(pwd)/images/${RELEASE}
 BUILDDIR=${BASEDIR}/build
 
 # General settings
@@ -96,6 +78,10 @@ ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 
+# Kernel compilation settings
+BUILD_KERNEL=${BUILD_KERNEL:=false}
+KERNEL_HEADERS=${KERNEL_HEADERS:=true}
+
 # Image chroot path
 R=${BUILDDIR}/chroot
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
@@ -116,6 +102,11 @@ set +x
 if [ "$(id -u)" -ne "0" ] ; then
   echo "this script must be executed with root privileges"
   exit 1
+fi
+
+# Add packages required for kernel cross compilation
+if [ "$BUILD_KERNEL" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
 fi
 
 # Check if all required packages are installed
@@ -214,415 +205,17 @@ if [ "$ENABLE_XORG" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},xorg"
 fi
 
-# Base debootstrap (unpack only)
-if [ "$ENABLE_MINBASE" = true ] ; then
-  http_proxy=${APT_PROXY} debootstrap --arch=armhf --variant=minbase --foreign --include=${APT_INCLUDES} $RELEASE $R http://${APT_SERVER}/debian
-else
-  http_proxy=${APT_PROXY} debootstrap --arch=armhf --foreign --include=${APT_INCLUDES} $RELEASE $R http://${APT_SERVER}/debian
+## Main bootstrap
+for i in bootstrap.d/*.sh; do
+  . $i
+done
+
+## Custom bootstrap scripts
+if [ -d "custom.d" ]; then
+  for i in custom.d/*.sh; do
+    . $i
+  done
 fi
-
-# Copy qemu emulator binary to chroot
-cp /usr/bin/qemu-arm-static $R/usr/bin
-
-# Copy debian-archive-keyring.pgp
-chroot $R mkdir -p /usr/share/keyrings
-cp /usr/share/keyrings/debian-archive-keyring.gpg $R/usr/share/keyrings/debian-archive-keyring.gpg
-
-# Complete the bootstrapping process
-chroot $R /debootstrap/debootstrap --second-stage
-
-# Mount required filesystems
-mount -t proc none $R/proc
-mount -t sysfs none $R/sys
-mount --bind /dev/pts $R/dev/pts
-
-# Use proxy inside chroot
-if [ -z "$APT_PROXY" ] ; then
-  echo "Acquire::http::Proxy \"$APT_PROXY\";" >> $R/etc/apt/apt.conf.d/10proxy
-fi
-
-# Pin package flash-kernel to repositories.collabora.co.uk
-cat <<EOM >$R/etc/apt/preferences.d/flash-kernel
-Package: flash-kernel
-Pin: origin repositories.collabora.co.uk
-Pin-Priority: 1000
-EOM
-
-# Set up timezone
-echo ${TIMEZONE} >$R/etc/timezone
-chroot_exec dpkg-reconfigure -f noninteractive tzdata
-
-# Upgrade collabora package index and install collabora keyring
-echo "deb https://repositories.collabora.co.uk/debian ${RELEASE} rpi2" >$R/etc/apt/sources.list
-chroot_exec apt-get -qq -y update
-chroot_exec apt-get -qq -y --force-yes install collabora-obs-archive-keyring
-
-# Set up initial sources.list
-cat <<EOM >$R/etc/apt/sources.list
-deb http://${APT_SERVER}/debian ${RELEASE} main contrib
-#deb-src http://${APT_SERVER}/debian ${RELEASE} main contrib
-
-deb http://${APT_SERVER}/debian/ ${RELEASE}-updates main contrib
-#deb-src http://${APT_SERVER}/debian/ ${RELEASE}-updates main contrib
-
-deb http://security.debian.org/ ${RELEASE}/updates main contrib
-#deb-src http://security.debian.org/ ${RELEASE}/updates main contrib
-
-deb https://repositories.collabora.co.uk/debian ${RELEASE} rpi2
-EOM
-
-# Upgrade package index and update all installed packages and changed dependencies
-chroot_exec apt-get -qq -y update
-chroot_exec apt-get -qq -y -u dist-upgrade
-
-# Set up default locale and keyboard configuration
-if [ "$ENABLE_MINBASE" = false ] ; then
-  # Set locale choice in debconf db, even though dpkg-reconfigure ignores and overwrites them due to some bug
-  # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=684134 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=685957
-  # ... so we have to set locales manually
-  if [ "$DEFLOCAL" = "en_US.UTF-8" ] ; then
-    chroot_exec echo "locales locales/locales_to_be_generated multiselect ${DEFLOCAL} UTF-8" | debconf-set-selections
-  else
-    # en_US.UTF-8 should be available anyway : https://www.debian.org/doc/manuals/debian-reference/ch08.en.html#_the_reconfiguration_of_the_locale
-    chroot_exec echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8, ${DEFLOCAL} UTF-8" | debconf-set-selections
-    chroot_exec sed -i "/en_US.UTF-8/s/^#//" /etc/locale.gen
-  fi
-  chroot_exec sed -i "/${DEFLOCAL}/s/^#//" /etc/locale.gen
-  chroot_exec echo "locales locales/default_environment_locale select ${DEFLOCAL}" | debconf-set-selections
-  chroot_exec locale-gen
-  chroot_exec update-locale LANG=${DEFLOCAL}
-
-  # Keyboard configuration, if requested
-  if [ "$XKBMODEL" != "" ] ; then
-    chroot_exec sed -i "s/^XKBMODEL.*/XKBMODEL=\"${XKBMODEL}\"/" /etc/default/keyboard
-  fi
-  if [ "$XKBLAYOUT" != "" ] ; then
-    chroot_exec sed -i "s/^XKBLAYOUT.*/XKBLAYOUT=\"${XKBLAYOUT}\"/" /etc/default/keyboard
-  fi
-  if [ "$XKBVARIANT" != "" ] ; then
-    chroot_exec sed -i "s/^XKBVARIANT.*/XKBVARIANT=\"${XKBVARIANT}\"/" /etc/default/keyboard
-  fi
-  if [ "$XKBOPTIONS" != "" ] ; then
-    chroot_exec sed -i "s/^XKBOPTIONS.*/XKBOPTIONS=\"${XKBOPTIONS}\"/" /etc/default/keyboard
-  fi
-  chroot_exec dpkg-reconfigure -f noninteractive keyboard-configuration
-  # Set up font console
-  case "${DEFLOCAL}" in
-    *UTF-8)
-      chroot_exec sed -i 's/^CHARMAP.*/CHARMAP="UTF-8"/' /etc/default/console-setup
-      ;;
-    *)
-      chroot_exec sed -i 's/^CHARMAP.*/CHARMAP="guess"/' /etc/default/console-setup
-      ;;
-  esac
-  chroot_exec dpkg-reconfigure -f noninteractive console-setup
-fi
-
-# Kernel installation
-# Install flash-kernel last so it doesn't try (and fail) to detect the platform in the chroot
-chroot_exec apt-get -qq -y --no-install-recommends install linux-image-${KERNEL} raspberrypi-bootloader-nokernel
-chroot_exec apt-get -qq -y install flash-kernel
-
-VMLINUZ="$(ls -1 $R/boot/vmlinuz-* | sort | tail -n 1)"
-[ -z "$VMLINUZ" ] && exit 1
-cp $VMLINUZ $R/boot/firmware/kernel7.img
-
-# Set up IPv4 hosts
-echo ${HOSTNAME} >$R/etc/hostname
-cat <<EOM >$R/etc/hosts
-127.0.0.1       localhost
-127.0.1.1       ${HOSTNAME}
-EOM
-if [ "$NET_ADDRESS" != "" ] ; then
-NET_IP=$(echo ${NET_ADDRESS} | cut -f 1 -d'/')
-sed -i "s/^127.0.1.1/${NET_IP}/" $R/etc/hosts
-fi
-
-# Set up IPv6 hosts
-if [ "$ENABLE_IPV6" = true ] ; then
-cat <<EOM >>$R/etc/hosts
-
-::1             localhost ip6-localhost ip6-loopback
-ff02::1         ip6-allnodes
-ff02::2         ip6-allrouters
-EOM
-fi
-
-# Place hint about network configuration
-cat <<EOM >$R/etc/network/interfaces
-# Debian switched to systemd-networkd configuration files.
-# please configure your networks in '/etc/systemd/network/'
-EOM
-
-if [ "$ENABLE_DHCP" = true ] ; then
-# Enable systemd-networkd DHCP configuration for interface eth0
-cat <<EOM >$R/etc/systemd/network/eth.network
-[Match]
-Name=eth0
-
-[Network]
-DHCP=yes
-EOM
-
-# Set DHCP configuration to IPv4 only
-if [ "$ENABLE_IPV6" = false ] ; then
-  sed -i "s/^DHCP=yes/DHCP=v4/" $R/etc/systemd/network/eth.network
-fi
-else # ENABLE_DHCP=false
-cat <<EOM >$R/etc/systemd/network/eth.network
-[Match]
-Name=eth0
-
-[Network]
-DHCP=no
-Address=${NET_ADDRESS}
-Gateway=${NET_GATEWAY}
-DNS=${NET_DNS_1}
-DNS=${NET_DNS_2}
-Domains=${NET_DNS_DOMAINS}
-NTP=${NET_NTP_1}
-NTP=${NET_NTP_2}
-EOM
-fi
-
-# Enable systemd-networkd service
-chroot_exec systemctl enable systemd-networkd
-
-# Generate crypt(3) password string
-ENCRYPTED_PASSWORD=`mkpasswd -m sha-512 ${PASSWORD}`
-
-# Set up default user
-if [ "$ENABLE_USER" = true ] ; then
-  chroot_exec adduser --gecos pi --add_extra_groups --disabled-password pi
-  chroot_exec usermod -a -G sudo -p "${ENCRYPTED_PASSWORD}" pi
-fi
-
-# Set up root password or not
-if [ "$ENABLE_ROOT" = true ]; then
-  chroot_exec usermod -p "${ENCRYPTED_PASSWORD}" root
-
-  if [ "$ENABLE_ROOT_SSH" = true ]; then
-    sed -i 's|[#]*PermitRootLogin.*|PermitRootLogin yes|g' $R/etc/ssh/sshd_config
-  fi
-else
-  chroot_exec usermod -p \'!\' root
-fi
-
-# Set up firmware boot cmdline
-if [ "$ENABLE_SPLITFS" = true ] ; then
-  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1"
-else
-  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1"
-fi
-
-# Set up serial console support (if requested)
-if [ "$ENABLE_CONSOLE" = true ] ; then
-  CMDLINE="${CMDLINE} console=ttyAMA0,115200 kgdboc=ttyAMA0,115200"
-fi
-
-# Set up IPv6 networking support
-if [ "$ENABLE_IPV6" = false ] ; then
-  CMDLINE="${CMDLINE} ipv6.disable=1"
-fi
-
-echo "${CMDLINE}" >$R/boot/firmware/cmdline.txt
-
-# Set up firmware config
-install -o root -g root -m 644 files/config.txt $R/boot/firmware/config.txt
-
-# Load snd_bcm2835 kernel module at boot time
-if [ "$ENABLE_SOUND" = true ] ; then
-  echo "snd_bcm2835" >>$R/etc/modules
-fi
-
-# Set smallest possible GPU memory allocation size: 16MB (no X)
-if [ "$ENABLE_MINGPU" = true ] ; then
-  echo "gpu_mem=16" >>$R/boot/firmware/config.txt
-fi
-
-# Create symlinks
-ln -sf firmware/config.txt $R/boot/config.txt
-ln -sf firmware/cmdline.txt $R/boot/cmdline.txt
-
-# Prepare modules-load.d directory
-mkdir -p $R/lib/modules-load.d/
-
-# Load random module on boot
-if [ "$ENABLE_HWRANDOM" = true ] ; then
-  cat <<EOM >$R/lib/modules-load.d/rpi2.conf
-bcm2708_rng
-EOM
-fi
-
-# Prepare modprobe.d directory
-mkdir -p $R/etc/modprobe.d/
-
-# Blacklist sound modules
-install -o root -g root -m 644 files/modprobe.d/raspi-blacklist.conf $R/etc/modprobe.d/raspi-blacklist.conf
-
-# Create default fstab
-install -o root -g root -m 644 files/fstab $R/etc/fstab
-if [ "$ENABLE_SPLITFS" = true ] ; then
-  sed -i '/mmcblk0p2/sda1/' $R/etc/fstab
-fi
-
-# Avoid swapping and increase cache sizes
-install -o root -g root -m 644 files/sysctl.d/81-rpi-vm.conf $R/etc/sysctl.d/81-rpi-vm.conf
-
-# Enable network stack hardening
-if [ "$ENABLE_HARDNET" = true ] ; then
-  install -o root -g root -m 644 files/sysctl.d/81-rpi-net-hardening.conf $R/etc/sysctl.d/81-rpi-net-hardening.conf
-
-# Enable resolver warnings about spoofed addresses
-  cat <<EOM >>$R/etc/host.conf
-spoof warn
-EOM
-fi
-
-# First boot actions
-cat files/firstboot/10-begin.sh > $R/etc/rc.firstboot
-
-# Ensure openssh server host keys are regenerated on first boot
-if [ "$ENABLE_SSHD" = true ] ; then
-  cat files/firstboot/21-generate-ssh-keys.sh >> $R/etc/rc.firstboot
-  rm -f $R/etc/ssh/ssh_host_*
-fi
-
-if [ "$EXPANDROOT" = true ] ; then
-  cat files/firstboot/22-expandroot.sh >> $R/etc/rc.firstboot
-fi
-
-cat files/firstboot/99-finish.sh >> $R/etc/rc.firstboot
-chmod +x $R/etc/rc.firstboot
-
-sed -i '/exit 0/d' $R/etc/rc.local
-echo /etc/rc.firstboot >> $R/etc/rc.local
-echo exit 0 >> $R/etc/rc.local
-
-# Disable rsyslog
-if [ "$ENABLE_RSYSLOG" = false ]; then
-  sed -i 's|[#]*ForwardToSyslog=yes|ForwardToSyslog=no|g' $R/etc/systemd/journald.conf
-  chroot_exec systemctl disable rsyslog
-  chroot_exec apt-get purge -q -y --force-yes rsyslog
-fi
-
-# Enable serial console systemd style
-if [ "$ENABLE_CONSOLE" = true ] ; then
-  chroot_exec systemctl enable serial-getty\@ttyAMA0.service
-fi
-
-# Enable firewall based on iptables started by systemd service
-if [ "$ENABLE_IPTABLES" = true ] ; then
-  # Create iptables configuration directory
-  mkdir -p "$R/etc/iptables"
-
-  # Create iptables systemd service
-  install -o root -g root -m 644 files/iptables/iptables.service $R/etc/systemd/system/iptables.service
-
-  # Create flush-table script called by iptables service
-  install -o root -g root -m 755 files/iptables/flush-iptables.sh $R/etc/iptables/flush-iptables.sh
-
-  # Create iptables rule file
-  install -o root -g root -m 644 files/iptables/iptables.rules $R/etc/iptables/iptables.rules
-
-  # Reload systemd configuration and enable iptables service
-  chroot_exec systemctl daemon-reload
-  chroot_exec systemctl enable iptables.service
-
-  if [ "$ENABLE_IPV6" = true ] ; then
-    # Create ip6tables systemd service
-    install -o root -g root -m 644 files/iptables/ip6tables.service $R/etc/systemd/system/ip6tables.service
-
-    # Create ip6tables file
-    install -o root -g root -m 755 files/iptables/flush-ip6tables.sh $R/etc/iptables/flush-ip6tables.sh
-
-    install -o root -g root -m 644 files/iptables/ip6tables.rules $R/etc/iptables/ip6tables.rules
-
-    # Reload systemd configuration and enable iptables service
-    chroot_exec systemctl daemon-reload
-    chroot_exec systemctl enable ip6tables.service
-  fi
-fi
-
-# Remove SSHD related iptables rules
-if [ "$ENABLE_SSHD" = false ] ; then
- sed -e '/^#/! {/SSH/ s/^/# /}' -i $R/etc/iptables/iptables.rules 2> /dev/null
- sed -e '/^#/! {/SSH/ s/^/# /}' -i $R/etc/iptables/ip6tables.rules 2> /dev/null
-fi
-
-# Install gcc/c++ build environment inside the chroot
-if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ]; then
-  chroot_exec apt-get install -q -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
-fi
-
-# Fetch and build U-Boot bootloader
-if [ "$ENABLE_UBOOT" = true ] ; then
-  # Fetch U-Boot bootloader sources
-  git -C $R/tmp clone git://git.denx.de/u-boot.git
-
-  # Build and install U-Boot inside chroot
-  chroot_exec make -C /tmp/u-boot/ rpi_2_defconfig all
-
-  # Copy compiled bootloader binary and set config.txt to load it
-  cp $R/tmp/u-boot/u-boot.bin $R/boot/firmware/
-  printf "\n# boot u-boot kernel\nkernel=u-boot.bin\n" >> $R/boot/firmware/config.txt
-
-  # Set U-Boot command file
-  cat <<EOM >$R/boot/firmware/uboot.mkimage
-# Tell Linux that it is booting on a Raspberry Pi2
-setenv machid 0x00000c42
-
-# Set the kernel boot command line
-setenv bootargs "earlyprintk ${CMDLINE}"
-
-# Save these changes to u-boot's environment
-saveenv
-
-# Load the existing Linux kernel into RAM
-fatload mmc 0:1 \${kernel_addr_r} kernel7.img
-
-# Boot the kernel we have just loaded
-bootz \${kernel_addr_r}
-EOM
-
-  # Generate U-Boot image from command file
-  chroot_exec mkimage -A arm -O linux -T script -C none -a 0x00000000 -e 0x00000000 -n "RPi2 Boot Script" -d /boot/firmware/uboot.mkimage /boot/firmware/boot.scr
-fi
-
-# Fetch and build fbturbo Xorg driver
-if [ "$ENABLE_FBTURBO" = true ] ; then
-  # Fetch fbturbo driver sources
-  git -C $R/tmp clone https://github.com/ssvb/xf86-video-fbturbo.git
-
-  # Install Xorg build dependencies
-  chroot_exec apt-get install -q -y --no-install-recommends xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
-
-  # Build and install fbturbo driver inside chroot
-  chroot_exec /bin/bash -c "cd /tmp/xf86-video-fbturbo; autoreconf -vi; ./configure --prefix=/usr; make; make install"
-
-  # Add fbturbo driver to Xorg configuration
-  cat <<EOM >$R/usr/share/X11/xorg.conf.d/99-fbturbo.conf
-Section "Device"
-        Identifier "Allwinner A10/A13 FBDEV"
-        Driver "fbturbo"
-        Option "fbdev" "/dev/fb0"
-        Option "SwapbuffersWait" "true"
-EndSection
-EOM
-
-  # Remove Xorg build dependencies
-  chroot_exec apt-get -q -y purge --auto-remove xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
-fi
-
-# Remove gcc/c++ build environment from the chroot
-if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ]; then
-  chroot_exec apt-get -y -q purge --auto-remove bc binutils cpp cpp-4.9 g++ g++-4.9 gcc gcc-4.9 libasan1 libatomic1 libc-dev-bin libc6-dev libcloog-isl4 libgcc-4.9-dev libgomp1 libisl10 libmpc3 libmpfr4 libstdc++-4.9-dev libubsan0 linux-compiler-gcc-4.9-arm linux-libc-dev make
-fi
-
-# Clean cached downloads
-chroot_exec apt-get -y clean
-chroot_exec apt-get -y autoclean
-chroot_exec apt-get -y autoremove
 
 # Invoke custom scripts
 if [ -n "${CHROOT_SCRIPTS}" ]; then
@@ -630,6 +223,11 @@ if [ -n "${CHROOT_SCRIPTS}" ]; then
   LANG=C chroot $R bash -c 'for SCRIPT in /chroot_scripts/*; do if [ -f $SCRIPT -a -x $SCRIPT ]; then $SCRIPT; fi done;'
   rm -rf "${R}/chroot_scripts"
 fi
+
+## Cleanup
+chroot_exec apt-get -y clean
+chroot_exec apt-get -y autoclean
+chroot_exec apt-get -y autoremove
 
 # Unmount mounted filesystems
 umount -l $R/proc
@@ -647,6 +245,7 @@ rm -f $R/var/lib/urandom/random-seed
 [ -L $R/var/lib/dbus/machine-id ] || rm -f $R/var/lib/dbus/machine-id
 rm -f $R/etc/machine-id
 rm -fr $R/etc/apt/apt.conf.d/10proxy
+rm -f $R/etc/resolv.conf
 
 # Calculate size of the chroot directory in KB
 CHROOT_SIZE=$(expr `du -s $R | awk '{ print $1 }'`)
@@ -690,7 +289,7 @@ unit: sectors
 3 : start=                  0, size=                 0, Id= 0
 4 : start=                  0, size=                 0, Id= 0
 EOM
-  # Set up temporary loop devices and build filesystems
+  # Set up temporary loop devices
   FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-frmw.img)"
   ROOT_LOOP="$(losetup -o 1M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-root.img)"
 else
@@ -705,11 +304,12 @@ unit: sectors
 3 : start=                  0, size=                 0, Id= 0
 4 : start=                  0, size=                 0, Id= 0
 EOM
-  # Set up temporary loop devices and build filesystems
+  # Set up temporary loop devices
   FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
   ROOT_LOOP="$(losetup -o 65M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
 fi
 
+# Build filesystems
 mkfs.vfat "$FRMW_LOOP"
 mkfs.ext4 "$ROOT_LOOP"
 
@@ -732,12 +332,12 @@ if [ "$ENABLE_SPLITFS" = true ] ; then
   bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}-root.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}-root.img"
 
   # Image was successfully created
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img ($(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} \* 512 \/ 1024)M)" ": successfully created"
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}-root.img ($(expr ${TABLE_SECTORS} + ${ROOT_SECTORS} \* 512 \/ 1024)M)" ": successfully created"
+  echo "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img ($(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$BASEDIR/${DATE}-debian-${RELEASE}-root.img ($(expr ${TABLE_SECTORS} + ${ROOT_SECTORS} \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
 else
   # (optional) create block map file for "bmaptool"
   bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}.img"
 
   # Image was successfully created
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}.img ($(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \* 512 \/ 1024)M)" ": successfully created"
+  echo "$BASEDIR/${DATE}-debian-${RELEASE}.img ($(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
 fi

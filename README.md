@@ -123,7 +123,7 @@ Install Xorg open-source X Window System.
 ##### `ENABLE_WM`=""
 Install a user defined window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_WM` is used. The `rpi2-gen-image.sh` script has been tested with the following list of window managers: `blackbox`, `openbox`, `fluxbox`, `jwm`, `dwm`, `xfce4`, `awesome`.
 
-#### Advanced sytem features:
+#### Advanced system features:
 ##### `ENABLE_MINBASE`=false
 Use debootstrap script variant `minbase` which only includes essential packages and apt. This will reduce the disk usage by about 65 MB.
 
@@ -154,6 +154,43 @@ Enable having root partition on an USB drive by creating two image files: one fo
 
 ##### `CHROOT_SCRIPTS`=""
 Path to a directory with scripts that should be run in the chroot before the image is finally built. Every executable file in this direcory is run in lexicographical order.
+
+#### Kernel compilation:
+##### `BUILD_KERNEL`=false
+Build and install the latest RPi2 linux kernel. Currently only the default RPi2 kernel configuration is used. Detailed configuration parameters for customizing the kernel and minor bug fixes still need to get implemented. feel free to help.
+
+##### `KERNEL_HEADERS`=true
+If true, also install kernel headers with built kernel.
+
+## Understanding the script
+The functions of this script that are required for the different stages of the bootstrapping are split up into single files located inside the `bootstrap.d` directory. During the bootstrapping every script in this directory gets executed in lexicographical order:
+
+| Script | Description |
+| --- | --- |
+| `10-bootstrap.sh` | Debootstrap basic system |
+| `11-apt.sh` | Setup APT repositories |
+| `12-locale.sh` | Setup Locales and keyboard settings |
+| `13-kernel.sh` | Build and install RPi2 Kernel |
+| `20-networking.sh` | Setup Networking |
+| `21-firewall.sh` | Setup iptables Firewall |
+| `30-security.sh` | Setup users and security settings |
+| `31-logging.sh` | Setup logging |
+| `41-uboot.sh` | Build and Setup Uboot |
+| `42-fbturbo.sh` | Buld and Setup fbturbo Xorg driver |
+| `50-firstboot.sh` | First boot actions |
+
+All the required configuration files that will be copied to the generated OS image are located inside the `files` directory. It is not recommended to modify these configuration files manually.
+
+| Directory | Description |
+| --- | --- |
+| `boot` | Boot and RPi2 configuration files |
+| `firstboot` | Scripts that get executed on first boot  |
+| `iptables` | Firewall configuration files |
+| `modprobe.d` | Kernel Module Blacklist configuration |
+| `mount` | Fstab configuration |
+| `network` | Networking configuration files |
+| `sysctl.d` | Swapping and Network Hardening configuration |
+| `xorg` | fbturbo Xorg driver configuration |
 
 ## Logging of the bootstrapping process
 All information related to the bootstrapping process and the commands executed by the `rpi2-gen-image.sh` script can easily be saved into a logfile. The common shell command `script` can be used for this purpose:
