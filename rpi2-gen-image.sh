@@ -209,9 +209,12 @@ for i in bootstrap.d/*.sh; do
   . $i
 done
 
-for i in custom.d/*.sh; do
-  . $i
-done
+## Custom bootstrap scripts
+if [ -d "custom.d" ]; then
+  for i in custom.d/*.sh; do
+    . $i
+  done
+fi
 
 # Invoke custom scripts
 if [ -n "${CHROOT_SCRIPTS}" ]; then
