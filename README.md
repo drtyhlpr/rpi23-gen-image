@@ -152,6 +152,10 @@ Enable IPv4/IPv6 network stack hardening settings.
 ##### `CHROOT_SCRIPTS`=""
 Path to a directory with scripts that should be run in the chroot before the image is finally built. Every executable file in this direcory is run in lexicographical order.
 
+#### Kernel compilation:
+##### `BUILD_KERNEL`=false
+Build and install the latest RPi2 linux kernel. Currently only the default RPi2 kernel configuration is used. Detailed configuration parameters for customizing the kernel and minor bug fixes still need to get implemented. feel free to help.
+
 ## Logging of the bootstrapping process
 All information related to the bootstrapping process and the commands executed by the `rpi2-gen-image.sh` script can easily be saved into a logfile. The common shell command `script` can be used for this purpose:
 

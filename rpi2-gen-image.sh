@@ -95,6 +95,9 @@ ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 
+# Kernel compilation settings
+BUILD_KERNEL=${BUILD_KERNEL:=false}
+
 # Image chroot path
 R=${BUILDDIR}/chroot
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
@@ -115,6 +118,11 @@ set +x
 if [ "$(id -u)" -ne "0" ] ; then
   echo "this script must be executed with root privileges"
   exit 1
+fi
+
+# Add packages required for kernel cross compilation
+if [ "$BUILD_KERNEL" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
 fi
 
 # Check if all required packages are installed
@@ -317,14 +325,43 @@ if [ "$ENABLE_MINBASE" = false ] ; then
   chroot_exec dpkg-reconfigure -f noninteractive console-setup
 fi
 
-# Kernel installation
-# Install flash-kernel last so it doesn't try (and fail) to detect the platform in the chroot
-chroot_exec apt-get -qq -y --no-install-recommends install linux-image-${KERNEL} raspberrypi-bootloader-nokernel
-chroot_exec apt-get -qq -y install flash-kernel
+# Fetch and build latest raspberry kernel
+if [ "$BUILD_KERNEL" = true ] ; then
+  # Fetch current raspberrypi kernel sources
+  git -C $R/tmp clone --depth=1 https://github.com/raspberrypi/linux
 
-VMLINUZ="$(ls -1 $R/boot/vmlinuz-* | sort | tail -n 1)"
-[ -z "$VMLINUZ" ] && exit 1
-cp $VMLINUZ $R/boot/firmware/kernel7.img
+  # Load default raspberry kernel configuration
+  make -C $R/tmp/linux ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- bcm2709_defconfig
+
+  # Cross compile kernel and modules
+  make -C $R/tmp/linux -j 8 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage modules dtbs
+
+  # Install kernel modules
+  make -C $R/tmp/linux ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=../.. modules_install
+
+  # Copy and rename compiled kernel to boot directory
+  mkdir $R/boot/firmware/
+  $R/tmp/linux/scripts/mkknlimg $R/tmp/linux/arch/arm/boot/zImage $R/boot/firmware/kernel7.img
+
+  # Copy dts and dtb device definitions
+  mkdir $R/boot/firmware/overlays/
+  cp $R/tmp/linux/arch/arm/boot/dts/*.dtb $R/boot/firmware/
+  cp $R/tmp/linux/arch/arm/boot/dts/overlays/*.dtb* $R/boot/firmware/overlays/
+  cp $R/tmp/linux/arch/arm/boot/dts/overlays/README $R/boot/firmware/overlays/
+
+  # Install raspberry bootloader and flash-kernel
+  chroot_exec apt-get -qq -y --no-install-recommends install raspberrypi-bootloader-nokernel
+else
+  # Kernel installation
+  chroot_exec apt-get -qq -y --no-install-recommends install linux-image-${KERNEL} raspberrypi-bootloader-nokernel
+
+  # Install flash-kernel last so it doesn't try (and fail) to detect the platform in the chroot
+  chroot_exec apt-get -qq -y install flash-kernel
+
+  VMLINUZ="$(ls -1 $R/boot/vmlinuz-* | sort | tail -n 1)"
+  [ -z "$VMLINUZ" ] && exit 1
+  cp $VMLINUZ $R/boot/firmware/kernel7.img
+fi
 
 # Set up IPv4 hosts
 echo ${HOSTNAME} >$R/etc/hostname
