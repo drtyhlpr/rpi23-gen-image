@@ -156,6 +156,9 @@ Path to a directory with scripts that should be run in the chroot before the ima
 ##### `BUILD_KERNEL`=false
 Build and install the latest RPi2 linux kernel. Currently only the default RPi2 kernel configuration is used. Detailed configuration parameters for customizing the kernel and minor bug fixes still need to get implemented. feel free to help.
 
+##### `KERNEL_HEADERS`=true
+If true, also install kernel headers with built kernel.
+
 ## Logging of the bootstrapping process
 All information related to the bootstrapping process and the commands executed by the `rpi2-gen-image.sh` script can easily be saved into a logfile. The common shell command `script` can be used for this purpose:
 
