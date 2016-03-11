@@ -79,6 +79,7 @@ ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 
 # Kernel compilation settings
 BUILD_KERNEL=${BUILD_KERNEL:=false}
+KERNEL_HEADERS=${KERNEL_HEADERS:=true}
 
 # Image chroot path
 R=${BUILDDIR}/chroot
