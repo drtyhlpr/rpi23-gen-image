@@ -61,7 +61,11 @@ else
 fi
 
 # Set up firmware boot cmdline
-CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1 ${CMDLINE}"
+if [ "$ENABLE_SPLITFS" = true ] ; then
+  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1 ${CMDLINE}"
+else
+  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1 ${CMDLINE}"
+fi
 
 # Set up serial console support (if requested)
 if [ "$ENABLE_CONSOLE" = true ] ; then
@@ -110,6 +114,9 @@ install_readonly files/modprobe.d/raspi-blacklist.conf $R/etc/modprobe.d/raspi-b
 
 # Create default fstab
 install_readonly files/mount/fstab $R/etc/fstab
+if [ "$ENABLE_SPLITFS" = true ] ; then
+  sed -i 's/mmcblk0p2/sda1/' $R/etc/fstab
+fi
 
 # Avoid swapping and increase cache sizes
 install_readonly files/sysctl.d/81-rpi-vm.conf $R/etc/sysctl.d/81-rpi-vm.conf
