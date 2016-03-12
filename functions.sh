@@ -17,8 +17,8 @@ cleanup (){
   umount -l $R/dev/pts 2> /dev/null
   umount "$BUILDDIR/mount/boot/firmware" 2> /dev/null
   umount "$BUILDDIR/mount" 2> /dev/null
-  losetup -d "$EXT4_LOOP" 2> /dev/null
-  losetup -d "$VFAT_LOOP" 2> /dev/null
+  losetup -d "$ROOT_LOOP" 2> /dev/null
+  losetup -d "$FRMW_LOOP" 2> /dev/null
   trap - 0 1 2 3 6
 }
 

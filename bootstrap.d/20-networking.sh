@@ -60,7 +60,7 @@ chroot_exec systemctl enable systemd-networkd
 
 # Enable network stack hardening
 if [ "$ENABLE_HARDNET" = true ] ; then
-  install_readonly files/sysctl.d/81-rpi-net-hardening.conf $R/etc/sysctl.d/81-rpi-net-hardening.conf
+  install_readonly files/sysctl.d/82-rpi-net-hardening.conf $R/etc/sysctl.d/82-rpi-net-hardening.conf
 
 # Enable resolver warnings about spoofed addresses
   cat <<EOM >>$R/etc/host.conf
