@@ -1,7 +1,8 @@
 #
-# Fetch and build fbturbo Xorg driver
+# Build and Setup fbturbo Xorg driver
 #
 
+# Load utility functions
 . ./functions.sh
 
 if [ "$ENABLE_FBTURBO" = true ] ; then
@@ -12,17 +13,16 @@ if [ "$ENABLE_FBTURBO" = true ] ; then
   chroot_exec apt-get install -q -y --no-install-recommends xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
 
   # Build and install fbturbo driver inside chroot
-  chroot_exec /bin/bash -c "cd /tmp/xf86-video-fbturbo; autoreconf -vi; ./configure --prefix=/usr; make; make install"
+  chroot_exec /bin/bash -x <<'EOF'
+cd /tmp/xf86-video-fbturbo
+autoreconf -vi
+./configure --prefix=/usr
+make
+make install
+EOF
 
   # Add fbturbo driver to Xorg configuration
-  cat <<EOM >$R/usr/share/X11/xorg.conf.d/99-fbturbo.conf
-Section "Device"
-        Identifier "Allwinner A10/A13 FBDEV"
-        Driver "fbturbo"
-        Option "fbdev" "/dev/fb0"
-        Option "SwapbuffersWait" "true"
-EndSection
-EOM
+  install_readonly files/xorg/99-fbturbo.conf $R/usr/share/X11/xorg.conf.d/99-fbturbo.conf
 
   # Remove Xorg build dependencies
   chroot_exec apt-get -q -y purge --auto-remove xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev

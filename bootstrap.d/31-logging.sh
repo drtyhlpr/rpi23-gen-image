@@ -1,7 +1,8 @@
 #
-# Setup logging
+# Setup Logging
 #
 
+# Load utility functions
 . ./functions.sh
 
 # Disable rsyslog

@@ -1,7 +1,8 @@
 #
-# Setup locales and keyboard settings
+# Setup Locales and keyboard settings
 #
 
+# Load utility functions
 . ./functions.sh
 
 # Set up timezone
@@ -20,25 +21,27 @@ if [ "$ENABLE_MINBASE" = false ] ; then
     chroot_exec echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8, ${DEFLOCAL} UTF-8" | debconf-set-selections
     chroot_exec sed -i "/en_US.UTF-8/s/^#//" /etc/locale.gen
   fi
+
   chroot_exec sed -i "/${DEFLOCAL}/s/^#//" /etc/locale.gen
   chroot_exec echo "locales locales/default_environment_locale select ${DEFLOCAL}" | debconf-set-selections
   chroot_exec locale-gen
   chroot_exec update-locale LANG=${DEFLOCAL}
 
   # Keyboard configuration, if requested
-  if [ "$XKBMODEL" != "" ] ; then
-    chroot_exec sed -i "s/^XKBMODEL.*/XKBMODEL=\"${XKBMODEL}\"/" /etc/default/keyboard
+  if [ "$XKB_MODEL" != "" ] ; then
+    chroot_exec sed -i "s/^XKBMODEL.*/XKBMODEL=\"${XKB_MODEL}\"/" /etc/default/keyboard
   fi
-  if [ "$XKBLAYOUT" != "" ] ; then
-    chroot_exec sed -i "s/^XKBLAYOUT.*/XKBLAYOUT=\"${XKBLAYOUT}\"/" /etc/default/keyboard
+  if [ "$XKB_LAYOUT" != "" ] ; then
+    chroot_exec sed -i "s/^XKBLAYOUT.*/XKBLAYOUT=\"${XKB_LAYOUT}\"/" /etc/default/keyboard
   fi
-  if [ "$XKBVARIANT" != "" ] ; then
-    chroot_exec sed -i "s/^XKBVARIANT.*/XKBVARIANT=\"${XKBVARIANT}\"/" /etc/default/keyboard
+  if [ "$XKB_VARIANT" != "" ] ; then
+    chroot_exec sed -i "s/^XKBVARIANT.*/XKBVARIANT=\"${XKB_VARIANT}\"/" /etc/default/keyboard
   fi
-  if [ "$XKBOPTIONS" != "" ] ; then
-    chroot_exec sed -i "s/^XKBOPTIONS.*/XKBOPTIONS=\"${XKBOPTIONS}\"/" /etc/default/keyboard
+  if [ "$XKB_OPTIONS" != "" ] ; then
+    chroot_exec sed -i "s/^XKBOPTIONS.*/XKBOPTIONS=\"${XKB_OPTIONS}\"/" /etc/default/keyboard
   fi
   chroot_exec dpkg-reconfigure -f noninteractive keyboard-configuration
+
   # Set up font console
   case "${DEFLOCAL}" in
     *UTF-8)
@@ -49,4 +52,7 @@ if [ "$ENABLE_MINBASE" = false ] ; then
       ;;
   esac
   chroot_exec dpkg-reconfigure -f noninteractive console-setup
+else
+  # Set POSIX default locales
+  install_readonly files/locales/locale $R/etc/default/locale
 fi

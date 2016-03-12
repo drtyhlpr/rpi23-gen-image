@@ -2,6 +2,7 @@
 # Setup users and security settings
 #
 
+# Load utility functions
 . ./functions.sh
 
 # Generate crypt(3) password string

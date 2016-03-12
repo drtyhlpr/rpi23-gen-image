@@ -15,14 +15,16 @@
 # Copyright (C) 2015 Luca Falavigna <dktrkranz@debian.org>
 ########################################################################
 
-source ./functions.sh
+# Load utility functions
+. ./functions.sh
 
 set -e
+echo -n -e "\n#\n# RPi2 Bootstrap Settings\n#\n"
 set -x
 
 # Debian release
 RELEASE=${RELEASE:=jessie}
-KERNEL=${KERNEL:=3.18.0-trunk-rpi2}
+COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
 
 # Build settings
 BASEDIR=$(pwd)/images/${RELEASE}
@@ -33,16 +35,19 @@ HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
 PASSWORD=${PASSWORD:=raspberry}
 DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
 TIMEZONE=${TIMEZONE:="Europe/Berlin"}
-XKBMODEL=${XKBMODEL:=""}
-XKBLAYOUT=${XKBLAYOUT:=""}
-XKBVARIANT=${XKBVARIANT:=""}
-XKBOPTIONS=${XKBOPTIONS:=""}
 EXPANDROOT=${EXPANDROOT:=true}
 
-# Network settings
+# Keyboard settings
+XKB_MODEL=${XKB_MODEL:=""}
+XKB_LAYOUT=${XKB_LAYOUT:=""}
+XKB_VARIANT=${XKB_VARIANT:=""}
+XKB_OPTIONS=${XKB_OPTIONS:=""}
+
+# Network settings (DHCP)
 ENABLE_DHCP=${ENABLE_DHCP:=true}
-# NET_* settings are ignored when ENABLE_DHCP=true
-# NET_ADDRESS is an IPv4 or IPv6 address and its prefix, separated by "/"
+
+# Network settings (static)
+# only used on ENABLE_DHCP=false
 NET_ADDRESS=${NET_ADDRESS:=""}
 NET_GATEWAY=${NET_GATEWAY:=""}
 NET_DNS_1=${NET_DNS_1:=""}
@@ -79,7 +84,9 @@ ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 
 # Kernel compilation settings
 BUILD_KERNEL=${BUILD_KERNEL:=false}
+KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
+KERNEL_RMSRC=${KERNEL_RMSRC:=true}
 
 # Image chroot path
 R=${BUILDDIR}/chroot
@@ -206,6 +213,7 @@ fi
 
 ## Main bootstrap
 for i in bootstrap.d/*.sh; do
+  head -n 3 $i
   . $i
 done
 
@@ -298,7 +306,7 @@ rsync -a "$R/" "$BUILDDIR/mount/"
 # Unmount all temporary loop devices and mount points
 cleanup
 
-# (optinal) create block map file for "bmaptool"
+# Create block map file for "bmaptool"
 bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}.img"
 
 # Image was successfully created

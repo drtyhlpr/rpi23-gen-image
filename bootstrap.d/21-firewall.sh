@@ -1,7 +1,8 @@
 #
-# Enable firewall based on iptables started by systemd service
+# Setup Firewall
 #
 
+# Load utility functions
 . ./functions.sh
 
 if [ "$ENABLE_IPTABLES" = true ] ; then
@@ -9,13 +10,13 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
   mkdir -p "$R/etc/iptables"
 
   # Create iptables systemd service
-  install -o root -g root -m 644 files/iptables/iptables.service $R/etc/systemd/system/iptables.service
+  install_readonly files/iptables/iptables.service $R/etc/systemd/system/iptables.service
 
   # Create flush-table script called by iptables service
-  install -o root -g root -m 755 files/iptables/flush-iptables.sh $R/etc/iptables/flush-iptables.sh
+  install_exec files/iptables/flush-iptables.sh $R/etc/iptables/flush-iptables.sh
 
   # Create iptables rule file
-  install -o root -g root -m 644 files/iptables/iptables.rules $R/etc/iptables/iptables.rules
+  install_readonly files/iptables/iptables.rules $R/etc/iptables/iptables.rules
 
   # Reload systemd configuration and enable iptables service
   chroot_exec systemctl daemon-reload
@@ -23,12 +24,12 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
 
   if [ "$ENABLE_IPV6" = true ] ; then
     # Create ip6tables systemd service
-    install -o root -g root -m 644 files/iptables/ip6tables.service $R/etc/systemd/system/ip6tables.service
+    install_readonly files/iptables/ip6tables.service $R/etc/systemd/system/ip6tables.service
 
     # Create ip6tables file
-    install -o root -g root -m 755 files/iptables/flush-ip6tables.sh $R/etc/iptables/flush-ip6tables.sh
+    install_exec files/iptables/flush-ip6tables.sh $R/etc/iptables/flush-ip6tables.sh
 
-    install -o root -g root -m 644 files/iptables/ip6tables.rules $R/etc/iptables/ip6tables.rules
+    install_readonly files/iptables/ip6tables.rules $R/etc/iptables/ip6tables.rules
 
     # Reload systemd configuration and enable iptables service
     chroot_exec systemctl daemon-reload

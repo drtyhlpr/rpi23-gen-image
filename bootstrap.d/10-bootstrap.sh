@@ -2,6 +2,7 @@
 # Debootstrap basic system
 #
 
+# Load utility functions
 . ./functions.sh
 
 # Base debootstrap (unpack only)

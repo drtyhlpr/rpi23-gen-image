@@ -1,0 +1,11 @@
+# Tell Linux that it is booting on a Raspberry Pi2
+setenv machid 0x00000c42
+
+# Save these changes to u-boot's environment
+saveenv
+
+# Load the existing Linux kernel into RAM
+fatload mmc 0:1 ${kernel_addr_r} kernel7.img
+
+# Boot the kernel we have just loaded
+bootz ${kernel_addr_r}

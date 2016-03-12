@@ -18,7 +18,8 @@ ENABLE_WM=xfce4 ENABLE_FBTURBO=true ENABLE_MINBASE=true ./rpi2-gen-image.sh
 ENABLE_HARDNET=true ENABLE_IPTABLES=true /rpi2-gen-image.sh
 APT_SERVER=ftp.de.debian.org APT_PROXY="http://127.0.0.1:3142/" ./rpi2-gen-image.sh
 ENABLE_MINBASE=true ./rpi2-gen-image.sh
- ```
+BUILD_KERNEL=true ENABLE_MINBASE=true ENABLE_IPV6=false ./rpi2-gen-image.sh
+```
 
 #### APT settings:
 ##### `APT_SERVER`="ftp.debian.org"
@@ -49,25 +50,25 @@ Expand the root partition and filesystem automatically on first boot.
 #### Keyboard settings:
 These options are used to configure keyboard layout in `/etc/default/keyboard` for console and Xorg. These settings can also be changed inside the running OS using the `dpkg-reconfigure keyboard-configuration` command.
 
-##### `XKBMODEL`=""
+##### `XKB_MODEL`=""
 Set the name of the model of your keyboard type.
 
-##### `XKBLAYOUT`=""
+##### `XKB_LAYOUT`=""
 Set the supported keyboard layout(s).
 
-##### `XKBVARIANT`=""
+##### `XKB_VARIANT`=""
 Set the supported variant(s) of the keyboard layout(s).
 
-##### `XKBOPTIONS`=""
+##### `XKB_OPTIONS`=""
 Set extra xkb configuration options.
 
-#### Networking settings (DHCP)
+#### Networking settings (DHCP):
 This setting is used to set up networking auto configuration in `/etc/systemd/network/eth.network`.
 
 #####`ENABLE_DHCP`=true
 Set the system to use DHCP. This requires an DHCP server.
 
-#### Networking settings (static)
+#### Networking settings (static):
 These settings are used to set up a static networking configuration in /etc/systemd/network/eth.network. The following static networking settings are only supported if `ENABLE_DHCP` was set to `false`.
 
 #####`NET_ADDRESS`=""
@@ -156,8 +157,14 @@ Path to a directory with scripts that should be run in the chroot before the ima
 ##### `BUILD_KERNEL`=false
 Build and install the latest RPi2 linux kernel. Currently only the default RPi2 kernel configuration is used. Detailed configuration parameters for customizing the kernel and minor bug fixes still need to get implemented. feel free to help.
 
+##### `KERNEL_THREADS`=1
+Number of parallel kernel building threads. If the parameter is left untouched the script will automatically determine the number of CPU cores to set the number of parallel threads to speed the kernel compilation.
+
 ##### `KERNEL_HEADERS`=true
-If true, also install kernel headers with built kernel.
+Install kernel headers with built kernel.
+
+##### `KERNEL_RMSRC`=true
+Remove all kernel sources from the generated OS image after building.
 
 ## Understanding the script
 The functions of this script that are required for the different stages of the bootstrapping are split up into single files located inside the `bootstrap.d` directory. During the bootstrapping every script in this directory gets executed in lexicographical order:
@@ -169,11 +176,11 @@ The functions of this script that are required for the different stages of the b
 | `12-locale.sh` | Setup Locales and keyboard settings |
 | `13-kernel.sh` | Build and install RPi2 Kernel |
 | `20-networking.sh` | Setup Networking |
-| `21-firewall.sh` | Setup iptables Firewall |
-| `30-security.sh` | Setup users and security settings |
-| `31-logging.sh` | Setup logging |
+| `21-firewall.sh` | Setup Firewall |
+| `30-security.sh` | Setup Users and Security settings |
+| `31-logging.sh` | Setup Logging |
 | `41-uboot.sh` | Build and Setup Uboot |
-| `42-fbturbo.sh` | Buld and Setup fbturbo Xorg driver |
+| `42-fbturbo.sh` | Build and Setup fbturbo Xorg driver |
 | `50-firstboot.sh` | First boot actions |
 
 All the required configuration files that will be copied to the generated OS image are located inside the `files` directory. It is not recommended to modify these configuration files manually.
@@ -183,6 +190,7 @@ All the required configuration files that will be copied to the generated OS ima
 | `boot` | Boot and RPi2 configuration files |
 | `firstboot` | Scripts that get executed on first boot  |
 | `iptables` | Firewall configuration files |
+| `locales` | Locales configuration |
 | `modprobe.d` | Kernel Module Blacklist configuration |
 | `mount` | Fstab configuration |
 | `network` | Networking configuration files |
