@@ -48,7 +48,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Install raspberry bootloader and flash-kernel
   chroot_exec apt-get -qq -y --no-install-recommends install raspberrypi-bootloader-nokernel
-else
+else # BUILD_KERNEL=false
   # Kernel installation
   chroot_exec apt-get -qq -y --no-install-recommends install linux-image-${COLLABORA_KERNEL} raspberrypi-bootloader-nokernel
 

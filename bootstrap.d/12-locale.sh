@@ -19,40 +19,40 @@ if [ "$ENABLE_MINBASE" = false ] ; then
   else
     # en_US.UTF-8 should be available anyway : https://www.debian.org/doc/manuals/debian-reference/ch08.en.html#_the_reconfiguration_of_the_locale
     chroot_exec echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8, ${DEFLOCAL} UTF-8" | debconf-set-selections
-    chroot_exec sed -i "/en_US.UTF-8/s/^#//" /etc/locale.gen
+    sed -i "/en_US.UTF-8/s/^#//" $R/etc/locale.gen
   fi
 
-  chroot_exec sed -i "/${DEFLOCAL}/s/^#//" /etc/locale.gen
+  sed -i "/${DEFLOCAL}/s/^#//" $R/etc/locale.gen
   chroot_exec echo "locales locales/default_environment_locale select ${DEFLOCAL}" | debconf-set-selections
   chroot_exec locale-gen
   chroot_exec update-locale LANG=${DEFLOCAL}
 
   # Keyboard configuration, if requested
   if [ "$XKB_MODEL" != "" ] ; then
-    chroot_exec sed -i "s/^XKBMODEL.*/XKBMODEL=\"${XKB_MODEL}\"/" /etc/default/keyboard
+    sed -i "s/^XKBMODEL.*/XKBMODEL=\"${XKB_MODEL}\"/" $R/etc/default/keyboard
   fi
   if [ "$XKB_LAYOUT" != "" ] ; then
-    chroot_exec sed -i "s/^XKBLAYOUT.*/XKBLAYOUT=\"${XKB_LAYOUT}\"/" /etc/default/keyboard
+    sed -i "s/^XKBLAYOUT.*/XKBLAYOUT=\"${XKB_LAYOUT}\"/" $R/etc/default/keyboard
   fi
   if [ "$XKB_VARIANT" != "" ] ; then
-    chroot_exec sed -i "s/^XKBVARIANT.*/XKBVARIANT=\"${XKB_VARIANT}\"/" /etc/default/keyboard
+    sed -i "s/^XKBVARIANT.*/XKBVARIANT=\"${XKB_VARIANT}\"/" $R/etc/default/keyboard
   fi
   if [ "$XKB_OPTIONS" != "" ] ; then
-    chroot_exec sed -i "s/^XKBOPTIONS.*/XKBOPTIONS=\"${XKB_OPTIONS}\"/" /etc/default/keyboard
+    sed -i "s/^XKBOPTIONS.*/XKBOPTIONS=\"${XKB_OPTIONS}\"/" $R/etc/default/keyboard
   fi
   chroot_exec dpkg-reconfigure -f noninteractive keyboard-configuration
 
   # Set up font console
   case "${DEFLOCAL}" in
     *UTF-8)
-      chroot_exec sed -i 's/^CHARMAP.*/CHARMAP="UTF-8"/' /etc/default/console-setup
+      sed -i 's/^CHARMAP.*/CHARMAP="UTF-8"/' $R/etc/default/console-setup
       ;;
     *)
-      chroot_exec sed -i 's/^CHARMAP.*/CHARMAP="guess"/' /etc/default/console-setup
+      sed -i 's/^CHARMAP.*/CHARMAP="guess"/' $R/etc/default/console-setup
       ;;
   esac
   chroot_exec dpkg-reconfigure -f noninteractive console-setup
-else
+else # ENABLE_MINBASE=true
   # Set POSIX default locales
   install_readonly files/locales/locale $R/etc/default/locale
 fi

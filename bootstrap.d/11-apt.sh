@@ -8,7 +8,7 @@
 # Use proxy inside chroot
 if [ -z "$APT_PROXY" ] ; then
   install_readonly files/apt/10proxy $R/etc/apt/apt.conf.d/10proxy
-  sed -i -e "s/\"\"/\"${APT_PROXY}\"/" $R/etc/apt/apt.conf.d/10proxy
+  sed -i "s/\"\"/\"${APT_PROXY}\"/" $R/etc/apt/apt.conf.d/10proxy
 fi
 
 # Pin package flash-kernel to repositories.collabora.co.uk
@@ -21,8 +21,8 @@ chroot_exec apt-get -qq -y --force-yes install collabora-obs-archive-keyring
 
 # Set up initial sources.list
 install_readonly files/apt/sources.list $R/etc/apt/sources.list
-sed -i -e "s/\/ftp.debian.org\//\/${APT_SERVER}\//" $R/etc/apt/sources.list
-sed -i -e "s/ jessie/ ${RELEASE}/" $R/etc/apt/sources.list
+sed -i "s/\/ftp.debian.org\//\/${APT_SERVER}\//" $R/etc/apt/sources.list
+sed -i "s/ jessie/ ${RELEASE}/" $R/etc/apt/sources.list
 
 # Upgrade package index and update all installed packages and changed dependencies
 chroot_exec apt-get -qq -y update

@@ -7,10 +7,10 @@
 
 # Set up IPv4 hosts
 install_readonly files/network/hostname $R/etc/hostname
-sed -i -e "s/^rpi2-jessie/${HOSTNAME}/" $R/etc/hostname
+sed -i "s/^rpi2-jessie/${HOSTNAME}/" $R/etc/hostname
 
 install_readonly files/network/hosts $R/etc/hosts
-sed -i -e "s/rpi2-jessie/${HOSTNAME}/" $R/etc/hosts
+sed -i "s/rpi2-jessie/${HOSTNAME}/" $R/etc/hosts
 
 if [ "$NET_ADDRESS" != "" ] ; then
   NET_IP=$(echo ${NET_ADDRESS} | cut -f 1 -d'/')
@@ -31,13 +31,14 @@ fi
 install_readonly files/network/interfaces $R/etc/network/interfaces
 
 if [ "$ENABLE_DHCP" = true ] ; then
-# Enable systemd-networkd DHCP configuration for interface eth0
-install_readonly files/network/eth.network $R/etc/systemd/network/eth.network
+  # Enable systemd-networkd DHCP configuration for interface eth0
+  install_readonly files/network/eth.network $R/etc/systemd/network/eth.network
 
-# Set DHCP configuration to IPv4 only
+  # Set DHCP configuration to IPv4 only
   if [ "$ENABLE_IPV6" = false ] ; then
     sed -i "s/^DHCP=yes/DHCP=v4/" $R/etc/systemd/network/eth.network
   fi
+
 else # ENABLE_DHCP=false
   cat <<EOM >$R/etc/systemd/network/eth.network
 [Match]
@@ -62,8 +63,6 @@ chroot_exec systemctl enable systemd-networkd
 if [ "$ENABLE_HARDNET" = true ] ; then
   install_readonly files/sysctl.d/82-rpi-net-hardening.conf $R/etc/sysctl.d/82-rpi-net-hardening.conf
 
-# Enable resolver warnings about spoofed addresses
-  cat <<EOM >>$R/etc/host.conf
-spoof warn
-EOM
+  # Enable resolver warnings about spoofed addresses
+  install_readonly files/network/host.conf $R/etc/host.conf
 fi

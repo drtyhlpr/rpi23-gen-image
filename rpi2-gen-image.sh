@@ -18,6 +18,7 @@
 # Load utility functions
 . ./functions.sh
 
+# Introduce settings
 set -e
 echo -n -e "\n#\n# RPi2 Bootstrap Settings\n#\n"
 set -x

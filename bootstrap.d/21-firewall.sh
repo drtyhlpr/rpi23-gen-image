@@ -37,8 +37,8 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
   fi
 fi
 
-# Remove SSHD related iptables rules
 if [ "$ENABLE_SSHD" = false ] ; then
- sed -e '/^#/! {/SSH/ s/^/# /}' -i $R/etc/iptables/iptables.rules 2> /dev/null
- sed -e '/^#/! {/SSH/ s/^/# /}' -i $R/etc/iptables/ip6tables.rules 2> /dev/null
+ # Remove SSHD related iptables rules
+ sed -i "/^#/! {/SSH/ s/^/# /}" $R/etc/iptables/iptables.rules 2> /dev/null
+ sed -i "/^#/! {/SSH/ s/^/# /}" $R/etc/iptables/ip6tables.rules 2> /dev/null
 fi
