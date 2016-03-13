@@ -15,10 +15,10 @@ if [ "$ENABLE_USER" = true ] ; then
 fi
 
 # Setup root password or not
-if [ "$ENABLE_ROOT" = true ]; then
+if [ "$ENABLE_ROOT" = true ] ; then
   chroot_exec usermod -p "${ENCRYPTED_PASSWORD}" root
 
-  if [ "$ENABLE_ROOT_SSH" = true ]; then
+  if [ "$ENABLE_ROOT_SSH" = true ] ; then
     sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin yes|g" $R/etc/ssh/sshd_config
   fi
 else

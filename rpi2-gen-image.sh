@@ -15,6 +15,12 @@
 # Copyright (C) 2015 Luca Falavigna <dktrkranz@debian.org>
 ########################################################################
 
+# Check if ./functions.sh script exists
+if [ ! -r "./functions.sh" ] ; then
+  echo "error: './functions.sh' required script not found. please reinstall the latest script version!"
+  exit 1
+fi
+
 # Load utility functions
 . ./functions.sh
 
@@ -29,6 +35,7 @@ KERNEL_ARCH=${KERNEL_ARCH:=arm}
 RELEASE_ARCH=${RELEASE_ARCH:=armhf}
 CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
 COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
+KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
 QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
 
 # Build settings
@@ -90,9 +97,12 @@ ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 
 # Kernel compilation settings
 BUILD_KERNEL=${BUILD_KERNEL:=false}
+KERNEL_SRCDIR=${KERNEL_SRCDIR:=""}
 KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
 KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
+KERNEL_CLEANSRC=${KERNEL_CLEANSRC:=false}
+KERNEL_CONFIGSRC=${KERNEL_CONFIGSRC:=true}
 KERNEL_RMSRC=${KERNEL_RMSRC:=true}
 
 # Image chroot path
@@ -107,14 +117,38 @@ MISSING_PACKAGES=""
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
-APT_INCLUDES="${APT_INCLUDES},apt-transport-https,ca-certificates,debian-archive-keyring,dialog,sudo"
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo"
 
 set +x
 
 # Are we running as root?
 if [ "$(id -u)" -ne "0" ] ; then
-  echo "this script must be executed with root privileges"
+  echo "error: this script must be executed with root privileges!"
   exit 1
+fi
+
+# Check if ./bootstrap.d directory exists
+if [ ! -d "./bootstrap.d/" ] ; then
+  echo "error: './bootstrap.d' required directory not found. please reinstall the latest script version!"
+  exit 1
+fi
+
+# Check if ./files directory exists
+if [ ! -d "./files/" ] ; then
+  echo "error: './files' required directory not found. please reinstall the latest script version!"
+  exit 1
+fi
+
+# Check if specified KERNEL_SRCDIR directory exists
+if [ -n "$KERNEL_SRCDIR" ] && [ ! -d "$KERNEL_SRCDIR" ] ; then
+  echo "error: ${KERNEL_SRCDIR} (KERNEL_SRCDIR) specified directory not found!"
+  exit 1
+fi
+
+# Check if specified CHROOT_SCRIPTS directory exists
+if [ -n "$CHROOT_SCRIPTS" ] && [ ! -d "$CHROOT_SCRIPTS" ] ; then
+   echo "error: ${CHROOT_SCRIPTS} (CHROOT_SCRIPTS) specified directory not found!"
+   exit 1
 fi
 
 # Add packages required for kernel cross compilation
@@ -148,9 +182,20 @@ fi
 apt-get -qq -y install ${REQUIRED_PACKAGES}
 
 # Don't clobber an old build
-if [ -e "$BUILDDIR" ]; then
-  echo "directory $BUILDDIR already exists, not proceeding"
+if [ -e "$BUILDDIR" ] ; then
+  echo "error: directory ${BUILDDIR} already exists, not proceeding"
   exit 1
+fi
+
+# Check if build directory has enough of free disk space >512MB
+if [ "$(df --output=avail ${BUILDDIR} | sed "1d")" -le "524288" ] ; then
+  echo "error: ${BUILDDIR} not enough space left on this partition to generate the output image!"
+  exit 1
+fi
+
+# Warn if build directory has low free disk space <1024MB
+if [ "$(df --output=avail ${BUILDDIR} | sed "1d")" -le "1048576" ] ; then
+  echo `df -h --output=avail ${BUILDDIR} | sed "1 s|.*Avail|warning: $partition is low on free space:|"`
 fi
 
 set -x
@@ -198,10 +243,6 @@ if [ "$ENABLE_HWRANDOM" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},rng-tools"
 fi
 
-if [ "$ENABLE_USER" = true ]; then
-  APT_INCLUDES="${APT_INCLUDES},sudo"
-fi
-
 # Add fbturbo video driver
 if [ "$ENABLE_FBTURBO" = true ] ; then
   # Enable xorg package dependencies
@@ -221,27 +262,42 @@ if [ "$ENABLE_XORG" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},xorg"
 fi
 
-## Main bootstrap
-for i in bootstrap.d/*.sh; do
-  head -n 3 $i
-  . $i
+# Set KERNEL_CONFIGSRC=true
+if [ "$BUILD_KERNEL" = true ] && [ -z "$KERNEL_SRCDIR" ] ; then
+  KERNEL_CONFIGSRC=true
+fi
+
+## MAIN bootstrap
+for SCRIPT in bootstrap.d/*.sh; do
+  # Execute bootstrap scripts (lexicographical order)
+  head -n 3 $SCRIPT
+  . $SCRIPT
 done
 
 ## Custom bootstrap scripts
-if [ -d "custom.d" ]; then
-  for i in custom.d/*.sh; do
-    . $i
+if [ -d "custom.d" ] ; then
+  # Execute custom bootstrap scripts (lexicographical order)
+  for SCRIPT in custom.d/*.sh; do
+    . $SCRIPT
   done
 fi
 
 # Invoke custom scripts
-if [ -n "${CHROOT_SCRIPTS}" ]; then
+if [ -n "$CHROOT_SCRIPTS" ] && [ -d "$CHROOT_SCRIPTS" ] ; then
   cp -r "${CHROOT_SCRIPTS}" "${R}/chroot_scripts"
-  LANG=C chroot $R bash -c 'for SCRIPT in /chroot_scripts/*; do if [ -f $SCRIPT -a -x $SCRIPT ]; then $SCRIPT; fi done;'
+  # Execute scripts inside the chroot (lexicographical order)
+  chroot_exec /bin/bash -x <<'EOF'
+for SCRIPT in /chroot_scripts/* ; do
+  if [ -f $SCRIPT -a -x $SCRIPT ] ; then
+    $SCRIPT
+  fi
+done
+EOF
   rm -rf "${R}/chroot_scripts"
 fi
 
 ## Cleanup
+chroot_exec apt-get purge -q -y --force-yes apt-utils
 chroot_exec apt-get -y clean
 chroot_exec apt-get -y autoclean
 chroot_exec apt-get -y autoremove

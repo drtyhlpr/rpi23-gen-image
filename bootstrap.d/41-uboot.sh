@@ -6,8 +6,8 @@
 . ./functions.sh
 
 # Install gcc/c++ build environment inside the chroot
-if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ]; then
-  chroot_exec apt-get install -q -y --force-yes --no-install-recommends linux-compiler-gcc-4.9-arm g++ make bc
+if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ] ; then
+  chroot_exec apt-get -q -y --force-yes --no-install-recommends install linux-compiler-gcc-4.9-arm g++ make bc
 fi
 
 # Fetch and build U-Boot bootloader

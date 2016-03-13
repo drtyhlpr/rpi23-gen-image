@@ -27,3 +27,4 @@ sed -i "s/ jessie/ ${RELEASE}/" $R/etc/apt/sources.list
 # Upgrade package index and update all installed packages and changed dependencies
 chroot_exec apt-get -qq -y update
 chroot_exec apt-get -qq -y -u dist-upgrade
+chroot_exec apt-get -qq -y check

@@ -7,32 +7,55 @@
 
 # Fetch and build latest raspberry kernel
 if [ "$BUILD_KERNEL" = true ] ; then
-  # Fetch current raspberrypi kernel sources
-  git -C $R/usr/src clone --depth=1 https://github.com/raspberrypi/linux
+  # Setup source directory
+  mkdir -p $R/usr/src
 
-  # Load default raspberry kernel configuration
-  make -C $R/usr/src/linux ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} bcm2709_defconfig
+  # Copy existing kernel sources into chroot directory
+  if [ -n "$KERNEL_SRCDIR" ] && [ -d "$KERNEL_SRCDIR" ] ; then
+    # Copy kernel sources
+    cp -r "${KERNEL_SRCDIR}" "${R}/usr/src"
+
+    # Clean the kernel sources
+    if [ "$KERNEL_CLEANSRC" = true ] ; then
+      make -C $R/usr/src/linux ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} mrproper
+    fi
+  else # KERNEL_SRCDIR=""
+    # Fetch current raspberrypi kernel sources
+    git -C $R/usr/src clone --depth=1 https://github.com/raspberrypi/linux
+  fi
 
   # Calculate optimal number of kernel building threads
-  if [ "$KERNEL_THREADS" = 1 ] ; then
-    if [ -f /proc/cpuinfo ] ; then
+  if [ "$KERNEL_THREADS" = "1" ] ; then
+    if [ -r /proc/cpuinfo ] ; then
       KERNEL_THREADS=$(grep -c processor /proc/cpuinfo)
     fi
   fi
 
-  # Start menu-driven kernel configuration (interactive)
-  if [ "$KERNEL_MENUCONFIG" = true ] ; then
-    make -C $R/usr/src/linux ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} menuconfig
+  if [ "$KERNEL_CONFIGSRC" = true ] ; then
+    # Load default raspberry kernel configuration
+    make -C $R/usr/src/linux ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} ${KERNEL_DEFCONFIG}
+
+    # Start menu-driven kernel configuration (interactive)
+    if [ "$KERNEL_MENUCONFIG" = true ] ; then
+      make -C $R/usr/src/linux ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} menuconfig
+    fi
   fi
 
   # Cross compile kernel and modules
   make -C $R/usr/src/linux -j${KERNEL_THREADS} ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} zImage modules dtbs
 
+  # Check if kernel compilation was successful
+  if [ ! -r $R/usr/src/linux/arch/${KERNEL_ARCH}/boot/zImage ] ; then
+    echo "error: kernel compilation failed!"
+    cleanup
+    exit 1
+  fi
+
   # Install kernel modules
   make -C $R/usr/src/linux ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_MOD_PATH=../../.. modules_install
 
   # Install kernel headers
-  if [ "$KERNEL_HEADERS" = true ]; then
+  if [ "$KERNEL_HEADERS" = true ] ; then
     make -C $R/usr/src/linux ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_HDR_PATH=../.. headers_install
   fi
 
@@ -47,7 +70,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
   cp $R/usr/src/linux/arch/${KERNEL_ARCH}/boot/dts/overlays/README $R/boot/firmware/overlays/
 
   # Remove kernel sources
-  if [ "$KERNEL_RMSRC" = true ]; then
+  if [ "$KERNEL_RMSRC" = true ] ; then
     rm -fr $R/usr/src/linux
   fi
 

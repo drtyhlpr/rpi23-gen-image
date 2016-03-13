@@ -5,7 +5,7 @@
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
 
-  ```debootstrap debian-archive-keyring qemu-user-static dosfstools rsync bmap-tools whois git-core```
+  ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git-core```
 
 ## Command-line parameters
 The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi2-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi2-gen-image.sh` script.
@@ -19,6 +19,7 @@ ENABLE_HARDNET=true ENABLE_IPTABLES=true /rpi2-gen-image.sh
 APT_SERVER=ftp.de.debian.org APT_PROXY="http://127.0.0.1:3142/" ./rpi2-gen-image.sh
 ENABLE_MINBASE=true ./rpi2-gen-image.sh
 BUILD_KERNEL=true ENABLE_MINBASE=true ENABLE_IPV6=false ./rpi2-gen-image.sh
+BUILD_KERNEL=true KERNEL_SRCDIR=/tmp/linux ./rpi2-gen-image.sh
 ```
 
 #### APT settings:
@@ -158,7 +159,10 @@ Path to a directory with scripts that should be run in the chroot before the ima
 
 #### Kernel compilation:
 ##### `BUILD_KERNEL`=false
-Build and install the latest RPi2 linux kernel. Currently only the default RPi2 kernel configuration is used. Detailed configuration parameters for customizing the kernel and minor bug fixes still need to get implemented. feel free to help.
+Build and install the latest RPi2 Linux kernel. Currently only the default RPi2 kernel configuration is used. Detailed configuration parameters for customizing the kernel and minor bug fixes still need to get implemented. feel free to help.
+
+##### `KERNEL_SRCDIR`=""
+Path to a directory of [RaspberryPi Linux kernel] sources (https://github.com/raspberrypi/linux) that will be copied, configured, build and installed inside the chroot.
 
 ##### `KERNEL_THREADS`=1
 Number of parallel kernel building threads. If the parameter is left untouched the script will automatically determine the number of CPU cores to set the number of parallel threads to speed the kernel compilation.
@@ -169,8 +173,14 @@ Install kernel headers with built kernel.
 ##### `KERNEL_MENUCONFIG`=false
 Start `make menuconfig` interactive menu-driven kernel configuration. The script will continue after `make menuconfig` was terminated.
 
+##### `KERNEL_CONFIGSRC`=true
+Run `make bcm2709_defconfig` (and optional `make menuconfig`) to configure the kernel sources before building. This setting is automatically set to `true` if no existing kernel sources directory was specified using `KERNEL_SRCDIR`.
+
+##### `KERNEL_CLEANSRC`=false
+Clean the existing kernel sources directory `KERNEL_SRCDIR` (using `make mrproper`) after it was copied to the chroot and before the compilation of the kernel has started. This setting will be ignored if no `KERNEL_SRCDIR` was specified.
+
 ##### `KERNEL_RMSRC`=true
-Remove all kernel sources from the generated OS image after building.
+Remove all kernel sources from the generated OS image after it was built and installed.
 
 ## Understanding the script
 The functions of this script that are required for the different stages of the bootstrapping are split up into single files located inside the `bootstrap.d` directory. During the bootstrapping every script in this directory gets executed in lexicographical order:
