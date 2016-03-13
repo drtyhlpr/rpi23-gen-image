@@ -7,13 +7,13 @@
 
 # Base debootstrap (unpack only)
 if [ "$ENABLE_MINBASE" = true ] ; then
-  http_proxy=${APT_PROXY} debootstrap --arch=armhf --variant=minbase --foreign --include=${APT_INCLUDES} $RELEASE $R http://${APT_SERVER}/debian
+  http_proxy=${APT_PROXY} debootstrap --arch=${RELEASE_ARCH} --variant=minbase --foreign --include=${APT_INCLUDES} ${RELEASE} $R http://${APT_SERVER}/debian
 else
-  http_proxy=${APT_PROXY} debootstrap --arch=armhf --foreign --include=${APT_INCLUDES} $RELEASE $R http://${APT_SERVER}/debian
+  http_proxy=${APT_PROXY} debootstrap --arch=${RELEASE_ARCH} --foreign --include=${APT_INCLUDES} ${RELEASE} $R http://${APT_SERVER}/debian
 fi
 
 # Copy qemu emulator binary to chroot
-cp /usr/bin/qemu-arm-static $R/usr/bin
+cp ${QEMU_BINARY} $R/usr/bin
 
 # Copy debian-archive-keyring.pgp
 mkdir -p $R/usr/share/keyrings

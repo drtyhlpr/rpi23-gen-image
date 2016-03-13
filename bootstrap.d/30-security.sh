@@ -8,13 +8,13 @@
 # Generate crypt(3) password string
 ENCRYPTED_PASSWORD=`mkpasswd -m sha-512 ${PASSWORD}`
 
-# Set up default user
+# Setup default user
 if [ "$ENABLE_USER" = true ] ; then
   chroot_exec adduser --gecos pi --add_extra_groups --disabled-password pi
   chroot_exec usermod -a -G sudo -p "${ENCRYPTED_PASSWORD}" pi
 fi
 
-# Set up root password or not
+# Setup root password or not
 if [ "$ENABLE_ROOT" = true ]; then
   chroot_exec usermod -p "${ENCRYPTED_PASSWORD}" root
 

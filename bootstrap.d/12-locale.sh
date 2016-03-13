@@ -5,11 +5,11 @@
 # Load utility functions
 . ./functions.sh
 
-# Set up timezone
+# Install and setup timezone
 echo ${TIMEZONE} >$R/etc/timezone
 chroot_exec dpkg-reconfigure -f noninteractive tzdata
 
-# Set up default locale and keyboard configuration
+# Install and setup default locale and keyboard configuration
 if [ "$ENABLE_MINBASE" = false ] ; then
   # Set locale choice in debconf db, even though dpkg-reconfigure ignores and overwrites them due to some bug
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=684134 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=685957
@@ -27,7 +27,7 @@ if [ "$ENABLE_MINBASE" = false ] ; then
   chroot_exec locale-gen
   chroot_exec update-locale LANG=${DEFLOCAL}
 
-  # Keyboard configuration, if requested
+  # Install and setup default keyboard configuration
   if [ "$XKB_MODEL" != "" ] ; then
     sed -i "s/^XKBMODEL.*/XKBMODEL=\"${XKB_MODEL}\"/" $R/etc/default/keyboard
   fi
@@ -42,7 +42,7 @@ if [ "$ENABLE_MINBASE" = false ] ; then
   fi
   chroot_exec dpkg-reconfigure -f noninteractive keyboard-configuration
 
-  # Set up font console
+  # Install and setup font console
   case "${DEFLOCAL}" in
     *UTF-8)
       sed -i 's/^CHARMAP.*/CHARMAP="UTF-8"/' $R/etc/default/console-setup
@@ -53,6 +53,6 @@ if [ "$ENABLE_MINBASE" = false ] ; then
   esac
   chroot_exec dpkg-reconfigure -f noninteractive console-setup
 else # ENABLE_MINBASE=true
-  # Set POSIX default locales
+  # Install POSIX default locale
   install_readonly files/locales/locale $R/etc/default/locale
 fi

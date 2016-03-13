@@ -21,7 +21,7 @@ make
 make install
 EOF
 
-  # Add fbturbo driver to Xorg configuration
+  # Install fbturbo driver Xorg configuration
   install_readonly files/xorg/99-fbturbo.conf $R/usr/share/X11/xorg.conf.d/99-fbturbo.conf
 
   # Remove Xorg build dependencies

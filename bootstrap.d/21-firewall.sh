@@ -9,13 +9,13 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
   # Create iptables configuration directory
   mkdir -p "$R/etc/iptables"
 
-  # Create iptables systemd service
+  # Install iptables systemd service
   install_readonly files/iptables/iptables.service $R/etc/systemd/system/iptables.service
 
-  # Create flush-table script called by iptables service
+  # Install flush-table script called by iptables service
   install_exec files/iptables/flush-iptables.sh $R/etc/iptables/flush-iptables.sh
 
-  # Create iptables rule file
+  # Install iptables rule file
   install_readonly files/iptables/iptables.rules $R/etc/iptables/iptables.rules
 
   # Reload systemd configuration and enable iptables service
@@ -23,10 +23,10 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
   chroot_exec systemctl enable iptables.service
 
   if [ "$ENABLE_IPV6" = true ] ; then
-    # Create ip6tables systemd service
+    # Install ip6tables systemd service
     install_readonly files/iptables/ip6tables.service $R/etc/systemd/system/ip6tables.service
 
-    # Create ip6tables file
+    # Install ip6tables file
     install_exec files/iptables/flush-ip6tables.sh $R/etc/iptables/flush-ip6tables.sh
 
     install_readonly files/iptables/ip6tables.rules $R/etc/iptables/ip6tables.rules

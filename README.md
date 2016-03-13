@@ -166,6 +166,9 @@ Number of parallel kernel building threads. If the parameter is left untouched t
 ##### `KERNEL_HEADERS`=true
 Install kernel headers with built kernel.
 
+##### `KERNEL_MENUCONFIG`=false
+Start `make menuconfig` interactive menu-driven kernel configuration. The script will continue after `make menuconfig` was terminated.
+
 ##### `KERNEL_RMSRC`=true
 Remove all kernel sources from the generated OS image after building.
 
@@ -182,7 +185,7 @@ The functions of this script that are required for the different stages of the b
 | `21-firewall.sh` | Setup Firewall |
 | `30-security.sh` | Setup Users and Security settings |
 | `31-logging.sh` | Setup Logging |
-| `41-uboot.sh` | Build and Setup Uboot |
+| `41-uboot.sh` | Build and Setup U-Boot |
 | `42-fbturbo.sh` | Build and Setup fbturbo Xorg driver |
 | `50-firstboot.sh` | First boot actions |
 
@@ -194,7 +197,7 @@ All the required configuration files that will be copied to the generated OS ima
 | `firstboot` | Scripts that get executed on first boot  |
 | `iptables` | Firewall configuration files |
 | `locales` | Locales configuration |
-| `modprobe.d` | Kernel Module Blacklist configuration |
+| `modules` | Kernel Modules configuration |
 | `mount` | Fstab configuration |
 | `network` | Networking configuration files |
 | `sysctl.d` | Swapping and Network Hardening configuration |

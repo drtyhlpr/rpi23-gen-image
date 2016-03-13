@@ -25,7 +25,11 @@ set -x
 
 # Debian release
 RELEASE=${RELEASE:=jessie}
+KERNEL_ARCH=${KERNEL_ARCH:=arm}
+RELEASE_ARCH=${RELEASE_ARCH:=armhf}
+CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
 COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
+QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
 
 # Build settings
 BASEDIR=$(pwd)/images/${RELEASE}
@@ -88,6 +92,7 @@ ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 BUILD_KERNEL=${BUILD_KERNEL:=false}
 KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
+KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
 KERNEL_RMSRC=${KERNEL_RMSRC:=true}
 
 # Image chroot path
@@ -115,6 +120,9 @@ fi
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+  if [ "$KERNEL_MENUCONFIG" = true ] ; then
+    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} ncurses-dev"
+  fi
 fi
 
 # Check if all required packages are installed
@@ -150,7 +158,7 @@ set -x
 # Call "cleanup" function on various signals and errors
 trap cleanup 0 1 2 3 6
 
-# Set up chroot directory
+# Setup chroot directory
 mkdir -p $R
 
 # Add required packages for the minbase installation
@@ -298,7 +306,7 @@ unit: sectors
 3 : start=                  0, size=                 0, Id= 0
 4 : start=                  0, size=                 0, Id= 0
 EOM
-  # Set up temporary loop devices
+  # Setup temporary loop devices
   FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-frmw.img)"
   ROOT_LOOP="$(losetup -o 1M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-root.img)"
 else
@@ -313,7 +321,7 @@ unit: sectors
 3 : start=                  0, size=                 0, Id= 0
 4 : start=                  0, size=                 0, Id= 0
 EOM
-  # Set up temporary loop devices
+  # Setup temporary loop devices
   FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
   ROOT_LOOP="$(losetup -o 65M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
 fi
@@ -342,12 +350,12 @@ if [ "$ENABLE_SPLITFS" = true ] ; then
   bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}-root.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}-root.img"
 
   # Image was successfully created
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img ($(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}-root.img ($(expr ${TABLE_SECTORS} + ${ROOT_SECTORS} \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$BASEDIR/${DATE}-debian-${RELEASE}-root.img ($(expr \( ${TABLE_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
 else
   # Create block map file for "bmaptool"
   bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}.img"
 
   # Image was successfully created
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}.img ($(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$BASEDIR/${DATE}-debian-${RELEASE}.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
 fi

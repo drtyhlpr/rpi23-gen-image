@@ -2,4 +2,11 @@
 Name=eth0
 
 [Network]
-DHCP=yes
+DHCP=no
+Address=
+Gateway=
+DNS=
+DNS=
+Domains=
+NTP=
+NTP=
