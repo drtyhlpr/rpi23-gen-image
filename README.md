@@ -166,7 +166,7 @@ Path to a directory with scripts that should be run in the chroot before the ima
 Build and install the latest RPi2 Linux kernel. Currently only the default RPi2 kernel configuration is used. Detailed configuration parameters for customizing the kernel and minor bug fixes still need to get implemented. feel free to help.
 
 ##### `KERNEL_SRCDIR`=""
-Path to a directory of [RaspberryPi Linux kernel] sources (https://github.com/raspberrypi/linux) that will be copied, configured, build and installed inside the chroot.
+Path to a directory of [RaspberryPi Linux kernel sources](https://github.com/raspberrypi/linux) that will be copied, configured, build and installed inside the chroot.
 
 ##### `KERNEL_THREADS`=1
 Number of parallel kernel building threads. If the parameter is left untouched the script will automatically determine the number of CPU cores to set the number of parallel threads to speed the kernel compilation.
