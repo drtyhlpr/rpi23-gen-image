@@ -89,6 +89,7 @@ ENABLE_ROOT_SSH=${ENABLE_ROOT_SSH:=false}
 
 # Advanced settings
 ENABLE_MINBASE=${ENABLE_MINBASE:=false}
+ENABLE_REDUCE=${ENABLE_REDUCE:=flase}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
@@ -296,8 +297,44 @@ EOF
   rm -rf "${R}/chroot_scripts"
 fi
 
-## Cleanup
-chroot_exec apt-get purge -q -y --force-yes apt-utils
+# Remove apt-utils
+chroot_exec apt-get purge -qq -y --force-yes apt-utils
+
+# Reduce the image size by removing and compressing
+if [ "$ENABLE_REDUCE" = true ] ; then
+  # Install dpkg configuration fragment file
+  install_readonly files/dpkg/01nodoc $R/etc/dpkg/dpkg.cfg.d/01nodoc
+
+  # Install APT configuration fragment files
+  install_readonly files/apt/02nocache $R/etc/apt/apt.conf.d/02nocache
+  install_readonly files/apt/03compress $R/etc/apt/apt.conf.d/03compress
+  install_readonly files/apt/04norecommends $R/etc/apt/apt.conf.d/04norecommends
+
+  # Remove APT cache files
+  rm -fr $R/var/cache/apt/pkgcache.bin
+  rm -fr $R/var/cache/apt/srcpkgcache.bin
+
+  # Remove all doc and man files
+  find $R/usr/share/doc -depth -type f ! -name copyright | xargs rm || true
+  find $R/usr/share/doc -empty | xargs rmdir || true
+  rm -rf $R/usr/share/man $R/usr/share/groff $R/usr/share/info $R/usr/share/lintian $R/usr/share/linda $R/var/cache/man
+
+  # Remove all translation files
+  find $R/usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' | xargs rm -r
+
+  # Clean APT list of repositories
+  rm -fr $R/var/lib/apt/lists/*
+  chroot_exec apt-get -qq -y update
+
+  if [ "$ENABLE_MINGPU" = true ] ; then
+    rm -f $R/boot/firmware/start.elf
+    rm -f $R/boot/firmware/fixup.dat
+    rm -f $R/boot/firmware/start_x.elf
+    rm -f $R/boot/firmware/fixup_x.dat
+  fi
+fi
+
+# APT Cleanup
 chroot_exec apt-get -y clean
 chroot_exec apt-get -y autoclean
 chroot_exec apt-get -y autoremove
@@ -306,19 +343,21 @@ chroot_exec apt-get -y autoremove
 umount -l $R/proc
 umount -l $R/sys
 
+# Clean up directories
+rm -rf $R/run
+rm -rf $R/tmp/*
+
 # Clean up files
 rm -f $R/etc/apt/sources.list.save
 rm -f $R/etc/resolvconf/resolv.conf.d/original
-rm -rf $R/run
-mkdir -p $R/run
 rm -f $R/etc/*-
 rm -f $R/root/.bash_history
-rm -rf $R/tmp/*
 rm -f $R/var/lib/urandom/random-seed
-[ -L $R/var/lib/dbus/machine-id ] || rm -f $R/var/lib/dbus/machine-id
+rm -f $R/var/lib/dbus/machine-id
 rm -f $R/etc/machine-id
-rm -fr $R/etc/apt/apt.conf.d/10proxy
+rm -f $R/etc/apt/apt.conf.d/10proxy
 rm -f $R/etc/resolv.conf
+rm -f "${R}${QEMU_BINARY}"
 
 # Calculate size of the chroot directory in KB
 CHROOT_SIZE=$(expr `du -s $R | awk '{ print $1 }'`)

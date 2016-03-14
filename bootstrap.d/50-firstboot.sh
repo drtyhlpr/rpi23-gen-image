@@ -19,6 +19,12 @@ if [ "$EXPANDROOT" = true ] ; then
   cat files/firstboot/22-expandroot.sh >> $R/etc/rc.firstboot
 fi
 
+# Ensure that dbus machine-id exists
+cat files/firstboot/23-generate-machineid.sh >> $R/etc/rc.firstboot
+
+# Create /etc/resolv.conf symlink
+cat files/firstboot/24-create-resolv-symlink.sh >> $R/etc/rc.firstboot
+
 # Finalize rc.firstboot script
 cat files/firstboot/99-finish.sh >> $R/etc/rc.firstboot
 chmod +x $R/etc/rc.firstboot

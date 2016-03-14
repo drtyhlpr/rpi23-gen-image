@@ -52,7 +52,11 @@ if [ "$BUILD_KERNEL" = true ] ; then
   fi
 
   # Install kernel modules
-  make -C $R/usr/src/linux ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_MOD_PATH=../../.. modules_install
+  if [ "$ENABLE_REDUCE" = true ] ; then
+    make -C $R/usr/src/linux ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=../../.. modules_install
+  else
+    make -C $R/usr/src/linux ARCH=${KERNEL_ARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_MOD_PATH=../../.. modules_install
+  fi
 
   # Install kernel headers
   if [ "$KERNEL_HEADERS" = true ] ; then

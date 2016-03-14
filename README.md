@@ -20,6 +20,7 @@ APT_SERVER=ftp.de.debian.org APT_PROXY="http://127.0.0.1:3142/" ./rpi2-gen-image
 ENABLE_MINBASE=true ./rpi2-gen-image.sh
 BUILD_KERNEL=true ENABLE_MINBASE=true ENABLE_IPV6=false ./rpi2-gen-image.sh
 BUILD_KERNEL=true KERNEL_SRCDIR=/tmp/linux ./rpi2-gen-image.sh
+ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi2-gen-image.sh
 ```
 
 #### APT settings:
@@ -129,6 +130,9 @@ Install a user defined window manager for the X Window System. To make sure all 
 ##### `ENABLE_MINBASE`=false
 Use debootstrap script variant `minbase` which only includes essential packages and apt. This will reduce the disk usage by about 65 MB.
 
+##### `ENABLE_REDUCE`=false
+Reduce the disk usage by deleting all man pages and doc files (harsh). APT will be configured to use compressed package repository lists and no package caching files. If `ENABLE_MINGPU`=true unnecessary start.elf and fixup.dat files will also be removed from the boot partition. This will make it possible to generate output OS images with about 160MB of used disk space. It's recommended to use this parameter in combination with `ENABLE_MINBASE`=true.
+
 ##### `ENABLE_UBOOT`=false
 Replace default RPi2 second stage bootloader (bootcode.bin) with U-Boot bootloader. U-Boot can boot images via the network using the BOOTP/TFTP protocol.
 
@@ -204,6 +208,7 @@ All the required configuration files that will be copied to the generated OS ima
 | Directory | Description |
 | --- | --- |
 | `boot` | Boot and RPi2 configuration files |
+| `dpkg` | Package Manager configuration |
 | `firstboot` | Scripts that get executed on first boot  |
 | `iptables` | Firewall configuration files |
 | `locales` | Locales configuration |
