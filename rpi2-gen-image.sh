@@ -98,13 +98,16 @@ ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 
 # Kernel compilation settings
 BUILD_KERNEL=${BUILD_KERNEL:=false}
-KERNEL_SRCDIR=${KERNEL_SRCDIR:=""}
 KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
 KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
-KERNEL_CLEANSRC=${KERNEL_CLEANSRC:=false}
-KERNEL_CONFIGSRC=${KERNEL_CONFIGSRC:=true}
-KERNEL_RMSRC=${KERNEL_RMSRC:=true}
+KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
+
+# Kernel compilation from source directory settings
+KERNELSRC_DIR=${KERNELSRC_DIR:=""}
+KERNELSRC_CLEAN=${KERNELSRC_CLEAN:=false}
+KERNELSRC_CONFIG=${KERNELSRC_CONFIG:=true}
+KERNELSRC_PREBUILT=${KERNELSRC_PREBUILT:=false}
 
 # Image chroot path
 R=${BUILDDIR}/chroot
@@ -140,9 +143,9 @@ if [ ! -d "./files/" ] ; then
   exit 1
 fi
 
-# Check if specified KERNEL_SRCDIR directory exists
-if [ -n "$KERNEL_SRCDIR" ] && [ ! -d "$KERNEL_SRCDIR" ] ; then
-  echo "error: ${KERNEL_SRCDIR} (KERNEL_SRCDIR) specified directory not found!"
+# Check if specified KERNELSRC_DIR directory exists
+if [ -n "$KERNELSRC_DIR" ] && [ ! -d "$KERNELSRC_DIR" ] ; then
+  echo "error: ${KERNELSRC_DIR} (KERNELSRC_DIR) specified directory not found!"
   exit 1
 fi
 
@@ -155,6 +158,7 @@ fi
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+
   if [ "$KERNEL_MENUCONFIG" = true ] ; then
     REQUIRED_PACKAGES="${REQUIRED_PACKAGES} ncurses-dev"
   fi
@@ -163,7 +167,7 @@ fi
 # Check if all required packages are installed
 for package in $REQUIRED_PACKAGES ; do
   if [ "`dpkg-query -W -f='${Status}' $package`" != "install ok installed" ] ; then
-    MISSING_PACKAGES="$MISSING_PACKAGES $package"
+    MISSING_PACKAGES="${MISSING_PACKAGES} $package"
   fi
 done
 
@@ -188,6 +192,9 @@ if [ -e "$BUILDDIR" ] ; then
   exit 1
 fi
 
+# Setup chroot directory
+mkdir -p "$R"
+
 # Check if build directory has enough of free disk space >512MB
 if [ "$(df --output=avail ${BUILDDIR} | sed "1d")" -le "524288" ] ; then
   echo "error: ${BUILDDIR} not enough space left on this partition to generate the output image!"
@@ -203,9 +210,6 @@ set -x
 
 # Call "cleanup" function on various signals and errors
 trap cleanup 0 1 2 3 6
-
-# Setup chroot directory
-mkdir -p $R
 
 # Add required packages for the minbase installation
 if [ "$ENABLE_MINBASE" = true ] ; then
@@ -263,23 +267,23 @@ if [ "$ENABLE_XORG" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},xorg"
 fi
 
-# Set KERNEL_CONFIGSRC=true
-if [ "$BUILD_KERNEL" = true ] && [ -z "$KERNEL_SRCDIR" ] ; then
-  KERNEL_CONFIGSRC=true
+# Set KERNELSRC_CONFIG=true
+if [ "$BUILD_KERNEL" = true ] && [ -z "$KERNELSRC_DIR" ] ; then
+  KERNELSRC_CONFIG=true
 fi
 
 ## MAIN bootstrap
 for SCRIPT in bootstrap.d/*.sh; do
   # Execute bootstrap scripts (lexicographical order)
-  head -n 3 $SCRIPT
-  . $SCRIPT
+  head -n 3 "$SCRIPT"
+  . "$SCRIPT"
 done
 
 ## Custom bootstrap scripts
 if [ -d "custom.d" ] ; then
   # Execute custom bootstrap scripts (lexicographical order)
   for SCRIPT in custom.d/*.sh; do
-    . $SCRIPT
+    . "$SCRIPT"
   done
 fi
 
@@ -294,7 +298,7 @@ for SCRIPT in /chroot_scripts/* ; do
   fi
 done
 EOF
-  rm -rf "${R}/chroot_scripts"
+  rm -rf "$R/chroot_scripts"
 fi
 
 # Remove apt-utils
@@ -303,34 +307,35 @@ chroot_exec apt-get purge -qq -y --force-yes apt-utils
 # Reduce the image size by removing and compressing
 if [ "$ENABLE_REDUCE" = true ] ; then
   # Install dpkg configuration fragment file
-  install_readonly files/dpkg/01nodoc $R/etc/dpkg/dpkg.cfg.d/01nodoc
+  install_readonly files/dpkg/01nodoc "$R/etc/dpkg/dpkg.cfg.d/01nodoc"
 
   # Install APT configuration fragment files
-  install_readonly files/apt/02nocache $R/etc/apt/apt.conf.d/02nocache
-  install_readonly files/apt/03compress $R/etc/apt/apt.conf.d/03compress
-  install_readonly files/apt/04norecommends $R/etc/apt/apt.conf.d/04norecommends
+  install_readonly files/apt/02nocache "$R/etc/apt/apt.conf.d/02nocache"
+  install_readonly files/apt/03compress "$R/etc/apt/apt.conf.d/03compress"
+  install_readonly files/apt/04norecommends "$R/etc/apt/apt.conf.d/04norecommends"
 
   # Remove APT cache files
-  rm -fr $R/var/cache/apt/pkgcache.bin
-  rm -fr $R/var/cache/apt/srcpkgcache.bin
+  rm -fr "$R/var/cache/apt/pkgcache.bin"
+  rm -fr "$R/var/cache/apt/srcpkgcache.bin"
 
   # Remove all doc and man files
-  find $R/usr/share/doc -depth -type f ! -name copyright | xargs rm || true
-  find $R/usr/share/doc -empty | xargs rmdir || true
-  rm -rf $R/usr/share/man $R/usr/share/groff $R/usr/share/info $R/usr/share/lintian $R/usr/share/linda $R/var/cache/man
+  find "$R/usr/share/doc" -depth -type f ! -name copyright | xargs rm || true
+  find "$R/usr/share/doc" -empty | xargs rmdir || true
+  rm -rf "$R/usr/share/man" "$R/usr/share/groff" "$R/usr/share/info" "$R/usr/share/lintian" "$R/usr/share/linda" "$R/var/cache/man"
 
   # Remove all translation files
-  find $R/usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' | xargs rm -r
+  find "$R/usr/share/locale" -mindepth 1 -maxdepth 1 ! -name 'en' | xargs rm -r
 
   # Clean APT list of repositories
-  rm -fr $R/var/lib/apt/lists/*
+  rm -fr "$R/var/lib/apt/lists/*"
   chroot_exec apt-get -qq -y update
 
+  # Remove GPU kernels
   if [ "$ENABLE_MINGPU" = true ] ; then
-    rm -f $R/boot/firmware/start.elf
-    rm -f $R/boot/firmware/fixup.dat
-    rm -f $R/boot/firmware/start_x.elf
-    rm -f $R/boot/firmware/fixup_x.dat
+    rm -f "$R/boot/firmware/start.elf"
+    rm -f "$R/boot/firmware/fixup.dat"
+    rm -f "$R/boot/firmware/start_x.elf"
+    rm -f "$R/boot/firmware/fixup_x.dat"
   fi
 fi
 
@@ -340,27 +345,27 @@ chroot_exec apt-get -y autoclean
 chroot_exec apt-get -y autoremove
 
 # Unmount mounted filesystems
-umount -l $R/proc
-umount -l $R/sys
+umount -l "$R/proc"
+umount -l "$R/sys"
 
 # Clean up directories
-rm -rf $R/run
-rm -rf $R/tmp/*
+rm -rf "$R/run"
+rm -rf "$R/tmp/*"
 
 # Clean up files
-rm -f $R/etc/apt/sources.list.save
-rm -f $R/etc/resolvconf/resolv.conf.d/original
-rm -f $R/etc/*-
-rm -f $R/root/.bash_history
-rm -f $R/var/lib/urandom/random-seed
-rm -f $R/var/lib/dbus/machine-id
-rm -f $R/etc/machine-id
-rm -f $R/etc/apt/apt.conf.d/10proxy
-rm -f $R/etc/resolv.conf
+rm -f "$R/etc/apt/sources.list.save"
+rm -f "$R/etc/resolvconf/resolv.conf.d/original"
+rm -f "$R/etc/*-"
+rm -f "$R/root/.bash_history"
+rm -f "$R/var/lib/urandom/random-seed"
+rm -f "$R/var/lib/dbus/machine-id"
+rm -f "$R/etc/machine-id"
+rm -f "$R/etc/apt/apt.conf.d/10proxy"
+rm -f "$R/etc/resolv.conf"
 rm -f "${R}${QEMU_BINARY}"
 
 # Calculate size of the chroot directory in KB
-CHROOT_SIZE=$(expr `du -s $R | awk '{ print $1 }'`)
+CHROOT_SIZE=$(expr `du -s "$R" | awk '{ print $1 }'`)
 
 # Calculate the amount of needed 512 Byte sectors
 TABLE_SECTORS=$(expr 1 \* 1024 \* 1024 \/ 512)
