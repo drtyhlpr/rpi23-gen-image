@@ -29,7 +29,44 @@ if [ "$BUILD_KERNEL" = true ] ; then
     KERNEL_THREADS=$(grep -c processor /proc/cpuinfo)
   fi
 
+  # Configure and build kernel
   if [ "$KERNELSRC_PREBUILT" = false ] ; then
+    # Remove device, network and filesystem drivers from kernel configuration
+    if [ "$KERNEL_REDUCE" = true ] ; then
+      make -C "$R/usr/src/linux" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
+      sed -i\
+      -e "s/\(^CONFIG_SND.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_SOUND.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_AC97.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_VIDEO_.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_MEDIA_TUNER.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_DVB.*\=\)[ym]/\1n/"\
+      -e "s/\(^CONFIG_REISERFS.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_JFS.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_XFS.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_GFS2.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_OCFS2.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_BTRFS.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_HFS.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_JFFS2.*\=\)[ym]/\1n/"\
+      -e "s/\(^CONFIG_UBIFS.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_SQUASHFS.*\=\)[ym]/\1n/"\
+      -e "s/\(^CONFIG_W1.*\=\)[ym]/\1n/"\
+      -e "s/\(^CONFIG_HAMRADIO.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_CAN.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_IRDA.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_BT_.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_WIMAX.*\=\)[ym]/\1n/"\
+      -e "s/\(^CONFIG_6LOWPAN.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_IEEE802154.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_NFC.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_FB_TFT=.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_TOUCHSCREEN.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_USB_GSPCA_.*\=\).*/\1n/"\
+      -e "s/\(^CONFIG_DRM.*\=\).*/\1n/"\
+      "$R/usr/src/linux/.config"
+    fi
+
     if [ "$KERNELSRC_CONFIG" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "$R/usr/src/linux" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
@@ -62,7 +99,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
   fi
 
   # Install kernel headers
-  if [ "$KERNEL_HEADERS" = true ] ; then
+  if [ "$KERNEL_HEADERS" = true ] && [ "$KERNEL_REDUCE" = false ] ; then
     make -C "$R/usr/src/linux" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_HDR_PATH=../.. headers_install
   fi
 

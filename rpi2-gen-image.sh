@@ -15,6 +15,12 @@
 # Copyright (C) 2015 Luca Falavigna <dktrkranz@debian.org>
 ########################################################################
 
+# Are we running as root?
+if [ "$(id -u)" -ne "0" ] ; then
+  echo "error: this script must be executed with root privileges!"
+  exit 1
+fi
+
 # Check if ./functions.sh script exists
 if [ ! -r "./functions.sh" ] ; then
   echo "error: './functions.sh' required script not found. please reinstall the latest script version!"
@@ -38,9 +44,10 @@ COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
 KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
 QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
 
-# Build settings
+# Build directories
 BASEDIR=$(pwd)/images/${RELEASE}
 BUILDDIR=${BASEDIR}/build
+R=${BUILDDIR}/chroot
 
 # General settings
 HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
@@ -59,7 +66,6 @@ XKB_OPTIONS=${XKB_OPTIONS:=""}
 ENABLE_DHCP=${ENABLE_DHCP:=true}
 
 # Network settings (static)
-# only used on ENABLE_DHCP=false
 NET_ADDRESS=${NET_ADDRESS:=""}
 NET_GATEWAY=${NET_GATEWAY:=""}
 NET_DNS_1=${NET_DNS_1:=""}
@@ -98,6 +104,7 @@ ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 
 # Kernel compilation settings
 BUILD_KERNEL=${BUILD_KERNEL:=false}
+KERNEL_REDUCE=${KERNEL_REDUCE:=false}
 KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
 KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
@@ -109,62 +116,40 @@ KERNELSRC_CLEAN=${KERNELSRC_CLEAN:=false}
 KERNELSRC_CONFIG=${KERNELSRC_CONFIG:=true}
 KERNELSRC_PREBUILT=${KERNELSRC_PREBUILT:=false}
 
-# Image chroot path
-R=${BUILDDIR}/chroot
+# Reduce disk usage settings
+REDUCE_APT=${REDUCE_APT:=true}
+REDUCE_DOC=${REDUCE_DOC:=true}
+REDUCE_MAN=${REDUCE_MAN:=true}
+REDUCE_VIM=${REDUCE_VIM:=true}
+REDUCE_BASH=${REDUCE_BASH:=false}
+REDUCE_HWDB=${REDUCE_HWDB:=true}
+REDUCE_SSHD=${REDUCE_SSHD:=true}
+REDUCE_LOCALE=${REDUCE_LOCALE:=true}
+
+# Chroot scripts directory
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
-
-# Packages required for bootstrapping
-REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git-core"
-
-# Missing packages that need to be installed
-MISSING_PACKAGES=""
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo"
 
+# Packages required for bootstrapping
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git-core"
+MISSING_PACKAGES=""
+
 set +x
-
-# Are we running as root?
-if [ "$(id -u)" -ne "0" ] ; then
-  echo "error: this script must be executed with root privileges!"
-  exit 1
-fi
-
-# Check if ./bootstrap.d directory exists
-if [ ! -d "./bootstrap.d/" ] ; then
-  echo "error: './bootstrap.d' required directory not found. please reinstall the latest script version!"
-  exit 1
-fi
-
-# Check if ./files directory exists
-if [ ! -d "./files/" ] ; then
-  echo "error: './files' required directory not found. please reinstall the latest script version!"
-  exit 1
-fi
-
-# Check if specified KERNELSRC_DIR directory exists
-if [ -n "$KERNELSRC_DIR" ] && [ ! -d "$KERNELSRC_DIR" ] ; then
-  echo "error: ${KERNELSRC_DIR} (KERNELSRC_DIR) specified directory not found!"
-  exit 1
-fi
-
-# Check if specified CHROOT_SCRIPTS directory exists
-if [ -n "$CHROOT_SCRIPTS" ] && [ ! -d "$CHROOT_SCRIPTS" ] ; then
-   echo "error: ${CHROOT_SCRIPTS} (CHROOT_SCRIPTS) specified directory not found!"
-   exit 1
-fi
 
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
-
-  if [ "$KERNEL_MENUCONFIG" = true ] ; then
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} ncurses-dev"
-  fi
 fi
 
-# Check if all required packages are installed
+# Add libncurses5 to enable kernel menuconfig
+if [ "$KERNEL_MENUCONFIG" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses5-dev"
+fi
+
+# Check if all required packages are installed on the build system
 for package in $REQUIRED_PACKAGES ; do
   if [ "`dpkg-query -W -f='${Status}' $package`" != "install ok installed" ] ; then
     MISSING_PACKAGES="${MISSING_PACKAGES} $package"
@@ -178,13 +163,35 @@ if [ -n "$MISSING_PACKAGES" ] ; then
 
   echo -n "\ndo you want to install the missing packages right now? [y/n] "
   read confirm
-  if [ "$confirm" != "y" ] ; then
-    exit 1
-  fi
+  [ "$confirm" != "y" ] && exit 1
 fi
 
 # Make sure all required packages are installed
 apt-get -qq -y install ${REQUIRED_PACKAGES}
+
+# Check if ./bootstrap.d directory exists
+if [ ! -d "./bootstrap.d/" ] ; then
+  echo "error: './bootstrap.d' required directory not found!"
+  exit 1
+fi
+
+# Check if ./files directory exists
+if [ ! -d "./files/" ] ; then
+  echo "error: './files' required directory not found!"
+  exit 1
+fi
+
+# Check if specified KERNELSRC_DIR directory exists
+if [ -n "$KERNELSRC_DIR" ] && [ ! -d "$KERNELSRC_DIR" ] ; then
+  echo "error: '${KERNELSRC_DIR}' specified directory not found (KERNELSRC_DIR)!"
+  exit 1
+fi
+
+# Check if specified CHROOT_SCRIPTS directory exists
+if [ -n "$CHROOT_SCRIPTS" ] && [ ! -d "$CHROOT_SCRIPTS" ] ; then
+   echo "error: ${CHROOT_SCRIPTS} specified directory not found (CHROOT_SCRIPTS)!"
+   exit 1
+fi
 
 # Don't clobber an old build
 if [ -e "$BUILDDIR" ] ; then
@@ -197,13 +204,8 @@ mkdir -p "$R"
 
 # Check if build directory has enough of free disk space >512MB
 if [ "$(df --output=avail ${BUILDDIR} | sed "1d")" -le "524288" ] ; then
-  echo "error: ${BUILDDIR} not enough space left on this partition to generate the output image!"
+  echo "error: ${BUILDDIR} not enough space left to generate the output image!"
   exit 1
-fi
-
-# Warn if build directory has low free disk space <1024MB
-if [ "$(df --output=avail ${BUILDDIR} | sed "1d")" -le "1048576" ] ; then
-  echo `df -h --output=avail ${BUILDDIR} | sed "1 s|.*Avail|warning: $partition is low on free space:|"`
 fi
 
 set -x
@@ -267,30 +269,45 @@ if [ "$ENABLE_XORG" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},xorg"
 fi
 
-# Set KERNELSRC_CONFIG=true
+# Replace selected packages with smaller clones
+if [ "$ENABLE_REDUCE" = true ] ; then
+  # Add levee package instead of vim-tiny
+  if [ "$REDUCE_VIM" = true ] ; then
+    APT_INCLUDES="$(echo ${APT_INCLUDES} | sed "s/vim-tiny/levee/")"
+  fi
+
+  # Add dropbear package instead of openssh-server
+  if [ "$REDUCE_SSHD" = true ] ; then
+    APT_INCLUDES="$(echo ${APT_INCLUDES} | sed "s/openssh-server/dropbear/")"
+  fi
+fi
+
+# Configure kernel sources if no KERNELSRC_DIR
 if [ "$BUILD_KERNEL" = true ] && [ -z "$KERNELSRC_DIR" ] ; then
   KERNELSRC_CONFIG=true
 fi
 
-## MAIN bootstrap
+# Configure reduced kernel
+if [ "$KERNEL_REDUCE" = true ] ; then
+  KERNELSRC_CONFIG=false
+fi
+
+# Execute bootstrap scripts
 for SCRIPT in bootstrap.d/*.sh; do
-  # Execute bootstrap scripts (lexicographical order)
   head -n 3 "$SCRIPT"
   . "$SCRIPT"
 done
 
-## Custom bootstrap scripts
+## Execute custom bootstrap scripts
 if [ -d "custom.d" ] ; then
-  # Execute custom bootstrap scripts (lexicographical order)
   for SCRIPT in custom.d/*.sh; do
     . "$SCRIPT"
   done
 fi
 
-# Invoke custom scripts
+# Execute custom scripts inside the chroot
 if [ -n "$CHROOT_SCRIPTS" ] && [ -d "$CHROOT_SCRIPTS" ] ; then
   cp -r "${CHROOT_SCRIPTS}" "${R}/chroot_scripts"
-  # Execute scripts inside the chroot (lexicographical order)
   chroot_exec /bin/bash -x <<'EOF'
 for SCRIPT in /chroot_scripts/* ; do
   if [ -f $SCRIPT -a -x $SCRIPT ] ; then
@@ -303,41 +320,6 @@ fi
 
 # Remove apt-utils
 chroot_exec apt-get purge -qq -y --force-yes apt-utils
-
-# Reduce the image size by removing and compressing
-if [ "$ENABLE_REDUCE" = true ] ; then
-  # Install dpkg configuration fragment file
-  install_readonly files/dpkg/01nodoc "$R/etc/dpkg/dpkg.cfg.d/01nodoc"
-
-  # Install APT configuration fragment files
-  install_readonly files/apt/02nocache "$R/etc/apt/apt.conf.d/02nocache"
-  install_readonly files/apt/03compress "$R/etc/apt/apt.conf.d/03compress"
-  install_readonly files/apt/04norecommends "$R/etc/apt/apt.conf.d/04norecommends"
-
-  # Remove APT cache files
-  rm -fr "$R/var/cache/apt/pkgcache.bin"
-  rm -fr "$R/var/cache/apt/srcpkgcache.bin"
-
-  # Remove all doc and man files
-  find "$R/usr/share/doc" -depth -type f ! -name copyright | xargs rm || true
-  find "$R/usr/share/doc" -empty | xargs rmdir || true
-  rm -rf "$R/usr/share/man" "$R/usr/share/groff" "$R/usr/share/info" "$R/usr/share/lintian" "$R/usr/share/linda" "$R/var/cache/man"
-
-  # Remove all translation files
-  find "$R/usr/share/locale" -mindepth 1 -maxdepth 1 ! -name 'en' | xargs rm -r
-
-  # Clean APT list of repositories
-  rm -fr "$R/var/lib/apt/lists/*"
-  chroot_exec apt-get -qq -y update
-
-  # Remove GPU kernels
-  if [ "$ENABLE_MINGPU" = true ] ; then
-    rm -f "$R/boot/firmware/start.elf"
-    rm -f "$R/boot/firmware/fixup.dat"
-    rm -f "$R/boot/firmware/start_x.elf"
-    rm -f "$R/boot/firmware/fixup_x.dat"
-  fi
-fi
 
 # APT Cleanup
 chroot_exec apt-get -y clean

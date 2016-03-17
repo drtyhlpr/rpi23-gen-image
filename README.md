@@ -131,7 +131,7 @@ Install a user defined window manager for the X Window System. To make sure all 
 Use debootstrap script variant `minbase` which only includes essential packages and apt. This will reduce the disk usage by about 65 MB.
 
 ##### `ENABLE_REDUCE`=false
-Reduce the disk usage by deleting all man pages and doc files (harsh). APT will be configured to use compressed package repository lists and no package caching files. If `ENABLE_MINGPU`=true unnecessary start.elf and fixup.dat files will also be removed from the boot partition. This will make it possible to generate output OS images with about 160MB of used disk space. It's recommended to use this parameter in combination with `ENABLE_MINBASE`=true.
+Reduce the disk usage by deleting packages and files. See `REDUCE_*` parameters for detailed information.
 
 ##### `ENABLE_UBOOT`=false
 Replace default RPi2 second stage bootloader (bootcode.bin) with U-Boot bootloader. U-Boot can boot images via the network using the BOOTP/TFTP protocol.
@@ -165,6 +165,9 @@ Path to a directory with scripts that should be run in the chroot before the ima
 ##### `BUILD_KERNEL`=false
 Build and install the latest RPi2 Linux kernel. Currently only the default RPi2 kernel configuration is used. Detailed configuration parameters for customizing the kernel and minor bug fixes still need to get implemented. feel free to help.
 
+##### `KERNEL_REDUCE`=false
+Reduce the size of the generated kernel by removing unwanted device, network and filesystem drivers (experimental).
+
 ##### `KERNEL_THREADS`=1
 Number of parallel kernel building threads. If the parameter is left untouched the script will automatically determine the number of CPU cores to set the number of parallel threads to speed the kernel compilation.
 
@@ -188,6 +191,33 @@ Run `make bcm2709_defconfig` (and optional `make menuconfig`) to configure the k
 
 ##### `KERNELSRC_PREBUILT`=false
 With this parameter set to true the script expects the existing kernel sources directory to be already successfully cross-compiled. The parameters `KERNELSRC_CLEAN`, `KERNELSRC_CONFIG` and `KERNEL_MENUCONFIG` are ignored and no kernel compilation tasks are performed.
+
+#### Reduce disk usage:
+The following list of parameters is ignored if `ENABLE_REDUCE`=false.
+
+##### `REDUCE_APT`=true
+Configure APT to use compressed package repository lists and no package caching files.
+
+##### `REDUCE_DOC`=true
+Remove all doc files (harsh). Configure APT to not include doc files on future `apt-get` package installations.
+
+##### `REDUCE_MAN`=true
+Remove all man pages and info files (harsh).  Configure APT to not include man pages on future `apt-get` package installations.
+
+##### `REDUCE_VIM`=true
+Replace `vim-tiny` package by `levee` a tiny vim clone.
+
+##### `REDUCE_BASH`=false
+Remove `bash` package and switch to `dash` shell (experimental).
+
+##### `REDUCE_HWDB`=true
+Remove PCI related hwdb files (experimental).
+
+##### `REDUCE_SSHD`=true
+Replace `openssh-server` with dropbear.
+
+##### `REDUCE_LOCALE`=true
+Remove all `locale` translation files.
 
 ## Understanding the script
 The functions of this script that are required for the different stages of the bootstrapping are split up into single files located inside the `bootstrap.d` directory. During the bootstrapping every script in this directory gets executed in lexicographical order:
