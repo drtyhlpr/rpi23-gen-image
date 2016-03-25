@@ -10,6 +10,11 @@ cleanup (){
   sleep 3
   fuser -9 -k -v "$R"
 
+  # Clean up temporary .password file
+  if [ -r ".password" ] ; then
+    shred -zu .password
+  fi
+
   # Clean up all temporary mount points
   echo "removing temporary mount points ..."
   umount -l "$R/proc" 2> /dev/null

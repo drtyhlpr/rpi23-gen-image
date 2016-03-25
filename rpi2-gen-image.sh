@@ -452,6 +452,7 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
 
   # Setup password keyfile
   echo -n ${CRYPTFS_PASSWORD} > .password
+  chmod 600 .password
 
   # Initialize encrypted partition
   echo "YES" | cryptsetup luksFormat "${ROOT_LOOP}" -c "${CRYPTFS_CIPHER}" -s "${CRYPTFS_XTSKEYSIZE}" .password
