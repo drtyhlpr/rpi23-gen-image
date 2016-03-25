@@ -5,14 +5,14 @@ case "${ROOT_PART}" in
   mmcblk0*) ROOT_DEV=mmcblk0 ;;
   sda*)     ROOT_DEV=sda ;;
 esac
-if [ "$PART_NUM" = "$ROOT_PART" ]; then
+if [ "$PART_NUM" = "$ROOT_PART" ] ; then
   logger -t "rc.firstboot" "$ROOT_PART is not an SD card. Don't know how to expand"
   return 0
 fi
 
 # NOTE: the NOOBS partition layout confuses parted. For now, let's only
 # agree to work with a sufficiently simple partition layout
-if [ "$PART_NUM" -gt 2 ]; then
+if [ "$PART_NUM" -gt 2 ] ; then
   logger -t "rc.firstboot" "Your partition layout is not currently supported by this tool."
   return 0
 fi
@@ -24,14 +24,18 @@ fi
 
 # Get the starting offset of the root partition
 PART_START=$(parted /dev/${ROOT_DEV} -ms unit s p | grep "^${PART_NUM}" | cut -f 2 -d: | sed 's/[^0-9]//g')
-[ "$PART_START" ] || return 1
+if [ -z "$PART_START" ] ; then
+  logger -t "rc.firstboot" "${ROOT_DEV} unable to get starting sector of the partition"
+  return 1
+fi
 
 # Get the possible last sector for the root partition
 PART_LAST=$(fdisk -l /dev/${ROOT_DEV} | grep '^Disk.*sectors' | awk '{ print $7 - 1 }')
-[ "$PART_LAST" ] || return 1
+if [ -z "$PART_LAST" ] ; then
+  logger -t "rc.firstboot" "${ROOT_DEV} unable to get last sector of the partition"
+  return 1
+fi
 
-# Return value will likely be error for fdisk as it fails to reload the
-# partition table because the root fs is mounted
 ### Since rc.local is run with "sh -e", let's add "|| true" to prevent premature exit
 fdisk /dev/${ROOT_DEV} <<EOF2 || true
 p

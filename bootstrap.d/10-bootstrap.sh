@@ -13,11 +13,11 @@ else
 fi
 
 # Copy qemu emulator binary to chroot
-cp "${QEMU_BINARY}" "$R/usr/bin"
+install_exec "${QEMU_BINARY}" "${R}${QEMU_BINARY}"
 
 # Copy debian-archive-keyring.pgp
 mkdir -p "$R/usr/share/keyrings"
-cp /usr/share/keyrings/debian-archive-keyring.gpg "$R/usr/share/keyrings/debian-archive-keyring.gpg"
+install_readonly /usr/share/keyrings/debian-archive-keyring.gpg "$R/usr/share/keyrings/debian-archive-keyring.gpg"
 
 # Complete the bootstrapping process
 chroot_exec /debootstrap/debootstrap --second-stage

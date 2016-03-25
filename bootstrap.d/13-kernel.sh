@@ -110,24 +110,31 @@ if [ "$BUILD_KERNEL" = true ] ; then
   KERNEL_VERSION=`cat "$R/usr/src/linux/include/config/kernel.release"`
 
   # Copy kernel configuration file to the boot directory
-  cp "$R/usr/src/linux/.config" "$R/boot/config-${KERNEL_VERSION}"
+  install_readonly "$R/usr/src/linux/.config" "$R/boot/config-${KERNEL_VERSION}"
 
   # Copy dts and dtb device tree sources and binaries
   mkdir "$R/boot/firmware/overlays/"
-  cp "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/dts/"*.dtb "$R/boot/firmware/"
-  cp "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtb* "$R/boot/firmware/overlays/"
-  cp "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/dts/overlays/README" "$R/boot/firmware/overlays/"
+  install_readonly "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/dts/"*.dtb "$R/boot/firmware/"
+  install_readonly "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtb* "$R/boot/firmware/overlays/"
+  install_readonly "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/dts/overlays/README" "$R/boot/firmware/overlays/README"
 
-  # Convert kernel zImage and copy it to the boot directory
-  "$R/usr/src/linux/scripts/mkknlimg" "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/zImage" "$R/boot/firmware/kernel7.img"
+  # Copy zImage kernel to the boot directory
+  install_readonly "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/zImage" "$R/boot/firmware/kernel7.img"
 
   # Remove kernel sources
   if [ "$KERNEL_REMOVESRC" = true ] ; then
     rm -fr "$R/usr/src/linux"
   fi
 
-  # Install raspberry bootloader and flash-kernel packages
-  chroot_exec apt-get -qq -y --no-install-recommends install raspberrypi-bootloader-nokernel
+  # Install latest boot binaries from raspberry/firmware github
+  wget -q -O "$R/boot/firmware/bootcode.bin" https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin
+  wget -q -O "$R/boot/firmware/fixup_cd.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_cd.dat
+  wget -q -O "$R/boot/firmware/fixup.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat
+  wget -q -O "$R/boot/firmware/fixup_x.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_x.dat
+  wget -q -O "$R/boot/firmware/start_cd.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_cd.elf
+  wget -q -O "$R/boot/firmware/start.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start.elf
+  wget -q -O "$R/boot/firmware/start_x.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_x.elf
+
 else # BUILD_KERNEL=false
   # Kernel installation
   chroot_exec apt-get -qq -y --no-install-recommends install linux-image-"${COLLABORA_KERNEL}" raspberrypi-bootloader-nokernel
@@ -135,9 +142,15 @@ else # BUILD_KERNEL=false
   # Install flash-kernel last so it doesn't try (and fail) to detect the platform in the chroot
   chroot_exec apt-get -qq -y install flash-kernel
 
+  # Check if kernel installation was successful
   VMLINUZ="$(ls -1 $R/boot/vmlinuz-* | sort | tail -n 1)"
-  [ -z "$VMLINUZ" ] && exit 1
-  cp "$VMLINUZ" "$R/boot/firmware/kernel7.img"
+  if [ -z "$VMLINUZ" ] ; then
+    echo "error: kernel installation failed! (/boot/vmlinuz-* not found)"
+    cleanup
+    exit 1
+  fi
+  # Copy vmlinuz kernel to the boot directory
+  install_readonly "$VMLINUZ" "$R/boot/firmware/kernel7.img"
 fi
 
 # Setup firmware boot cmdline
@@ -160,12 +173,22 @@ fi
 # Install firmware boot cmdline
 echo "${CMDLINE}" > "$R/boot/firmware/cmdline.txt"
 
+# Add encrypted root partition to cmdline.txt
+if [ "$ENABLE_CRYPTFS" = true ] ; then
+    sed -i "s/mmcblk0p2/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/mmcblk0p2:${CRYPTFS_MAPPING}/" "$R/boot/firmware/cmdline.txt"
+fi
+
 # Install firmware config
 install_readonly files/boot/config.txt "$R/boot/firmware/config.txt"
 
 # Setup minimal GPU memory allocation size: 16MB (no X)
 if [ "$ENABLE_MINGPU" = true ] ; then
   echo "gpu_mem=16" >> "$R/boot/firmware/config.txt"
+fi
+
+# Setup boot with initramfs
+if [ "$ENABLE_INITRAMFS" = true ] ; then
+  echo "initramfs initramfs-${KERNEL_VERSION} followkernel" >> "$R/boot/firmware/config.txt"
 fi
 
 # Create firmware configuration and cmdline symlinks
@@ -192,8 +215,37 @@ install_readonly files/modules/raspi-blacklist.conf "$R/etc/modprobe.d/raspi-bla
 
 # Install and setup fstab
 install_readonly files/mount/fstab "$R/etc/fstab"
+
+# Add usb/sda disk root partition to fstab
 if [ "$ENABLE_SPLITFS" = true ] ; then
-  sed -i 's/mmcblk0p2/sda1/' "$R/etc/fstab"
+  sed -i "s/mmcblk0p2/sda1/" "$R/etc/fstab"
+fi
+
+# Add encrypted root partition to fstab and crypttab
+if [ "$ENABLE_CRYPTFS" = true ] ; then
+  # Replace fstab root partition with encrypted partition mapping
+  sed -i "s/mmcblk0p2/mapper\/${CRYPTFS_MAPPING}/" "$R/etc/fstab"
+
+  # Add encrypted partition to crypttab and fstab
+  install_readonly files/mount/crypttab "$R/etc/crypttab"
+  echo "${CRYPTFS_MAPPING} /dev/mmcblk0p2 none luks" >> "$R/etc/crypttab"
+fi
+
+# Generate initramfs file
+if [ "$ENABLE_INITRAMFS" = true ] ; then
+  if [ "$ENABLE_CRYPTFS" = true ] ; then
+    # Dummy mapping required by mkinitramfs
+    echo "0 1 crypt $(echo ${CRYPTFS_CIPHER} | cut -d ':' -f 1) ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff 0 7:0 4096" | chroot_exec dmsetup create "${CRYPTFS_MAPPING}"
+
+    # Generate initramfs with encrypted root partition support
+    chroot_exec mkinitramfs -o "/boot/firmware/initramfs-${KERNEL_VERSION}" "${KERNEL_VERSION}"
+
+    # Remove dummy mapping
+    chroot_exec cryptsetup close "${CRYPTFS_MAPPING}"
+  else
+    # Generate initramfs without encrypted root partition support
+    chroot_exec mkinitramfs -o "/boot/firmware/initramfs-${KERNEL_VERSION}" "${KERNEL_VERSION}"
+  fi
 fi
 
 # Install sysctl.d configuration files

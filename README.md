@@ -21,6 +21,7 @@ ENABLE_MINBASE=true ./rpi2-gen-image.sh
 BUILD_KERNEL=true ENABLE_MINBASE=true ENABLE_IPV6=false ./rpi2-gen-image.sh
 BUILD_KERNEL=true KERNELSRC_DIR=/tmp/linux ./rpi2-gen-image.sh
 ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi2-gen-image.sh
+ENABLE_CRYPTFS=true CRYPTFS_PASSWORD=changeme EXPANDROOT=false ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi2-gen-image.sh
 ```
 
 #### APT settings:
@@ -31,7 +32,7 @@ Set Debian packages server address. Choose a server from the list of Debian worl
 Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once.
 
 ##### `APT_INCLUDES`=""
-A comma seperated list of additional packages to be installed during bootstrapping.
+A comma separated list of additional packages to be installed during bootstrapping.
 
 #### General system settings:
 ##### `HOSTNAME`="rpi2-jessie"
@@ -65,13 +66,13 @@ Set the supported variant(s) of the keyboard layout(s).
 Set extra xkb configuration options.
 
 #### Networking settings (DHCP):
-This setting is used to set up networking auto configuration in `/etc/systemd/network/eth.network`.
+This parameter is used to set up networking auto configuration in `/etc/systemd/network/eth.network`.
 
 #####`ENABLE_DHCP`=true
 Set the system to use DHCP. This requires an DHCP server.
 
 #### Networking settings (static):
-These settings are used to set up a static networking configuration in /etc/systemd/network/eth.network. The following static networking settings are only supported if `ENABLE_DHCP` was set to `false`.
+These parameters are used to set up a static networking configuration in /etc/systemd/network/eth.network. The following static networking parameters are only supported if `ENABLE_DHCP` was set to `false`.
 
 #####`NET_ADDRESS`=""
 Set a static IPv4 or IPv6 address and its prefix, separated by "/", eg. "192.169.0.3/24".
@@ -131,7 +132,7 @@ Install a user defined window manager for the X Window System. To make sure all 
 Use debootstrap script variant `minbase` which only includes essential packages and apt. This will reduce the disk usage by about 65 MB.
 
 ##### `ENABLE_REDUCE`=false
-Reduce the disk usage by deleting packages and files. See `REDUCE_*` parameters for detailed information.
+Reduce the disk space usage by deleting packages and files. See `REDUCE_*` parameters for detailed information.
 
 ##### `ENABLE_UBOOT`=false
 Replace default RPi2 second stage bootloader (bootcode.bin) with U-Boot bootloader. U-Boot can boot images via the network using the BOOTP/TFTP protocol.
@@ -159,11 +160,14 @@ Enable IPv4/IPv6 network stack hardening settings.
 Enable having root partition on an USB drive by creating two image files: one for the `/boot/firmware` mount point, and another for `/`.
 
 ##### `CHROOT_SCRIPTS`=""
-Path to a directory with scripts that should be run in the chroot before the image is finally built. Every executable file in this direcory is run in lexicographical order.
+Path to a directory with scripts that should be run in the chroot before the image is finally built. Every executable file in this directory is run in lexicographical order.
+
+##### `ENABLE_INITRAMFS`=false
+Create an initramfs that that will be loaded during the Linux startup process. `ENABLE_INITRAMFS` will automatically get enabled if `ENABLE_CRYPTFS`=true. This parameter will be ignored if `BUILD_KERNEL`=false.
 
 #### Kernel compilation:
 ##### `BUILD_KERNEL`=false
-Build and install the latest RPi2 Linux kernel. Currently only the default RPi2 kernel configuration is used. Detailed configuration parameters for customizing the kernel and minor bug fixes still need to get implemented. feel free to help.
+Build and install the latest RPi2 Linux kernel. Currently only the default RPi2 kernel configuration is used.
 
 ##### `KERNEL_REDUCE`=false
 Reduce the size of the generated kernel by removing unwanted device, network and filesystem drivers (experimental).
@@ -184,10 +188,10 @@ Remove all kernel sources from the generated OS image after it was built and ins
 Path to a directory of [RaspberryPi Linux kernel sources](https://github.com/raspberrypi/linux) that will be copied, configured, build and installed inside the chroot.
 
 ##### `KERNELSRC_CLEAN`=false
-Clean the existing kernel sources directory `KERNELSRC_DIR` (using `make mrproper`) after it was copied to the chroot and before the compilation of the kernel has started. This setting will be ignored if no `KERNELSRC_DIR` was specified or if `KERNELSRC_PREBUILT`=true.
+Clean the existing kernel sources directory `KERNELSRC_DIR` (using `make mrproper`) after it was copied to the chroot and before the compilation of the kernel has started. This parameter will be ignored if no `KERNELSRC_DIR` was specified or if `KERNELSRC_PREBUILT`=true.
 
 ##### `KERNELSRC_CONFIG`=true
-Run `make bcm2709_defconfig` (and optional `make menuconfig`) to configure the kernel sources before building. This setting is automatically set to `true` if no existing kernel sources directory was specified using `KERNELSRC_DIR`. This settings is ignored if `KERNELSRC_PREBUILT`=true.
+Run `make bcm2709_defconfig` (and optional `make menuconfig`) to configure the kernel sources before building. This parameter is automatically set to `true` if no existing kernel sources directory was specified using `KERNELSRC_DIR`. This parameter is ignored if `KERNELSRC_PREBUILT`=true.
 
 ##### `KERNELSRC_PREBUILT`=false
 With this parameter set to true the script expects the existing kernel sources directory to be already successfully cross-compiled. The parameters `KERNELSRC_CLEAN`, `KERNELSRC_CONFIG` and `KERNEL_MENUCONFIG` are ignored and no kernel compilation tasks are performed.
@@ -204,7 +208,7 @@ Remove all doc files (harsh). Configure APT to not include doc files on future `
 ##### `REDUCE_MAN`=true
 Remove all man pages and info files (harsh).  Configure APT to not include man pages on future `apt-get` package installations.
 
-##### `REDUCE_VIM`=true
+##### `REDUCE_VIM`=false
 Replace `vim-tiny` package by `levee` a tiny vim clone.
 
 ##### `REDUCE_BASH`=false
@@ -214,10 +218,27 @@ Remove `bash` package and switch to `dash` shell (experimental).
 Remove PCI related hwdb files (experimental).
 
 ##### `REDUCE_SSHD`=true
-Replace `openssh-server` with dropbear.
+Replace `openssh-server` with `dropbear`.
 
 ##### `REDUCE_LOCALE`=true
 Remove all `locale` translation files.
+
+#### Encrypted root partition:
+
+##### `ENABLE_CRYPTFS`=false
+Enable full system encryption with dm-crypt. Setup a fully LUKS encrypted root partition (aes-xts-plain64:sha512) and generate required initramfs. The /boot directory will not be encrypted. This parameter will be ignored if `BUILD_KERNEL`=false. `ENABLE_CRYPTFS` is experimental. `ENABLE_UBOOT`, `ENABLE_SPLITFS`, `EXPANDROOT` and SSH-to-initramfs are currently not supported but will be soon - feel free to help.
+
+##### `CRYPTFS_PASSWORD`=""
+Set password of the encrypted root partition. This parameter is mandatory if `ENABLE_CRYPTFS`=true.
+
+##### `CRYPTFS_MAPPING`="secure"
+Set name of dm-crypt managed device-mapper mapping.
+
+##### `CRYPTFS_CIPHER`="aes-xts-plain64:sha512"
+Set cipher specification string. `aes-xts*` ciphers are strongly recommended.
+
+##### `CRYPTFS_XTSKEYSIZE`=512
+Sets key size in bits. The argument has to be a multiple of 8.
 
 ## Understanding the script
 The functions of this script that are required for the different stages of the bootstrapping are split up into single files located inside the `bootstrap.d` directory. During the bootstrapping every script in this directory gets executed in lexicographical order:
@@ -235,11 +256,13 @@ The functions of this script that are required for the different stages of the b
 | `41-uboot.sh` | Build and Setup U-Boot |
 | `42-fbturbo.sh` | Build and Setup fbturbo Xorg driver |
 | `50-firstboot.sh` | First boot actions |
+| `99-reduce.sh` | Reduce the disk space usage |
 
 All the required configuration files that will be copied to the generated OS image are located inside the `files` directory. It is not recommended to modify these configuration files manually.
 
 | Directory | Description |
 | --- | --- |
+| `apt` | APT management configuration files |
 | `boot` | Boot and RPi2 configuration files |
 | `dpkg` | Package Manager configuration |
 | `firstboot` | Scripts that get executed on first boot  |

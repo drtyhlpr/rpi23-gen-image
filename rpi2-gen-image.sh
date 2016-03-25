@@ -23,7 +23,7 @@ fi
 
 # Check if ./functions.sh script exists
 if [ ! -r "./functions.sh" ] ; then
-  echo "error: './functions.sh' required script not found. please reinstall the latest script version!"
+  echo "error: './functions.sh' required script not found!"
   exit 1
 fi
 
@@ -45,9 +45,9 @@ KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
 QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
 
 # Build directories
-BASEDIR=$(pwd)/images/${RELEASE}
-BUILDDIR=${BASEDIR}/build
-R=${BUILDDIR}/chroot
+BASEDIR="$(pwd)/images/${RELEASE}"
+BUILDDIR="${BASEDIR}/build"
+R="${BUILDDIR}/chroot"
 
 # General settings
 HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
@@ -101,6 +101,7 @@ ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
+ENABLE_INITRAMFS=${ENABLE_INITRAMFS:=false}
 
 # Kernel compilation settings
 BUILD_KERNEL=${BUILD_KERNEL:=false}
@@ -120,11 +121,21 @@ KERNELSRC_PREBUILT=${KERNELSRC_PREBUILT:=false}
 REDUCE_APT=${REDUCE_APT:=true}
 REDUCE_DOC=${REDUCE_DOC:=true}
 REDUCE_MAN=${REDUCE_MAN:=true}
-REDUCE_VIM=${REDUCE_VIM:=true}
+REDUCE_VIM=${REDUCE_VIM:=false}
 REDUCE_BASH=${REDUCE_BASH:=false}
 REDUCE_HWDB=${REDUCE_HWDB:=true}
 REDUCE_SSHD=${REDUCE_SSHD:=true}
 REDUCE_LOCALE=${REDUCE_LOCALE:=true}
+
+# Encrypted filesystem settings
+ENABLE_CRYPTFS=${ENABLE_CRYPTFS:=false}
+CRYPTFS_PASSWORD=${CRYPTFS_PASSWORD:=""}
+CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
+CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
+CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
+
+# Stop the Crypto Wars
+DISABLE_FBI=${DISABLE_FBI:=false}
 
 # Chroot scripts directory
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
@@ -147,6 +158,28 @@ fi
 # Add libncurses5 to enable kernel menuconfig
 if [ "$KERNEL_MENUCONFIG" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses5-dev"
+fi
+
+# Stop the Crypto Wars
+if [ "$DISABLE_FBI" = true ] ; then
+  ENABLE_CRYPTFS=true
+fi
+
+# Add cryptsetup package to enable filesystem encryption
+if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
+  APT_INCLUDES="${APT_INCLUDES},cryptsetup"
+
+  if [ -z "$CRYPTFS_PASSWORD" ] ; then
+    echo "error: no password defined (CRYPTFS_PASSWORD)!"
+    exit 1
+  fi
+  ENABLE_INITRAMFS=true
+fi
+
+# Add initramfs generation tools
+if [ "$ENABLE_INITRAMFS" = true ] && [ "$BUILD_KERNEL" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},initramfs-tools"
 fi
 
 # Check if all required packages are installed on the build system
@@ -193,6 +226,12 @@ if [ -n "$CHROOT_SCRIPTS" ] && [ ! -d "$CHROOT_SCRIPTS" ] ; then
    exit 1
 fi
 
+# Check if specified device mapping already exists (will be used by cryptsetup)
+if [ -r "/dev/mapping/${CRYPTFS_MAPPING}" ] ; then
+  echo "error: mapping /dev/mapping/${CRYPTFS_MAPPING} already exists, not proceeding"
+  exit 1
+fi
+
 # Don't clobber an old build
 if [ -e "$BUILDDIR" ] ; then
   echo "error: directory ${BUILDDIR} already exists, not proceeding"
@@ -215,7 +254,7 @@ trap cleanup 0 1 2 3 6
 
 # Add required packages for the minbase installation
 if [ "$ENABLE_MINBASE" = true ] ; then
-  APT_INCLUDES="${APT_INCLUDES},vim-tiny,netbase,net-tools"
+  APT_INCLUDES="${APT_INCLUDES},vim-tiny,netbase,net-tools,ifupdown"
 else
   APT_INCLUDES="${APT_INCLUDES},locales,keyboard-configuration,console-setup"
 fi
@@ -321,6 +360,11 @@ fi
 # Remove apt-utils
 chroot_exec apt-get purge -qq -y --force-yes apt-utils
 
+# Generate required machine-id
+MACHINE_ID=$(dbus-uuidgen)
+echo -n "${MACHINE_ID}" > "$R/var/lib/dbus/machine-id"
+echo -n "${MACHINE_ID}" > "$R/etc/machine-id"
+
 # APT Cleanup
 chroot_exec apt-get -y clean
 chroot_exec apt-get -y autoclean
@@ -331,19 +375,21 @@ umount -l "$R/proc"
 umount -l "$R/sys"
 
 # Clean up directories
-rm -rf "$R/run"
+rm -rf "$R/run/*"
 rm -rf "$R/tmp/*"
 
 # Clean up files
+rm -f "$R/etc/ssh/ssh_host_*"
+rm -f "$R/etc/dropbear/dropbear_*"
 rm -f "$R/etc/apt/sources.list.save"
 rm -f "$R/etc/resolvconf/resolv.conf.d/original"
 rm -f "$R/etc/*-"
 rm -f "$R/root/.bash_history"
 rm -f "$R/var/lib/urandom/random-seed"
-rm -f "$R/var/lib/dbus/machine-id"
-rm -f "$R/etc/machine-id"
 rm -f "$R/etc/apt/apt.conf.d/10proxy"
 rm -f "$R/etc/resolv.conf"
+rm -f "$R/initrd.img"
+rm -f "$R/vmlinuz"
 rm -f "${R}${QEMU_BINARY}"
 
 # Calculate size of the chroot directory in KB
@@ -371,41 +417,56 @@ if [ "$ENABLE_SPLITFS" = true ] ; then
   dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" bs=512 count=0 seek=${FRMW_SECTORS}
   dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-root.img" bs=512 count=${TABLE_SECTORS}
   dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-root.img" bs=512 count=0 seek=${ROOT_SECTORS}
-  # Write partition tables
-  sfdisk -q -L -f "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" <<EOM
-unit: sectors
 
-1 : start=   ${TABLE_SECTORS}, size=   ${FRMW_SECTORS}, Id= c, bootable
-2 : start=                  0, size=                 0, Id= 0
-3 : start=                  0, size=                 0, Id= 0
-4 : start=                  0, size=                 0, Id= 0
+  # Write firmware/boot partition tables
+  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" 2> /dev/null <<EOM
+${TABLE_SECTORS},${FRMW_SECTORS},c,*
 EOM
-  sfdisk -q -L -f "$BASEDIR/${DATE}-debian-${RELEASE}-root.img" <<EOM
-unit: sectors
 
-1 : start=   ${TABLE_SECTORS}, size=   ${ROOT_SECTORS}, Id=83
-2 : start=                  0, size=                 0, Id= 0
-3 : start=                  0, size=                 0, Id= 0
-4 : start=                  0, size=                 0, Id= 0
+  # Write root partition table
+  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-debian-${RELEASE}-root.img" 2> /dev/null <<EOM
+${TABLE_SECTORS},${ROOT_SECTORS},83
 EOM
+
   # Setup temporary loop devices
   FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-frmw.img)"
   ROOT_LOOP="$(losetup -o 1M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-root.img)"
-else
+else # ENABLE_SPLITFS=false
   dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=${TABLE_SECTORS}
   dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=0 seek=${IMAGE_SECTORS}
-  # Write partition table
-  sfdisk -q -f "$BASEDIR/${DATE}-debian-${RELEASE}.img" <<EOM
-unit: sectors
 
-1 : start=   ${TABLE_SECTORS}, size=   ${FRMW_SECTORS}, Id= c, bootable
-2 : start=     ${ROOT_OFFSET}, size=   ${ROOT_SECTORS}, Id=83
-3 : start=                  0, size=                 0, Id= 0
-4 : start=                  0, size=                 0, Id= 0
+  # Write partition table
+  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-debian-${RELEASE}.img" 2> /dev/null <<EOM
+${TABLE_SECTORS},${FRMW_SECTORS},c,*
+${ROOT_OFFSET},${ROOT_SECTORS},83
 EOM
+
   # Setup temporary loop devices
   FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
   ROOT_LOOP="$(losetup -o 65M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
+fi
+
+if [ "$ENABLE_CRYPTFS" = true ] ; then
+  # Create dummy ext4 fs
+  mkfs.ext4 "$ROOT_LOOP"
+
+  # Setup password keyfile
+  echo -n ${CRYPTFS_PASSWORD} > .password
+
+  # Initialize encrypted partition
+  echo "YES" | cryptsetup luksFormat "${ROOT_LOOP}" -c "${CRYPTFS_CIPHER}" -s "${CRYPTFS_XTSKEYSIZE}" .password
+
+  # Open encrypted partition and setup mapping
+  cryptsetup luksOpen "${ROOT_LOOP}" -d .password "${CRYPTFS_MAPPING}"
+
+  # Secure delete password keyfile
+  shred -zu .password
+
+  # Update temporary loop device
+  ROOT_LOOP="/dev/mapper/${CRYPTFS_MAPPING}"
+
+  # Wipe encrypted partition (encryption cipher is used for randomness)
+  dd if=/dev/zero of="${ROOT_LOOP}" bs=512 count=$(blockdev --getsz "${ROOT_LOOP}")
 fi
 
 # Build filesystems

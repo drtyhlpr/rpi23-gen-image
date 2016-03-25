@@ -19,7 +19,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   chroot_exec make -C /tmp/u-boot/ rpi_2_defconfig all
 
   # Copy compiled bootloader binary and set config.txt to load it
-  cp "$R/tmp/u-boot/u-boot.bin" "$R/boot/firmware/"
+  install_readonly "$R/tmp/u-boot/u-boot.bin" "$R/boot/firmware/u-boot.bin"
   printf "\n# boot u-boot kernel\nkernel=u-boot.bin\n" >> "$R/boot/firmware/config.txt"
 
   # Install and setup U-Boot command file

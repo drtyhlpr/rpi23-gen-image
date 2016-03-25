@@ -66,6 +66,12 @@ if [ "$ENABLE_REDUCE" = true ] ; then
     rm -f "$R/boot/firmware/fixup_x.dat"
   fi
 
+  # Remove kernel and initrd from /boot (already in /boot/firmware)
+  if [ "$BUILD_KERNEL" = false ] ; then
+    rm -r "$R/boot/vmlinuz--*"
+    rm -r "$R/boot/initrd.img-*"
+  fi
+
   # Clean APT list of repositories
   rm -fr "$R/var/lib/apt/lists/*"
   chroot_exec apt-get -qq -y update
