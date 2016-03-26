@@ -145,7 +145,7 @@ APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo"
 
 # Packages required for bootstrapping
-REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git-core"
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git"
 MISSING_PACKAGES=""
 
 set +x
