@@ -118,8 +118,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
   install_readonly "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtb* "$R/boot/firmware/overlays/"
   install_readonly "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/dts/overlays/README" "$R/boot/firmware/overlays/README"
 
-  # Copy zImage kernel to the boot directory
-  install_readonly "$R/usr/src/linux/arch/${KERNEL_ARCH}/boot/zImage" "$R/boot/firmware/kernel7.img"
+  # Convert and copy zImage kernel to the boot directory
+  "$R/usr/src/linux/scripts/mkknlimg" "$R/usr/src/linux/arch/arm/boot/zImage" "$R/boot/firmware/kernel7.img"
 
   # Remove kernel sources
   if [ "$KERNEL_REMOVESRC" = true ] ; then
@@ -128,11 +128,11 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Install latest boot binaries from raspberry/firmware github
   wget -q -O "$R/boot/firmware/bootcode.bin" https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin
-  wget -q -O "$R/boot/firmware/fixup_cd.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_cd.dat
   wget -q -O "$R/boot/firmware/fixup.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat
+  wget -q -O "$R/boot/firmware/fixup_cd.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_cd.dat
   wget -q -O "$R/boot/firmware/fixup_x.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_x.dat
-  wget -q -O "$R/boot/firmware/start_cd.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_cd.elf
   wget -q -O "$R/boot/firmware/start.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start.elf
+  wget -q -O "$R/boot/firmware/start_cd.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_cd.elf
   wget -q -O "$R/boot/firmware/start_x.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_x.elf
 
 else # BUILD_KERNEL=false
