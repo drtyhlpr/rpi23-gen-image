@@ -1,3 +1,6 @@
+# Set device tree fdtfile
+setenv dtbfile bcm2709-rpi-2-b.dtb
+
 # Tell Linux that it is booting on a Raspberry Pi2
 setenv machid 0x00000c42
 
@@ -6,6 +9,7 @@ saveenv
 
 # Load the existing Linux kernel into RAM
 fatload mmc 0:1 ${kernel_addr_r} kernel7.img
+fatload mmc 0:1 ${fdt_addr_r} ${dtbfile}
+fatload mmc 0:1 ${ramdisk_addr_r} ${initramfs}
 
 # Boot the kernel we have just loaded
-bootz ${kernel_addr_r}

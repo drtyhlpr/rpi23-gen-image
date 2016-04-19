@@ -5,7 +5,7 @@
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
 
-  ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git-core```
+  ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git```
 
 ## Command-line parameters
 The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi2-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi2-gen-image.sh` script.
@@ -226,7 +226,7 @@ Remove all `locale` translation files.
 #### Encrypted root partition:
 
 ##### `ENABLE_CRYPTFS`=false
-Enable full system encryption with dm-crypt. Setup a fully LUKS encrypted root partition (aes-xts-plain64:sha512) and generate required initramfs. The /boot directory will not be encrypted. This parameter will be ignored if `BUILD_KERNEL`=false. `ENABLE_CRYPTFS` is experimental. `ENABLE_UBOOT`, `ENABLE_SPLITFS`, `EXPANDROOT` and SSH-to-initramfs are currently not supported but will be soon - feel free to help.
+Enable full system encryption with dm-crypt. Setup a fully LUKS encrypted root partition (aes-xts-plain64:sha512) and generate required initramfs. The /boot directory will not be encrypted. This parameter will be ignored if `BUILD_KERNEL`=false. `ENABLE_CRYPTFS` is experimental. SSH-to-initramfs is currently not supported but will be soon - feel free to help.
 
 ##### `CRYPTFS_PASSWORD`=""
 Set password of the encrypted root partition. This parameter is mandatory if `ENABLE_CRYPTFS`=true.
@@ -266,6 +266,7 @@ All the required configuration files that will be copied to the generated OS ima
 | `boot` | Boot and RPi2 configuration files |
 | `dpkg` | Package Manager configuration |
 | `firstboot` | Scripts that get executed on first boot  |
+| `initramfs` | Initramfs scripts |
 | `iptables` | Firewall configuration files |
 | `locales` | Locales configuration |
 | `modules` | Kernel Modules configuration |

@@ -1,9 +1,28 @@
-logger -t "rc.firstboot" "Expanding root partition"
+#!/bin/sh
+# expand_encrypted_rootfs initramfs-tools boot script
+
+# dependencies: grep awk cut tail fdisk parted e2fsck resize2fs
+
+set -e
+
+# Wait for USB devices to be ready
+sleep 5
+
+# Use initramfs utility functions
+if [ -r "/scripts/functions" ] ; then
+  . /scripts/functions
+fi
+
+# Check for cryptdevice variable
+if [ -z "$cryptdevice" ] ; then
+  echo "unable to get cryptdevice variable (init-premount)"
+  return 1
+fi
 
 # Detect root partition device
-ROOT_PART=$(mount | sed -n 's|^/dev/\(.*\) on / .*|\1|p')
+ROOT_PART=$(echo $cryptdevice | awk -F"/|:" '{ print $3 }')
 if [ -z "$ROOT_PART" ] ; then
-  log_warning_msg "unable to detect root partition device"
+  log_warning_msg "unable to detect encrypted root partition device (cryptdevice)"
   return 1
 fi
 
@@ -16,40 +35,40 @@ esac
 # Check detected root partition name
 PART_NUM=$(echo ${ROOT_PART} | grep -o '[1-9][0-9]*$')
 if [ "$PART_NUM" = "$ROOT_PART" ] ; then
-  logger -t "rc.firstboot" "$ROOT_PART is not an SD card. Don't know how to expand"
-  return 0
+  log_warning_msg "$ROOT_PART is not an SD card. Don't know how to expand"
+  return 1
 fi
 
 # NOTE: the NOOBS partition layout confuses parted. For now, let's only
 # agree to work with a sufficiently simple partition layout
 if [ "$PART_NUM" -gt 2 ] ; then
-  logger -t "rc.firstboot" "Your partition layout is not currently supported by this tool."
-  return 0
+  log_warning_msg "Your partition layout is not currently supported by this tool."
+  return 1
 fi
 
 # Check if last partition number
 LAST_PART_NUM=$(parted /dev/${ROOT_DEV} -ms unit s p | tail -n 1 | cut -f 1 -d:)
 if [ $LAST_PART_NUM -ne $PART_NUM ]; then
-  logger -t "rc.firstboot" "$ROOT_PART is not the last partition. Don't know how to expand"
-  return 0
+  log_warning_msg "$ROOT_PART is not the last partition. Don't know how to expand"
+  return 1
 fi
 
 # Get the starting offset of the root partition
 PART_START=$(parted /dev/${ROOT_DEV} -ms unit s p | grep "^${PART_NUM}" | cut -f 2 -d: | sed 's/[^0-9]//g')
 if [ -z "$PART_START" ] ; then
-  logger -t "rc.firstboot" "${ROOT_DEV} unable to get starting sector of the partition"
+  log_warning_msg "${ROOT_DEV} unable to get starting sector of the partition"
   return 1
 fi
 
 # Get the possible last sector for the root partition
 PART_LAST=$(fdisk -l /dev/${ROOT_DEV} | grep '^Disk.*sectors' | awk '{ print $7 - 1 }')
 if [ -z "$PART_LAST" ] ; then
-  logger -t "rc.firstboot" "${ROOT_DEV} unable to get last sector of the partition"
+  log_warning_msg "${ROOT_DEV} unable to get last sector of the partition"
   return 1
 fi
 
 ### Since rc.local is run with "sh -e", let's add "|| true" to prevent premature exit
-fdisk /dev/${ROOT_DEV} <<EOF2 || true
+fdisk /dev/${ROOT_DEV} 2> /dev/null <<EOF2 || true
 p
 d
 $PART_NUM
@@ -62,7 +81,5 @@ p
 w
 EOF2
 
-# Reload the partition table, resize root filesystem then remove resizing code from this file
-partprobe &&
-  resize2fs /dev/${ROOT_PART} &&
-  logger -t "rc.firstboot" "Root partition successfully resized."
+partprobe
+log_success_msg "Root partition successfully resized."

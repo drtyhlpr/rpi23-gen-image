@@ -42,12 +42,20 @@ RELEASE_ARCH=${RELEASE_ARCH:=armhf}
 CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
 COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
 KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
+KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
+DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
+UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
 QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
 
 # Build directories
 BASEDIR="$(pwd)/images/${RELEASE}"
 BUILDDIR="${BASEDIR}/build"
+
+# Chroot directories
 R="${BUILDDIR}/chroot"
+ETCDIR="${R}/etc"
+BOOTDIR="${R}/boot/firmware"
+KERNELDIR="${R}/usr/src/linux"
 
 # General settings
 HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
@@ -239,7 +247,7 @@ if [ -e "$BUILDDIR" ] ; then
 fi
 
 # Setup chroot directory
-mkdir -p "$R"
+mkdir -p "${R}"
 
 # Check if build directory has enough of free disk space >512MB
 if [ "$(df --output=avail ${BUILDDIR} | sed "1d")" -le "524288" ] ; then
@@ -354,7 +362,7 @@ for SCRIPT in /chroot_scripts/* ; do
   fi
 done
 EOF
-  rm -rf "$R/chroot_scripts"
+  rm -rf "${R}/chroot_scripts"
 fi
 
 # Remove apt-utils
@@ -362,8 +370,8 @@ chroot_exec apt-get purge -qq -y --force-yes apt-utils
 
 # Generate required machine-id
 MACHINE_ID=$(dbus-uuidgen)
-echo -n "${MACHINE_ID}" > "$R/var/lib/dbus/machine-id"
-echo -n "${MACHINE_ID}" > "$R/etc/machine-id"
+echo -n "${MACHINE_ID}" > "${R}/var/lib/dbus/machine-id"
+echo -n "${MACHINE_ID}" > "${ETCDIR}/machine-id"
 
 # APT Cleanup
 chroot_exec apt-get -y clean
@@ -371,29 +379,29 @@ chroot_exec apt-get -y autoclean
 chroot_exec apt-get -y autoremove
 
 # Unmount mounted filesystems
-umount -l "$R/proc"
-umount -l "$R/sys"
+umount -l "${R}/proc"
+umount -l "${R}/sys"
 
 # Clean up directories
-rm -rf "$R/run/*"
-rm -rf "$R/tmp/*"
+rm -rf "${R}/run/*"
+rm -rf "${R}/tmp/*"
 
 # Clean up files
-rm -f "$R/etc/ssh/ssh_host_*"
-rm -f "$R/etc/dropbear/dropbear_*"
-rm -f "$R/etc/apt/sources.list.save"
-rm -f "$R/etc/resolvconf/resolv.conf.d/original"
-rm -f "$R/etc/*-"
-rm -f "$R/root/.bash_history"
-rm -f "$R/var/lib/urandom/random-seed"
-rm -f "$R/etc/apt/apt.conf.d/10proxy"
-rm -f "$R/etc/resolv.conf"
-rm -f "$R/initrd.img"
-rm -f "$R/vmlinuz"
+rm -f "${ETCDIR}/ssh/ssh_host_*"
+rm -f "${ETCDIR}/dropbear/dropbear_*"
+rm -f "${ETCDIR}/apt/sources.list.save"
+rm -f "${ETCDIR}/resolvconf/resolv.conf.d/original"
+rm -f "${ETCDIR}/*-"
+rm -f "${ETCDIR}/apt/apt.conf.d/10proxy"
+rm -f "${ETCDIR}/resolv.conf"
+rm -f "${R}/root/.bash_history"
+rm -f "${R}/var/lib/urandom/random-seed"
+rm -f "${R}/initrd.img"
+rm -f "${R}/vmlinuz"
 rm -f "${R}${QEMU_BINARY}"
 
 # Calculate size of the chroot directory in KB
-CHROOT_SIZE=$(expr `du -s "$R" | awk '{ print $1 }'`)
+CHROOT_SIZE=$(expr `du -s "${R}" | awk '{ print $1 }'`)
 
 # Calculate the amount of needed 512 Byte sectors
 TABLE_SECTORS=$(expr 1 \* 1024 \* 1024 \/ 512)
@@ -482,7 +490,7 @@ mkdir -p "$BUILDDIR/mount/boot/firmware"
 mount "$FRMW_LOOP" "$BUILDDIR/mount/boot/firmware"
 
 # Copy all files from the chroot to the loop device mount point directory
-rsync -a "$R/" "$BUILDDIR/mount/"
+rsync -a "${R}/" "$BUILDDIR/mount/"
 
 # Unmount all temporary loop devices and mount points
 cleanup

@@ -19,7 +19,7 @@ if [ "$ENABLE_ROOT" = true ] ; then
   chroot_exec usermod -p "${ENCRYPTED_PASSWORD}" root
 
   if [ "$ENABLE_ROOT_SSH" = true ] ; then
-    sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin yes|g" "$R/etc/ssh/sshd_config"
+    sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin yes|g" "${ETCDIR}/ssh/sshd_config"
   fi
 else
   # Set no root password to disable root login

@@ -10,33 +10,33 @@ if [ "$ENABLE_REDUCE" = true ] ; then
   if [ "$REDUCE_APT" = true ] ; then
     # Install dpkg configuration file
     if [ "$REDUCE_DOC" = true ] || [ "$REDUCE_MAN" = true ] ; then
-      install_readonly files/dpkg/01nodoc "$R/etc/dpkg/dpkg.cfg.d/01nodoc"
+      install_readonly files/dpkg/01nodoc "${ETCDIR}/dpkg/dpkg.cfg.d/01nodoc"
     fi
 
     # Install APT configuration files
-    install_readonly files/apt/02nocache "$R/etc/apt/apt.conf.d/02nocache"
-    install_readonly files/apt/03compress "$R/etc/apt/apt.conf.d/03compress"
-    install_readonly files/apt/04norecommends "$R/etc/apt/apt.conf.d/04norecommends"
+    install_readonly files/apt/02nocache "${ETCDIR}/apt/apt.conf.d/02nocache"
+    install_readonly files/apt/03compress "${ETCDIR}/apt/apt.conf.d/03compress"
+    install_readonly files/apt/04norecommends "${ETCDIR}/apt/apt.conf.d/04norecommends"
 
     # Remove APT cache files
-    rm -fr "$R/var/cache/apt/pkgcache.bin"
-    rm -fr "$R/var/cache/apt/srcpkgcache.bin"
+    rm -fr "${R}/var/cache/apt/pkgcache.bin"
+    rm -fr "${R}/var/cache/apt/srcpkgcache.bin"
   fi
 
   # Remove all doc files
   if [ "$REDUCE_DOC" = true ] ; then
-    find "$R/usr/share/doc" -depth -type f ! -name copyright | xargs rm || true
-    find "$R/usr/share/doc" -empty | xargs rmdir || true
+    find "${R}/usr/share/doc" -depth -type f ! -name copyright | xargs rm || true
+    find "${R}/usr/share/doc" -empty | xargs rmdir || true
   fi
 
   # Remove all man pages and info files
   if [ "$REDUCE_MAN" = true ] ; then
-    rm -rf "$R/usr/share/man" "$R/usr/share/groff" "$R/usr/share/info" "$R/usr/share/lintian" "$R/usr/share/linda" "$R/var/cache/man"
+    rm -rf "${R}/usr/share/man" "${R}/usr/share/groff" "${R}/usr/share/info" "${R}/usr/share/lintian" "${R}/usr/share/linda" "${R}/var/cache/man"
   fi
 
   # Remove all locale translation files
   if [ "$REDUCE_LOCALE" = true ] ; then
-    find "$R/usr/share/locale" -mindepth 1 -maxdepth 1 ! -name 'en' | xargs rm -r
+    find "${R}/usr/share/locale" -mindepth 1 -maxdepth 1 ! -name 'en' | xargs rm -r
   fi
 
   # Remove hwdb PCI device classes (experimental)
@@ -60,19 +60,19 @@ if [ "$ENABLE_REDUCE" = true ] ; then
 
   # Remove GPU kernels
   if [ "$ENABLE_MINGPU" = true ] ; then
-    rm -f "$R/boot/firmware/start.elf"
-    rm -f "$R/boot/firmware/fixup.dat"
-    rm -f "$R/boot/firmware/start_x.elf"
-    rm -f "$R/boot/firmware/fixup_x.dat"
+    rm -f "${BOOTDIR}/start.elf"
+    rm -f "${BOOTDIR}/fixup.dat"
+    rm -f "${BOOTDIR}/start_x.elf"
+    rm -f "${BOOTDIR}/fixup_x.dat"
   fi
 
   # Remove kernel and initrd from /boot (already in /boot/firmware)
   if [ "$BUILD_KERNEL" = false ] ; then
-    rm -r "$R/boot/vmlinuz--*"
-    rm -r "$R/boot/initrd.img-*"
+    rm -f "${R}/boot/vmlinuz-*"
+    rm -f "${R}/boot/initrd.img-*"
   fi
 
   # Clean APT list of repositories
-  rm -fr "$R/var/lib/apt/lists/*"
+  rm -fr "${R}/var/lib/apt/lists/*"
   chroot_exec apt-get -qq -y update
 fi

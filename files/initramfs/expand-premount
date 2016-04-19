@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+# Check for cryptdevice variable
+if [ -z "$cryptdevice" ] ; then
+  echo "unable to get cryptdevice variable (local-premount)"
+  exit 1
+fi
+
+if [ -n "$ROOT" ] ; then
+  # Resize encrypted root partition
+  cryptsetup resize "${ROOT}"
+  e2fsck -fp "${ROOT}"
+  resize2fs -f "${ROOT}"
+  e2fsck -fp "${ROOT}"
+fi
+
+exit 0

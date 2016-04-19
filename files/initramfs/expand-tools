@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+# Use initramfs utility functions
+. /usr/share/initramfs-tools/hook-functions
+
+# Add binaries required for resizing the filesystem
+copy_exec /bin/grep /bin
+copy_exec /usr/bin/awk /bin
+copy_exec /usr/bin/cut /bin
+copy_exec /usr/bin/tail /bin
+copy_exec /sbin/fdisk /sbin
+copy_exec /sbin/parted /sbin
+copy_exec /sbin/e2fsck /sbin
+copy_exec /sbin/resize2fs /sbin
+copy_exec /sbin/partprobe /sbin
+
+exit 0
