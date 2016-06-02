@@ -57,6 +57,9 @@ ETCDIR="${R}/etc"
 BOOTDIR="${R}/boot/firmware"
 KERNELDIR="${R}/usr/src/linux"
 
+# Firmware directory: Blank if download from github
+FIRMWAREDIR=${FIRMWAREDIR:=""}
+
 # General settings
 HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
 PASSWORD=${PASSWORD:=raspberry}
