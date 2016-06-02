@@ -144,7 +144,10 @@ Install and enable the hardware accelerated Xorg video driver `fbturbo`. Please 
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
 
 ##### `ENABLE_USER`=true
-Create pi user with password raspberry
+Create non-root user with password raspberry. Unless overridden with `USER_NAME`=user, username will be `pi`.
+
+##### `USER_NAME`=pi
+Non-root user to create.  Ignored if `ENABLE_USER`=false
 
 ##### `ENABLE_ROOT`=true
 Set root user password so root login will be enabled
