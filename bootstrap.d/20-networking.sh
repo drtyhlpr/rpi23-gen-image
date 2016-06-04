@@ -70,3 +70,8 @@ if [ "$ENABLE_HARDNET" = true ] ; then
   # Setup resolver warnings about spoofed addresses
   sed -i "s/^# spoof warn/spoof warn/" "${ETCDIR}/host.conf"
 fi
+
+# Enable time sync
+if [ "NET_NTP_1" != "" ] ; then
+  chroot_exec systemctl enable systemd-timesyncd.service
+fi
