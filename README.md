@@ -281,6 +281,10 @@ All the required configuration files that will be copied to the generated OS ima
 | `sysctl.d` | Swapping and Network Hardening configuration |
 | `xorg` | fbturbo Xorg driver configuration |
 
+Debian custom packages, i.e. those not in the debian repositories, can be installed by placing them in the `packages` directory. They are installed immediately after packages from the repositories are installed. Any dependencies listed in the custom packages will be downloaded automatically from the repositories. Do not list these custom packages in `APT_INCLUDES`.
+
+Scripts in the custom.d directory will be executed after all other installation is complete but before the image is created.
+
 ## Logging of the bootstrapping process
 All information related to the bootstrapping process and the commands executed by the `rpi2-gen-image.sh` script can easily be saved into a logfile. The common shell command `script` can be used for this purpose:
 

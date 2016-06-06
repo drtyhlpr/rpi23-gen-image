@@ -1,5 +1,6 @@
 images
 custom.d
+packages
 *.swp
 *.bak
 *.log
