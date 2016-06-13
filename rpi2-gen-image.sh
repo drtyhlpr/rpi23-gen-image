@@ -57,6 +57,9 @@ ETCDIR="${R}/etc"
 BOOTDIR="${R}/boot/firmware"
 KERNELDIR="${R}/usr/src/linux"
 
+# Firmware directory: Blank if download from github
+FIRMWAREDIR=${FIRMWAREDIR:=""}
+
 # General settings
 HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
 PASSWORD=${PASSWORD:=raspberry}
@@ -98,6 +101,7 @@ ENABLE_XORG=${ENABLE_XORG:=false}
 ENABLE_WM=${ENABLE_WM:=""}
 ENABLE_RSYSLOG=${ENABLE_RSYSLOG:=true}
 ENABLE_USER=${ENABLE_USER:=true}
+USER_NAME=${USER_NAME:="pi"}
 ENABLE_ROOT=${ENABLE_ROOT:=false}
 ENABLE_ROOT_SSH=${ENABLE_ROOT_SSH:=false}
 

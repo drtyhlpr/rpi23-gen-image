@@ -131,14 +131,25 @@ if [ "$BUILD_KERNEL" = true ] ; then
     rm -fr "${KERNELDIR}"
   fi
 
-  # Install latest boot binaries from raspberry/firmware github
-  wget -q -O "${BOOTDIR}/bootcode.bin" https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin
-  wget -q -O "${BOOTDIR}/fixup.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat
-  wget -q -O "${BOOTDIR}/fixup_cd.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_cd.dat
-  wget -q -O "${BOOTDIR}/fixup_x.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_x.dat
-  wget -q -O "${BOOTDIR}/start.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start.elf
-  wget -q -O "${BOOTDIR}/start_cd.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_cd.elf
-  wget -q -O "${BOOTDIR}/start_x.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_x.elf
+  if [ -n "$FIRMWAREDIR" ] && [ -d "$FIRMWAREDIR" ] ; then
+    # Install boot binaries from local directory
+    cp ${FIRMWAREDIR}/boot/bootcode.bin ${BOOTDIR}/bootcode.bin
+    cp ${FIRMWAREDIR}/boot/fixup.dat ${BOOTDIR}/fixup.dat
+    cp ${FIRMWAREDIR}/boot/fixup_cd.dat ${BOOTDIR}/fixup_cd.dat
+    cp ${FIRMWAREDIR}/boot/fixup_x.dat ${BOOTDIR}/fixup_x.dat
+    cp ${FIRMWAREDIR}/boot/start.elf ${BOOTDIR}/start.elf
+    cp ${FIRMWAREDIR}/boot/start_cd.elf ${BOOTDIR}/start_cd.elf
+    cp ${FIRMWAREDIR}/boot/start_x.elf ${BOOTDIR}/start_x.elf
+  else
+    # Install latest boot binaries from raspberry/firmware github
+    wget -q -O "${BOOTDIR}/bootcode.bin" https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin
+    wget -q -O "${BOOTDIR}/fixup.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat
+    wget -q -O "${BOOTDIR}/fixup_cd.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_cd.dat
+    wget -q -O "${BOOTDIR}/fixup_x.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_x.dat
+    wget -q -O "${BOOTDIR}/start.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start.elf
+    wget -q -O "${BOOTDIR}/start_cd.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_cd.elf
+    wget -q -O "${BOOTDIR}/start_x.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_x.elf
+  fi
 
 else # BUILD_KERNEL=false
   # Kernel installation

@@ -144,7 +144,10 @@ Install and enable the hardware accelerated Xorg video driver `fbturbo`. Please 
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
 
 ##### `ENABLE_USER`=true
-Create pi user with password raspberry
+Create non-root user with password raspberry. Unless overridden with `USER_NAME`=user, username will be `pi`.
+
+##### `USER_NAME`=pi
+Non-root user to create.  Ignored if `ENABLE_USER`=false
 
 ##### `ENABLE_ROOT`=true
 Set root user password so root login will be enabled
@@ -195,6 +198,9 @@ Run `make bcm2709_defconfig` (and optional `make menuconfig`) to configure the k
 
 ##### `KERNELSRC_PREBUILT`=false
 With this parameter set to true the script expects the existing kernel sources directory to be already successfully cross-compiled. The parameters `KERNELSRC_CLEAN`, `KERNELSRC_CONFIG` and `KERNEL_MENUCONFIG` are ignored and no kernel compilation tasks are performed.
+
+##### `FIRMWAREDIR`=""
+The directory containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.
 
 #### Reduce disk usage:
 The following list of parameters is ignored if `ENABLE_REDUCE`=false.
@@ -274,6 +280,10 @@ All the required configuration files that will be copied to the generated OS ima
 | `network` | Networking configuration files |
 | `sysctl.d` | Swapping and Network Hardening configuration |
 | `xorg` | fbturbo Xorg driver configuration |
+
+Debian custom packages, i.e. those not in the debian repositories, can be installed by placing them in the `packages` directory. They are installed immediately after packages from the repositories are installed. Any dependencies listed in the custom packages will be downloaded automatically from the repositories. Do not list these custom packages in `APT_INCLUDES`.
+
+Scripts in the custom.d directory will be executed after all other installation is complete but before the image is created.
 
 ## Logging of the bootstrapping process
 All information related to the bootstrapping process and the commands executed by the `rpi2-gen-image.sh` script can easily be saved into a logfile. The common shell command `script` can be used for this purpose:
