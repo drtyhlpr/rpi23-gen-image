@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ########################################################################
-# rpi2-gen-image.sh					   ver2a 12/2015
+# rpi2-gen-image.sh					       2015-2016
 #
 # Advanced debian "jessie" bootstrap script for RPi2
 #
@@ -10,9 +10,9 @@
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
 #
-# some parts based on rpi2-build-image:
-# Copyright (C) 2015 Ryan Finnie <ryan@finnie.org>
-# Copyright (C) 2015 Luca Falavigna <dktrkranz@debian.org>
+# Copyright (C) 2015 Jan Wagner <mail@jwagner.eu>
+#
+# Big thanks for patches and enhancements by 10+ github contributors!
 ########################################################################
 
 # Are we running as root?
@@ -265,7 +265,7 @@ set -x
 trap cleanup 0 1 2 3 6
 
 # Add required packages for the minbase installation
-if [ "$ENABLE_MINBASE" = true ] ; then
+if [ "$ENABLE_MINBASE" = true ]  && [ "$DEFLOCAL" == "en_US.UTF-8" ] ; then
   APT_INCLUDES="${APT_INCLUDES},vim-tiny,netbase,net-tools,ifupdown"
 else
   APT_INCLUDES="${APT_INCLUDES},locales,keyboard-configuration,console-setup"

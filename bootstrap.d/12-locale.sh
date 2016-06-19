@@ -10,7 +10,7 @@ echo ${TIMEZONE} > "${ETCDIR}/timezone"
 chroot_exec dpkg-reconfigure -f noninteractive tzdata
 
 # Install and setup default locale and keyboard configuration
-if [ "$ENABLE_MINBASE" = false ] ; then
+if [ $(echo "$APT_INCLUDES" | grep ",locales") ] ; then
   # Set locale choice in debconf db, even though dpkg-reconfigure ignores and overwrites them due to some bug
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=684134 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=685957
   # ... so we have to set locales manually
@@ -52,7 +52,7 @@ if [ "$ENABLE_MINBASE" = false ] ; then
       ;;
   esac
   chroot_exec dpkg-reconfigure -f noninteractive console-setup
-else # ENABLE_MINBASE=true
+else # (no locales were installed)
   # Install POSIX default locale
   install_readonly files/locales/locale "${ETCDIR}/default/locale"
 fi
