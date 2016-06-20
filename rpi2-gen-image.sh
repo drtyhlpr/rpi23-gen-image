@@ -265,9 +265,12 @@ set -x
 trap cleanup 0 1 2 3 6
 
 # Add required packages for the minbase installation
-if [ "$ENABLE_MINBASE" = true ]  && [ "$DEFLOCAL" == "en_US.UTF-8" ] ; then
+if [ "$ENABLE_MINBASE" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},vim-tiny,netbase,net-tools,ifupdown"
-else
+fi
+
+# Add required locales packages
+if [ "$DEFLOCAL" != "en_US.UTF-8" ] ; then
   APT_INCLUDES="${APT_INCLUDES},locales,keyboard-configuration,console-setup"
 fi
 
