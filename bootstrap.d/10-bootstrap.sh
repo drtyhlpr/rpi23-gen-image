@@ -5,12 +5,21 @@
 # Load utility functions
 . ./functions.sh
 
-# Base debootstrap (unpack only)
-if [ "$ENABLE_MINBASE" = true ] ; then
-  http_proxy=${APT_PROXY} debootstrap --arch="${RELEASE_ARCH}" --foreign --variant=minbase --include="${APT_INCLUDES}" "${RELEASE}" "${R}" "http://${APT_SERVER}/debian"
-else
-  http_proxy=${APT_PROXY} debootstrap --arch="${RELEASE_ARCH}" --foreign --include="${APT_INCLUDES}" "${RELEASE}" "${R}" "http://${APT_SERVER}/debian"
+VARIANT=""
+COMPONENTS="main"
+
+# Use non-free Debian packages if needed
+if [ "$ENABLE_NONFREE" = true ] ; then
+  COMPONENTS="main,non-free"
 fi
+
+# Use minbase bootstrap variant which only includes essential packages
+if [ "$ENABLE_MINBASE" = true ] ; then
+  VARIANT="--variant=minbase"
+fi
+
+# Base debootstrap (unpack only)
+http_proxy=${APT_PROXY} debootstrap --arch="${RELEASE_ARCH}" --foreign ${VARIANT} --components="${COMPONENTS}" --include="${APT_INCLUDES}" "${RELEASE}" "${R}" "http://${APT_SERVER}/debian"
 
 # Copy qemu emulator binary to chroot
 install_exec "${QEMU_BINARY}" "${R}${QEMU_BINARY}"

@@ -21,7 +21,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     fi
   else # KERNELSRC_DIR=""
     # Fetch current raspberrypi kernel sources
-    git -C "${R}/usr/src" clone --depth=1 https://github.com/raspberrypi/linux
+    git -C "${R}/usr/src" clone --depth=1 "${KERNEL_URL}"
   fi
 
   # Calculate optimal number of kernel building threads
@@ -142,13 +142,13 @@ if [ "$BUILD_KERNEL" = true ] ; then
     cp ${FIRMWAREDIR}/boot/start_x.elf ${BOOTDIR}/start_x.elf
   else
     # Install latest boot binaries from raspberry/firmware github
-    wget -q -O "${BOOTDIR}/bootcode.bin" https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin
-    wget -q -O "${BOOTDIR}/fixup.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat
-    wget -q -O "${BOOTDIR}/fixup_cd.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_cd.dat
-    wget -q -O "${BOOTDIR}/fixup_x.dat" https://github.com/raspberrypi/firmware/raw/master/boot/fixup_x.dat
-    wget -q -O "${BOOTDIR}/start.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start.elf
-    wget -q -O "${BOOTDIR}/start_cd.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_cd.elf
-    wget -q -O "${BOOTDIR}/start_x.elf" https://github.com/raspberrypi/firmware/raw/master/boot/start_x.elf
+    wget -q -O "${BOOTDIR}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
+    wget -q -O "${BOOTDIR}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
+    wget -q -O "${BOOTDIR}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
+    wget -q -O "${BOOTDIR}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
+    wget -q -O "${BOOTDIR}/start.elf" "${FIRMWARE_URL}/start.elf"
+    wget -q -O "${BOOTDIR}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
+    wget -q -O "${BOOTDIR}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
   fi
 
 else # BUILD_KERNEL=false

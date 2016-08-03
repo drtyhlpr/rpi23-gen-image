@@ -13,7 +13,7 @@ fi
 # Fetch and build U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
   # Fetch U-Boot bootloader sources
-  git -C "${R}/tmp" clone git://git.denx.de/u-boot.git
+  git -C "${R}/tmp" clone "${UBOOT_URL}"
 
   # Build and install U-Boot inside chroot
   chroot_exec make -C /tmp/u-boot/ ${UBOOT_CONFIG} all

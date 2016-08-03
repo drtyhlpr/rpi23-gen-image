@@ -105,6 +105,9 @@ Enable IPv6 support. The network interface configuration is managed via systemd-
 ##### `ENABLE_SSHD`=true
 Install and enable OpenSSH service. The default configuration of the service doesn't allow `root` to login. Please use the user `pi` instead and `su -` or `sudo` to execute commands as root.
 
+##### `ENABLE_NONFREE`=false
+Allow the installation of non-free Debian packages that do not comply with the DFSG. This is required to install closed-source firmware binary blobs.
+
 ##### `ENABLE_RSYSLOG`=true
 If set to false, disable and uninstall rsyslog (so logs will be available only
 in journal files)

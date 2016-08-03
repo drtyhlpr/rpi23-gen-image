@@ -47,6 +47,13 @@ DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
 UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
 QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
 
+# URLs
+KERNEL_URL=${KERNEL_URL:=https://github.com/raspberrypi/linux}
+FIRMWARE_URL=${FIRMWARE_URL:=https://github.com/raspberrypi/firmware/raw/master/boot}
+COLLABORA_URL=${COLLABORA_URL:=https://repositories.collabora.co.uk/debian}
+FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
+UBOOT_URL=${UBOOT_URL:=git://git.denx.de/u-boot.git}
+
 # Build directories
 BASEDIR="$(pwd)/images/${RELEASE}"
 BUILDDIR="${BASEDIR}/build"
@@ -93,6 +100,7 @@ APT_SERVER=${APT_SERVER:="ftp.debian.org"}
 ENABLE_CONSOLE=${ENABLE_CONSOLE:=true}
 ENABLE_IPV6=${ENABLE_IPV6:=true}
 ENABLE_SSHD=${ENABLE_SSHD:=true}
+ENABLE_NONFREE=${ENABLE_NONFREE:=false}
 ENABLE_SOUND=${ENABLE_SOUND:=true}
 ENABLE_DBUS=${ENABLE_DBUS:=true}
 ENABLE_HWRANDOM=${ENABLE_HWRANDOM:=true}

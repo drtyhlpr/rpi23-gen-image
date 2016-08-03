@@ -17,7 +17,7 @@ if [ "$BUILD_KERNEL" = false ] ; then
 
   # Install APT sources.list
   install_readonly files/apt/sources.list "${ETCDIR}/apt/sources.list"
-  echo "deb https://repositories.collabora.co.uk/debian ${RELEASE} rpi2" >> "${ETCDIR}/apt/sources.list"
+  echo "deb ${COLLABORA_URL} ${RELEASE} rpi2" >> "${ETCDIR}/apt/sources.list"
 
   # Upgrade collabora package index and install collabora keyring
   chroot_exec apt-get -qq -y update
@@ -29,6 +29,11 @@ else # BUILD_KERNEL=true
   # Use specified APT server and release
   sed -i "s/\/ftp.debian.org\//\/${APT_SERVER}\//" "${ETCDIR}/apt/sources.list"
   sed -i "s/ jessie/ ${RELEASE}/" "${ETCDIR}/apt/sources.list"
+fi
+
+# Allow the installation of non-free Debian packages
+if [ "$ENABLE_NONFREE" = true ] ; then
+  sed -i "s/ contrib/ contrib non-free/" "${ETCDIR}/apt/sources.list"
 fi
 
 # Upgrade package index and update all installed packages and changed dependencies

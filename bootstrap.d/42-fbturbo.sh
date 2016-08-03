@@ -7,7 +7,7 @@
 
 if [ "$ENABLE_FBTURBO" = true ] ; then
   # Fetch fbturbo driver sources
-  git -C "${R}/tmp" clone https://github.com/ssvb/xf86-video-fbturbo.git
+  git -C "${R}/tmp" clone "${FBTURBO_URL}"
 
   # Install Xorg build dependencies
   chroot_exec apt-get -q -y --no-install-recommends install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
