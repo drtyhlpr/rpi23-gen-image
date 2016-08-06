@@ -56,6 +56,12 @@ fi
 # Remove empty settings from network configuration
 sed -i "/.*=\$/d" "${ETCDIR}/systemd/network/eth.network"
 
+# Move systemd network configuration if required by Debian release
+if [ "$RELEASE" = "stretch" ] ; then
+  mv -v "${ETCDIR}/systemd/network/eth.network" "${LIBDIR}/systemd/network/10-eth.network"
+  rm -fr "${ETCDIR}/systemd/network"
+fi
+
 # Enable systemd-networkd service
 chroot_exec systemctl enable systemd-networkd
 

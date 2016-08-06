@@ -29,9 +29,19 @@ cat files/firstboot/24-generate-machineid.sh >> "${ETCDIR}/rc.firstboot"
 # Create /etc/resolv.conf symlink
 cat files/firstboot/25-create-resolv-symlink.sh >> "${ETCDIR}/rc.firstboot"
 
+# Configure automatic network interface names
+if [ "$ENABLE_IFNAMES" = true ] ; then
+  cat files/firstboot/26-config-ifnames.sh >> "${ETCDIR}/rc.firstboot"
+fi
+
 # Finalize rc.firstboot script
 cat files/firstboot/99-finish.sh >> "${ETCDIR}/rc.firstboot"
 chmod +x "${ETCDIR}/rc.firstboot"
+
+# Install default rc.local if it does not exist
+if [ ! -f "${ETCDIR}/rc.local" ] ; then
+  install_exec files/etc/rc.local "${ETCDIR}/rc.local"
+fi
 
 # Add rc.firstboot script to rc.local
 sed -i '/exit 0/d' "${ETCDIR}/rc.local"

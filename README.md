@@ -1,6 +1,6 @@
 # rpi2-gen-image
 ## Introduction
-`rpi2-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for the Raspberry 2 (RPi2) computer. The script at this time only supports the bootstrapping of the current stable Debian 8 "jessie" release.
+`rpi2-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for the Raspberry 2 (RPi2) computer. The script at this time supports the bootstrapping of the Debian releases "jessie" and "stretch".
 
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
@@ -22,6 +22,7 @@ BUILD_KERNEL=true ENABLE_MINBASE=true ENABLE_IPV6=false ./rpi2-gen-image.sh
 BUILD_KERNEL=true KERNELSRC_DIR=/tmp/linux ./rpi2-gen-image.sh
 ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi2-gen-image.sh
 ENABLE_CRYPTFS=true CRYPTFS_PASSWORD=changeme EXPANDROOT=false ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi2-gen-image.sh
+RELEASE=stretch BUILD_KERNEL=true ./rpi2-gen-image.sh
 ```
 
 #### APT settings:
@@ -35,6 +36,9 @@ Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will sp
 A comma separated list of additional packages to be installed during bootstrapping.
 
 #### General system settings:
+##### `RELEASE`="jessie"
+Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases "jessie" and "stretch". `BUILD_KERNEL`=true will automatically be set if the Debian release `stretch` is used.
+
 ##### `HOSTNAME`="rpi2-jessie"
 Set system host name. It's recommended that the host name is unique in the corresponding subnet.
 
@@ -170,6 +174,9 @@ Path to a directory with scripts that should be run in the chroot before the ima
 
 ##### `ENABLE_INITRAMFS`=false
 Create an initramfs that that will be loaded during the Linux startup process. `ENABLE_INITRAMFS` will automatically get enabled if `ENABLE_CRYPTFS`=true. This parameter will be ignored if `BUILD_KERNEL`=false.
+
+##### `ENABLE_IFNAMES`=true
+Enable automatic assignment of predictable, stable network interface names for all local Ethernet, WLAN interfaces. This might create complex and long interface names. This parameter is only supported if the Debian release `stretch` is used.
 
 #### Kernel compilation:
 ##### `BUILD_KERNEL`=false

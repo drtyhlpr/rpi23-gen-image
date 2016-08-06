@@ -3,7 +3,7 @@
 ########################################################################
 # rpi2-gen-image.sh					       2015-2016
 #
-# Advanced debian "jessie" bootstrap script for RPi2
+# Advanced Debian "jessie" and "stretch"  bootstrap script for RPi2
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -61,6 +61,7 @@ BUILDDIR="${BASEDIR}/build"
 # Chroot directories
 R="${BUILDDIR}/chroot"
 ETCDIR="${R}/etc"
+LIBDIR="${R}/lib"
 BOOTDIR="${R}/boot/firmware"
 KERNELDIR="${R}/usr/src/linux"
 
@@ -122,6 +123,7 @@ ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 ENABLE_INITRAMFS=${ENABLE_INITRAMFS:=false}
+ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
 
 # Kernel compilation settings
 BUILD_KERNEL=${BUILD_KERNEL:=false}
@@ -162,13 +164,18 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
-APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo"
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
 
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git"
 MISSING_PACKAGES=""
 
 set +x
+
+# Build latest RPi2 Linux kernel if required by Debian release
+if [ "$RELEASE" = "stretch" ] ; then
+  BUILD_KERNEL=true
+fi
 
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then

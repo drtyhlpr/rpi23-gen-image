@@ -171,9 +171,9 @@ fi
 
 # Setup firmware boot cmdline
 if [ "$ENABLE_SPLITFS" = true ] ; then
-  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1 ${CMDLINE}"
+  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1"
 else
-  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait net.ifnames=1 console=tty1 ${CMDLINE}"
+  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1"
 fi
 
 # Add encrypted root partition to cmdline.txt
@@ -193,6 +193,18 @@ fi
 # Remove IPv6 networking support
 if [ "$ENABLE_IPV6" = false ] ; then
   CMDLINE="${CMDLINE} ipv6.disable=1"
+fi
+
+# Automatically assign predictable network interface names
+if [ "$ENABLE_IFNAMES" = false ] ; then
+  CMDLINE="${CMDLINE} net.ifnames=0"
+else
+  CMDLINE="${CMDLINE} net.ifnames=1"
+fi
+
+# Set init to systemd if required by Debian release
+if [ "$RELEASE" = "stretch" ] ; then
+  CMDLINE="${CMDLINE} init=/bin/systemd"
 fi
 
 # Install firmware boot cmdline
