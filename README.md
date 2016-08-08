@@ -70,13 +70,13 @@ Set the supported variant(s) of the keyboard layout(s).
 Set extra xkb configuration options.
 
 #### Networking settings (DHCP):
-This parameter is used to set up networking auto configuration in `/etc/systemd/network/eth.network`.
+This parameter is used to set up networking auto configuration in `/etc/systemd/network/eth.network`. The default location of network configuration files in the Debian `stretch` release was changed to `/lib/systemd/network`.`
 
 #####`ENABLE_DHCP`=true
 Set the system to use DHCP. This requires an DHCP server.
 
 #### Networking settings (static):
-These parameters are used to set up a static networking configuration in /etc/systemd/network/eth.network. The following static networking parameters are only supported if `ENABLE_DHCP` was set to `false`.
+These parameters are used to set up a static networking configuration in `/etc/systemd/network/eth.network`. The following static networking parameters are only supported if `ENABLE_DHCP` was set to `false`. The default location of network configuration files in the Debian `stretch` release was changed to `/lib/systemd/network`.
 
 #####`NET_ADDRESS`=""
 Set a static IPv4 or IPv6 address and its prefix, separated by "/", eg. "192.169.0.3/24".
@@ -281,6 +281,7 @@ All the required configuration files that will be copied to the generated OS ima
 | `apt` | APT management configuration files |
 | `boot` | Boot and RPi2 configuration files |
 | `dpkg` | Package Manager configuration |
+| `etc` | Configuration files and rc scripts |
 | `firstboot` | Scripts that get executed on first boot  |
 | `initramfs` | Initramfs scripts |
 | `iptables` | Firewall configuration files |

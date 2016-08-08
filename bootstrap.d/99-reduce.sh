@@ -56,7 +56,9 @@ if [ "$ENABLE_REDUCE" = true ] ; then
   fi
 
   # Re-install tools for managing kernel moduless
-  chroot_exec apt-get -qq -y --force-yes install module-init-tools
+  if [ "$RELEASE" = "jessie" ] ; then
+    chroot_exec apt-get -qq -y --force-yes install module-init-tools
+  fi
 
   # Remove GPU kernels
   if [ "$ENABLE_MINGPU" = true ] ; then

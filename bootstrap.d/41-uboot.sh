@@ -7,7 +7,8 @@
 
 # Install gcc/c++ build environment inside the chroot
 if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ] ; then
-  chroot_exec apt-get -q -y --force-yes --no-install-recommends install linux-compiler-gcc-4.8-arm g++ make bc
+  COMPILER_PACKAGES=$(chroot_exec apt-get -s install ${COMPILER_PACKAGES} | grep "^Inst " | awk -v ORS=" " '{ print $2 }')
+  chroot_exec apt-get -q -y --force-yes --no-install-recommends install ${COMPILER_PACKAGES}
 fi
 
 # Fetch and build U-Boot bootloader

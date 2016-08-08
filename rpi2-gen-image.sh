@@ -68,6 +68,9 @@ KERNELDIR="${R}/usr/src/linux"
 # Firmware directory: Blank if download from github
 FIRMWAREDIR=${FIRMWAREDIR:=""}
 
+# Packages for gcc/c++ inside the chroot
+COMPILER_PACKAGES=${COMPILER_PACKAGES:="linux-compiler-gcc-4.8-arm g++ make bc"}
+
 # General settings
 HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
 PASSWORD=${PASSWORD:=raspberry}
@@ -175,6 +178,7 @@ set +x
 # Build latest RPi2 Linux kernel if required by Debian release
 if [ "$RELEASE" = "stretch" ] ; then
   BUILD_KERNEL=true
+  COMPILER_PACKAGES=$(echo $COMPILER_PACKAGES | sed s/-4.8-arm/-5-arm/)
 fi
 
 # Add packages required for kernel cross compilation
@@ -388,7 +392,9 @@ EOF
 fi
 
 # Remove apt-utils
-chroot_exec apt-get purge -qq -y --force-yes apt-utils
+if [ "$RELEASE" = "jessie" ] ; then
+  chroot_exec apt-get purge -qq -y --force-yes apt-utils
+fi
 
 # Generate required machine-id
 MACHINE_ID=$(dbus-uuidgen)
@@ -432,8 +438,8 @@ ROOT_OFFSET=$(expr ${TABLE_SECTORS} + ${FRMW_SECTORS})
 
 # The root partition is EXT4
 # This means more space than the actual used space of the chroot is used.
-# As overhead for journaling and reserved blocks 20% are added.
-ROOT_SECTORS=$(expr $(expr ${CHROOT_SIZE} + ${CHROOT_SIZE} \/ 100 \* 20) \* 1024 \/ 512)
+# As overhead for journaling and reserved blocks 25% are added.
+ROOT_SECTORS=$(expr $(expr ${CHROOT_SIZE} + ${CHROOT_SIZE} \/ 100 \* 25) \* 1024 \/ 512)
 
 # Calculate required image size in 512 Byte sectors
 IMAGE_SECTORS=$(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS})

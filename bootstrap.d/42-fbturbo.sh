@@ -10,7 +10,7 @@ if [ "$ENABLE_FBTURBO" = true ] ; then
   git -C "${R}/tmp" clone "${FBTURBO_URL}"
 
   # Install Xorg build dependencies
-  chroot_exec apt-get -q -y --no-install-recommends install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
+  chroot_exec apt-get -q -y --force-yes --no-install-recommends install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
 
   # Build and install fbturbo driver inside chroot
   chroot_exec /bin/bash -x <<'EOF'
@@ -30,5 +30,5 @@ fi
 
 # Remove gcc/c++ build environment from the chroot
 if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ] ; then
-  chroot_exec apt-get -qq -y --auto-remove purge bc binutils cpp cpp-4.8 cpp-4.9 g++ g++-4.8 g++-4.9 gcc gcc-4.8 gcc-4.9 libasan1 libatomic1 libc-dev-bin libc6-dev libcloog-isl4 libgcc-4.8-dev libgcc-4.9-dev libgomp1 libisl10 libmpc3 libmpfr4 libstdc++-4.9-dev libubsan0 linux-compiler-gcc-4.8-arm linux-libc-dev make
+  chroot_exec apt-get -qq -y --auto-remove purge ${COMPILER_PACKAGES}
 fi
