@@ -217,7 +217,7 @@ Run `make bcm2709_defconfig` (and optional `make menuconfig`) to configure the k
 ##### `KERNELSRC_PREBUILT`=false
 With this parameter set to true the script expects the existing kernel sources directory to be already successfully cross-compiled. The parameters `KERNELSRC_CLEAN`, `KERNELSRC_CONFIG` and `KERNEL_MENUCONFIG` are ignored and no kernel compilation tasks are performed.
 
-##### `FIRMWAREDIR`=""
+##### `RPI_FIRMWARE_DIR`=""
 The directory containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.
 
 #### Reduce disk usage:
