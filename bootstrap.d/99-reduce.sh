@@ -10,13 +10,13 @@ if [ "$ENABLE_REDUCE" = true ] ; then
   if [ "$REDUCE_APT" = true ] ; then
     # Install dpkg configuration file
     if [ "$REDUCE_DOC" = true ] || [ "$REDUCE_MAN" = true ] ; then
-      install_readonly files/dpkg/01nodoc "${ETCDIR}/dpkg/dpkg.cfg.d/01nodoc"
+      install_readonly files/dpkg/01nodoc "${ETC_DIR}/dpkg/dpkg.cfg.d/01nodoc"
     fi
 
     # Install APT configuration files
-    install_readonly files/apt/02nocache "${ETCDIR}/apt/apt.conf.d/02nocache"
-    install_readonly files/apt/03compress "${ETCDIR}/apt/apt.conf.d/03compress"
-    install_readonly files/apt/04norecommends "${ETCDIR}/apt/apt.conf.d/04norecommends"
+    install_readonly files/apt/02nocache "${ETC_DIR}/apt/apt.conf.d/02nocache"
+    install_readonly files/apt/03compress "${ETC_DIR}/apt/apt.conf.d/03compress"
+    install_readonly files/apt/04norecommends "${ETC_DIR}/apt/apt.conf.d/04norecommends"
 
     # Remove APT cache files
     rm -fr "${R}/var/cache/apt/pkgcache.bin"
@@ -62,10 +62,10 @@ if [ "$ENABLE_REDUCE" = true ] ; then
 
   # Remove GPU kernels
   if [ "$ENABLE_MINGPU" = true ] ; then
-    rm -f "${BOOTDIR}/start.elf"
-    rm -f "${BOOTDIR}/fixup.dat"
-    rm -f "${BOOTDIR}/start_x.elf"
-    rm -f "${BOOTDIR}/fixup_x.dat"
+    rm -f "${BOOT_DIR}/start.elf"
+    rm -f "${BOOT_DIR}/fixup.dat"
+    rm -f "${BOOT_DIR}/start_x.elf"
+    rm -f "${BOOT_DIR}/fixup_x.dat"
   fi
 
   # Remove kernel and initrd from /boot (already in /boot/firmware)

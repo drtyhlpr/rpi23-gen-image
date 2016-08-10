@@ -1,5 +1,5 @@
 #
-# Build and Setup RPi2 Kernel
+# Build and Setup RPi2/3 Kernel
 #
 
 # Load utility functions
@@ -17,7 +17,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
     # Clean the kernel sources
     if [ "$KERNELSRC_CLEAN" = true ] && [ "$KERNELSRC_PREBUILT" = false ] ; then
-      make -C "${KERNELDIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" mrproper
+      make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" mrproper
     fi
   else # KERNELSRC_DIR=""
     # Fetch current raspberrypi kernel sources
@@ -33,7 +33,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
   if [ "$KERNELSRC_PREBUILT" = false ] ; then
     # Remove device, network and filesystem drivers from kernel configuration
     if [ "$KERNEL_REDUCE" = true ] ; then
-      make -C "${KERNELDIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
+      make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
       sed -i\
       -e "s/\(^CONFIG_SND.*\=\).*/\1n/"\
       -e "s/\(^CONFIG_SOUND.*\=\).*/\1n/"\
@@ -64,25 +64,25 @@ if [ "$BUILD_KERNEL" = true ] ; then
       -e "s/\(^CONFIG_TOUCHSCREEN.*\=\).*/\1n/"\
       -e "s/\(^CONFIG_USB_GSPCA_.*\=\).*/\1n/"\
       -e "s/\(^CONFIG_DRM.*\=\).*/\1n/"\
-      "${KERNELDIR}/.config"
+      "${KERNEL_DIR}/.config"
     fi
 
     if [ "$KERNELSRC_CONFIG" = true ] ; then
       # Load default raspberry kernel configuration
-      make -C "${KERNELDIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
+      make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
 
       # Start menu-driven kernel configuration (interactive)
       if [ "$KERNEL_MENUCONFIG" = true ] ; then
-        make -C "${KERNELDIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" menuconfig
+        make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" menuconfig
       fi
     fi
 
     # Cross compile kernel and modules
-    make -C "${KERNELDIR}" -j${KERNEL_THREADS} ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" zImage modules dtbs
+    make -C "${KERNEL_DIR}" -j${KERNEL_THREADS} ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" zImage modules dtbs
   fi
 
   # Check if kernel compilation was successful
-  if [ ! -r "${KERNELDIR}/arch/${KERNEL_ARCH}/boot/zImage" ] ; then
+  if [ ! -r "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/zImage" ] ; then
     echo "error: kernel compilation failed! (zImage not found)"
     cleanup
     exit 1
@@ -90,65 +90,65 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Install kernel modules
   if [ "$ENABLE_REDUCE" = true ] ; then
-    make -C "${KERNELDIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=../../.. modules_install
+    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=../../.. modules_install
   else
-    make -C "${KERNELDIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH=../../.. modules_install
+    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH=../../.. modules_install
 
     # Install kernel firmware
-    make -C "${KERNELDIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_FW_PATH=../../../lib firmware_install
+    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_FW_PATH=../../../lib firmware_install
   fi
 
   # Install kernel headers
   if [ "$KERNEL_HEADERS" = true ] && [ "$KERNEL_REDUCE" = false ] ; then
-    make -C "${KERNELDIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_HDR_PATH=../.. headers_install
+    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_HDR_PATH=../.. headers_install
   fi
 
   # Prepare boot (firmware) directory
-  mkdir "${BOOTDIR}"
+  mkdir "${BOOT_DIR}"
 
   # Get kernel release version
-  KERNEL_VERSION=`cat "${KERNELDIR}/include/config/kernel.release"`
+  KERNEL_VERSION=`cat "${KERNEL_DIR}/include/config/kernel.release"`
 
   # Copy kernel configuration file to the boot directory
-  install_readonly "${KERNELDIR}/.config" "${R}/boot/config-${KERNEL_VERSION}"
+  install_readonly "${KERNEL_DIR}/.config" "${R}/boot/config-${KERNEL_VERSION}"
 
   # Copy dts and dtb device tree sources and binaries
-  mkdir "${BOOTDIR}/overlays"
-  install_readonly "${KERNELDIR}/arch/${KERNEL_ARCH}/boot/dts/"*.dtb "${BOOTDIR}/"
-  install_readonly "${KERNELDIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtb* "${BOOTDIR}/overlays/"
-  install_readonly "${KERNELDIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/README" "${BOOTDIR}/overlays/README"
+  mkdir "${BOOT_DIR}/overlays"
+  install_readonly "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/"*.dtb "${BOOT_DIR}/"
+  install_readonly "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtb* "${BOOT_DIR}/overlays/"
+  install_readonly "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/README" "${BOOT_DIR}/overlays/README"
 
   if [ "$ENABLE_UBOOT" = false ] ; then
     # Convert and copy zImage kernel to the boot directory
-    "${KERNELDIR}/scripts/mkknlimg" "${KERNELDIR}/arch/${KERNEL_ARCH}/boot/zImage" "${BOOTDIR}/${KERNEL_IMAGE}"
+    "${KERNEL_DIR}/scripts/mkknlimg" "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/zImage" "${BOOT_DIR}/${KERNEL_IMAGE}"
   else
     # Copy zImage kernel to the boot directory
-    install_readonly "${KERNELDIR}/arch/${KERNEL_ARCH}/boot/zImage" "${BOOTDIR}/${KERNEL_IMAGE}"
+    install_readonly "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/zImage" "${BOOT_DIR}/${KERNEL_IMAGE}"
   fi
 
   # Remove kernel sources
   if [ "$KERNEL_REMOVESRC" = true ] ; then
-    rm -fr "${KERNELDIR}"
+    rm -fr "${KERNEL_DIR}"
   fi
 
-  if [ -n "$FIRMWAREDIR" ] && [ -d "$FIRMWAREDIR" ] ; then
+  if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
     # Install boot binaries from local directory
-    cp ${FIRMWAREDIR}/boot/bootcode.bin ${BOOTDIR}/bootcode.bin
-    cp ${FIRMWAREDIR}/boot/fixup.dat ${BOOTDIR}/fixup.dat
-    cp ${FIRMWAREDIR}/boot/fixup_cd.dat ${BOOTDIR}/fixup_cd.dat
-    cp ${FIRMWAREDIR}/boot/fixup_x.dat ${BOOTDIR}/fixup_x.dat
-    cp ${FIRMWAREDIR}/boot/start.elf ${BOOTDIR}/start.elf
-    cp ${FIRMWAREDIR}/boot/start_cd.elf ${BOOTDIR}/start_cd.elf
-    cp ${FIRMWAREDIR}/boot/start_x.elf ${BOOTDIR}/start_x.elf
+    cp ${RPI_FIRMWARE_DIR}/boot/bootcode.bin ${BOOT_DIR}/bootcode.bin
+    cp ${RPI_FIRMWARE_DIR}/boot/fixup.dat ${BOOT_DIR}/fixup.dat
+    cp ${RPI_FIRMWARE_DIR}/boot/fixup_cd.dat ${BOOT_DIR}/fixup_cd.dat
+    cp ${RPI_FIRMWARE_DIR}/boot/fixup_x.dat ${BOOT_DIR}/fixup_x.dat
+    cp ${RPI_FIRMWARE_DIR}/boot/start.elf ${BOOT_DIR}/start.elf
+    cp ${RPI_FIRMWARE_DIR}/boot/start_cd.elf ${BOOT_DIR}/start_cd.elf
+    cp ${RPI_FIRMWARE_DIR}/boot/start_x.elf ${BOOT_DIR}/start_x.elf
   else
     # Install latest boot binaries from raspberry/firmware github
-    wget -q -O "${BOOTDIR}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
-    wget -q -O "${BOOTDIR}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
-    wget -q -O "${BOOTDIR}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
-    wget -q -O "${BOOTDIR}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
-    wget -q -O "${BOOTDIR}/start.elf" "${FIRMWARE_URL}/start.elf"
-    wget -q -O "${BOOTDIR}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
-    wget -q -O "${BOOTDIR}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
+    wget -q -O "${BOOT_DIR}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
+    wget -q -O "${BOOT_DIR}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
+    wget -q -O "${BOOT_DIR}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
+    wget -q -O "${BOOT_DIR}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
+    wget -q -O "${BOOT_DIR}/start.elf" "${FIRMWARE_URL}/start.elf"
+    wget -q -O "${BOOT_DIR}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
+    wget -q -O "${BOOT_DIR}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
   fi
 
 else # BUILD_KERNEL=false
@@ -166,7 +166,7 @@ else # BUILD_KERNEL=false
     exit 1
   fi
   # Copy vmlinuz kernel to the boot directory
-  install_readonly "${VMLINUZ}" "${BOOTDIR}/${KERNEL_IMAGE}"
+  install_readonly "${VMLINUZ}" "${BOOT_DIR}/${KERNEL_IMAGE}"
 fi
 
 # Setup firmware boot cmdline
@@ -208,19 +208,26 @@ if [ "$RELEASE" = "stretch" ] ; then
 fi
 
 # Install firmware boot cmdline
-echo "${CMDLINE}" > "${BOOTDIR}/cmdline.txt"
+echo "${CMDLINE}" > "${BOOT_DIR}/cmdline.txt"
 
 # Install firmware config
-install_readonly files/boot/config.txt "${BOOTDIR}/config.txt"
+install_readonly files/boot/config.txt "${BOOT_DIR}/config.txt"
 
 # Setup minimal GPU memory allocation size: 16MB (no X)
 if [ "$ENABLE_MINGPU" = true ] ; then
-  echo "gpu_mem=16" >> "${BOOTDIR}/config.txt"
+  echo "gpu_mem=16" >> "${BOOT_DIR}/config.txt"
 fi
 
 # Setup boot with initramfs
 if [ "$ENABLE_INITRAMFS" = true ] ; then
-  echo "initramfs initramfs-${KERNEL_VERSION} followkernel" >> "${BOOTDIR}/config.txt"
+  echo "initramfs initramfs-${KERNEL_VERSION} followkernel" >> "${BOOT_DIR}/config.txt"
+fi
+
+# Disable RPi3 Bluetooth and restore ttyAMA0 serial device
+if [ "$RPI_MODEL" = 3 ] ; then
+  if [ "$ENABLE_CONSOLE" = true ] ; then
+    echo "dtoverlay=pi3-miniuart-bt" >> "${BOOT_DIR}/config.txt"
+  fi
 fi
 
 # Create firmware configuration and cmdline symlinks
@@ -242,29 +249,29 @@ if [ "$ENABLE_SOUND" = true ] ; then
 fi
 
 # Install kernel modules blacklist
-mkdir -p "${ETCDIR}/modprobe.d/"
-install_readonly files/modules/raspi-blacklist.conf "${ETCDIR}/modprobe.d/raspi-blacklist.conf"
+mkdir -p "${ETC_DIR}/modprobe.d/"
+install_readonly files/modules/raspi-blacklist.conf "${ETC_DIR}/modprobe.d/raspi-blacklist.conf"
 
 # Install and setup fstab
-install_readonly files/mount/fstab "${ETCDIR}/fstab"
+install_readonly files/mount/fstab "${ETC_DIR}/fstab"
 
 # Add usb/sda disk root partition to fstab
 if [ "$ENABLE_SPLITFS" = true ] && [ "$ENABLE_CRYPTFS" = false ] ; then
-  sed -i "s/mmcblk0p2/sda1/" "${ETCDIR}/fstab"
+  sed -i "s/mmcblk0p2/sda1/" "${ETC_DIR}/fstab"
 fi
 
 # Add encrypted root partition to fstab and crypttab
 if [ "$ENABLE_CRYPTFS" = true ] ; then
   # Replace fstab root partition with encrypted partition mapping
-  sed -i "s/mmcblk0p2/mapper\/${CRYPTFS_MAPPING}/" "${ETCDIR}/fstab"
+  sed -i "s/mmcblk0p2/mapper\/${CRYPTFS_MAPPING}/" "${ETC_DIR}/fstab"
 
   # Add encrypted partition to crypttab and fstab
-  install_readonly files/mount/crypttab "${ETCDIR}/crypttab"
-  echo "${CRYPTFS_MAPPING} /dev/mmcblk0p2 none luks" >> "${ETCDIR}/crypttab"
+  install_readonly files/mount/crypttab "${ETC_DIR}/crypttab"
+  echo "${CRYPTFS_MAPPING} /dev/mmcblk0p2 none luks" >> "${ETC_DIR}/crypttab"
 
   if [ "$ENABLE_SPLITFS" = true ] ; then
     # Add usb/sda disk to crypttab
-    sed -i "s/mmcblk0p2/sda1/" "${ETCDIR}/crypttab"
+    sed -i "s/mmcblk0p2/sda1/" "${ETC_DIR}/crypttab"
   fi
 fi
 
@@ -273,13 +280,13 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
   if [ "$ENABLE_CRYPTFS" = true ] ; then
     # Include initramfs scripts to auto expand encrypted root partition
     if [ "$EXPANDROOT" = true ] ; then
-      install_exec files/initramfs/expand_encrypted_rootfs "${ETCDIR}/initramfs-tools/scripts/init-premount/expand_encrypted_rootfs"
-      install_exec files/initramfs/expand-premount "${ETCDIR}/initramfs-tools/scripts/local-premount/expand-premount"
-      install_exec files/initramfs/expand-tools "${ETCDIR}/initramfs-tools/hooks/expand-tools"
+      install_exec files/initramfs/expand_encrypted_rootfs "${ETC_DIR}/initramfs-tools/scripts/init-premount/expand_encrypted_rootfs"
+      install_exec files/initramfs/expand-premount "${ETC_DIR}/initramfs-tools/scripts/local-premount/expand-premount"
+      install_exec files/initramfs/expand-tools "${ETC_DIR}/initramfs-tools/hooks/expand-tools"
     fi
 
     # Disable SSHD inside initramfs
-    printf "#\n# DROPBEAR: [ y | n ]\n#\n\nDROPBEAR=n\n" >> "${ETCDIR}/initramfs-tools/initramfs.conf"
+    printf "#\n# DROPBEAR: [ y | n ]\n#\n\nDROPBEAR=n\n" >> "${ETC_DIR}/initramfs-tools/initramfs.conf"
 
     # Dummy mapping required by mkinitramfs
     echo "0 1 crypt $(echo ${CRYPTFS_CIPHER} | cut -d ':' -f 1) ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff 0 7:0 4096" | chroot_exec dmsetup create "${CRYPTFS_MAPPING}"
@@ -296,4 +303,4 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
 fi
 
 # Install sysctl.d configuration files
-install_readonly files/sysctl.d/81-rpi-vm.conf "${ETCDIR}/sysctl.d/81-rpi-vm.conf"
+install_readonly files/sysctl.d/81-rpi-vm.conf "${ETC_DIR}/sysctl.d/81-rpi-vm.conf"

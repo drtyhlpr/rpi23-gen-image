@@ -1,6 +1,6 @@
-# rpi2-gen-image
+# rpi23-gen-image
 ## Introduction
-`rpi2-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for the Raspberry 2 (RPi2) computer. The script at this time supports the bootstrapping of the Debian releases "jessie" and "stretch".
+`rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for Raspberry Pi 2 (RPi2) and Raspberry Pi 3 (RPi3) computers. The script at this time supports the bootstrapping of the Debian releases "jessie" and "stretch". Raspberry Pi 3 images are currently generated for 32-bit mode only.
 
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
@@ -8,21 +8,23 @@ The following list of Debian packages must be installed on the build system beca
   ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git```
 
 ## Command-line parameters
-The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi2-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi2-gen-image.sh` script.
+The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi23-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi23-gen-image.sh` script.
 
 #####Command-line examples:
 ```shell
-ENABLE_UBOOT=true ./rpi2-gen-image.sh
-ENABLE_CONSOLE=false ENABLE_IPV6=false ./rpi2-gen-image.sh
-ENABLE_WM=xfce4 ENABLE_FBTURBO=true ENABLE_MINBASE=true ./rpi2-gen-image.sh
-ENABLE_HARDNET=true ENABLE_IPTABLES=true /rpi2-gen-image.sh
-APT_SERVER=ftp.de.debian.org APT_PROXY="http://127.0.0.1:3142/" ./rpi2-gen-image.sh
-ENABLE_MINBASE=true ./rpi2-gen-image.sh
-BUILD_KERNEL=true ENABLE_MINBASE=true ENABLE_IPV6=false ./rpi2-gen-image.sh
-BUILD_KERNEL=true KERNELSRC_DIR=/tmp/linux ./rpi2-gen-image.sh
-ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi2-gen-image.sh
-ENABLE_CRYPTFS=true CRYPTFS_PASSWORD=changeme EXPANDROOT=false ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi2-gen-image.sh
-RELEASE=stretch BUILD_KERNEL=true ./rpi2-gen-image.sh
+ENABLE_UBOOT=true ./rpi23-gen-image.sh
+ENABLE_CONSOLE=false ENABLE_IPV6=false ./rpi23-gen-image.sh
+ENABLE_WM=xfce4 ENABLE_FBTURBO=true ENABLE_MINBASE=true ./rpi23-gen-image.sh
+ENABLE_HARDNET=true ENABLE_IPTABLES=true /rpi23-gen-image.sh
+APT_SERVER=ftp.de.debian.org APT_PROXY="http://127.0.0.1:3142/" ./rpi23-gen-image.sh
+ENABLE_MINBASE=true ./rpi23-gen-image.sh
+BUILD_KERNEL=true ENABLE_MINBASE=true ENABLE_IPV6=false ./rpi23-gen-image.sh
+BUILD_KERNEL=true KERNELSRC_DIR=/tmp/linux ./rpi23-gen-image.sh
+ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi23-gen-image.sh
+ENABLE_CRYPTFS=true CRYPTFS_PASSWORD=changeme EXPANDROOT=false ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi23-gen-image.sh
+RELEASE=stretch BUILD_KERNEL=true ./rpi23-gen-image.sh
+RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNEL=true ./rpi23-gen-image.sh
+RELEASE=stretch RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNEL=true ./rpi23-gen-image.sh
 ```
 
 #### APT settings:
@@ -36,10 +38,13 @@ Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will sp
 A comma separated list of additional packages to be installed during bootstrapping.
 
 #### General system settings:
+##### `RPI_MODEL`=2
+Specifiy the target Raspberry Pi hardware model. The script at this time supports the Raspberry Pi models `2` and `3`. `BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model 3 is used.
+
 ##### `RELEASE`="jessie"
 Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases "jessie" and "stretch". `BUILD_KERNEL`=true will automatically be set if the Debian release `stretch` is used.
 
-##### `HOSTNAME`="rpi2-jessie"
+##### `HOSTNAME`="rpi${RPI_MODEL}-${RELEASE}"
 Set system host name. It's recommended that the host name is unique in the corresponding subnet.
 
 ##### `PASSWORD`="raspberry"
@@ -101,7 +106,7 @@ Set the IP address for the second NTP server.
 
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
-Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
+Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2/3. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
 
 ##### `ENABLE_IPV6`=true
 Enable IPv6 support. The network interface configuration is managed via systemd-networkd.
@@ -111,6 +116,9 @@ Install and enable OpenSSH service. The default configuration of the service doe
 
 ##### `ENABLE_NONFREE`=false
 Allow the installation of non-free Debian packages that do not comply with the DFSG. This is required to install closed-source firmware binary blobs.
+
+##### `ENABLE_WIRELESS`=false
+Download and install the required non-free closed-source firmware binary blob that is required to run the internal wireless interface of the Rasberry Pi model 3. This parameter is ignored if the specified `RPI_MODEL` is not 3.
 
 ##### `ENABLE_RSYSLOG`=true
 If set to false, disable and uninstall rsyslog (so logs will be available only
@@ -132,7 +140,7 @@ Install and enable D-Bus message bus. Please note that systemd should work witho
 Install Xorg open-source X Window System.
 
 ##### `ENABLE_WM`=""
-Install a user defined window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_WM` is used. The `rpi2-gen-image.sh` script has been tested with the following list of window managers: `blackbox`, `openbox`, `fluxbox`, `jwm`, `dwm`, `xfce4`, `awesome`.
+Install a user defined window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_WM` is used. The `rpi23-gen-image.sh` script has been tested with the following list of window managers: `blackbox`, `openbox`, `fluxbox`, `jwm`, `dwm`, `xfce4`, `awesome`.
 
 #### Advanced system features:
 ##### `ENABLE_MINBASE`=false
@@ -142,7 +150,7 @@ Use debootstrap script variant `minbase` which only includes essential packages 
 Reduce the disk space usage by deleting packages and files. See `REDUCE_*` parameters for detailed information.
 
 ##### `ENABLE_UBOOT`=false
-Replace default RPi2 second stage bootloader (bootcode.bin) with U-Boot bootloader. U-Boot can boot images via the network using the BOOTP/TFTP protocol.
+Replace the default RPi2/3 second stage bootloader (bootcode.bin) with U-Boot bootloader. U-Boot can boot images via the network using the BOOTP/TFTP protocol.
 
 ##### `ENABLE_FBTURBO`=false
 Install and enable the hardware accelerated Xorg video driver `fbturbo`. Please note that this driver is currently limited to hardware accelerated window moving and scrolling.
@@ -180,7 +188,7 @@ Enable automatic assignment of predictable, stable network interface names for a
 
 #### Kernel compilation:
 ##### `BUILD_KERNEL`=false
-Build and install the latest RPi2 Linux kernel. Currently only the default RPi2 kernel configuration is used.
+Build and install the latest RPi2/3 Linux kernel. Currently only the default RPi2/3 kernel configuration is used.
 
 ##### `KERNEL_REDUCE`=false
 Reduce the size of the generated kernel by removing unwanted device, network and filesystem drivers (experimental).
@@ -264,7 +272,7 @@ The functions of this script that are required for the different stages of the b
 | `10-bootstrap.sh` | Debootstrap basic system |
 | `11-apt.sh` | Setup APT repositories |
 | `12-locale.sh` | Setup Locales and keyboard settings |
-| `13-kernel.sh` | Build and install RPi2 Kernel |
+| `13-kernel.sh` | Build and install RPi2/3 Kernel |
 | `20-networking.sh` | Setup Networking |
 | `21-firewall.sh` | Setup Firewall |
 | `30-security.sh` | Setup Users and Security settings |
@@ -279,7 +287,7 @@ All the required configuration files that will be copied to the generated OS ima
 | Directory | Description |
 | --- | --- |
 | `apt` | APT management configuration files |
-| `boot` | Boot and RPi2 configuration files |
+| `boot` | Boot and RPi2/3 configuration files |
 | `dpkg` | Package Manager configuration |
 | `etc` | Configuration files and rc scripts |
 | `firstboot` | Scripts that get executed on first boot  |
@@ -297,14 +305,14 @@ Debian custom packages, i.e. those not in the debian repositories, can be instal
 Scripts in the custom.d directory will be executed after all other installation is complete but before the image is created.
 
 ## Logging of the bootstrapping process
-All information related to the bootstrapping process and the commands executed by the `rpi2-gen-image.sh` script can easily be saved into a logfile. The common shell command `script` can be used for this purpose:
+All information related to the bootstrapping process and the commands executed by the `rpi23-gen-image.sh` script can easily be saved into a logfile. The common shell command `script` can be used for this purpose:
 
 ```shell
-script -c 'APT_SERVER=ftp.de.debian.org ./rpi2-gen-image.sh' ./build.log
+script -c 'APT_SERVER=ftp.de.debian.org ./rpi23-gen-image.sh' ./build.log
 ```
 
 ## Flashing the image file
-After the image file was successfully created by the `rpi2-gen-image.sh` script it can be copied to the microSD card that will be used by the RPi2 computer. This can be performed by using the tools `bmaptool` or `dd`. Using `bmaptool` will probably speed-up the copy process because `bmaptool` copies more wisely than `dd`.
+After the image file was successfully created by the `rpi23-gen-image.sh` script it can be copied to the microSD card that will be used by the RPi2/3 computer. This can be performed by using the tools `bmaptool` or `dd`. Using `bmaptool` will probably speed-up the copy process because `bmaptool` copies more wisely than `dd`.
 
 #####Flashing examples:
 ```shell
@@ -316,3 +324,12 @@ If you have set `ENABLE_SPLITFS`, copy the `-frmw` image on the microSD card, th
 bmaptool copy ./images/jessie/2015-12-13-debian-jessie-frmw.img /dev/mmcblk0
 bmaptool copy ./images/jessie/2015-12-13-debian-jessie-root.img /dev/sdc
 ```
+
+## External links and references
+* [Debian worldwide mirror sites](https://www.debian.org/mirror/list)
+* [Official Raspberry Pi Firmware on github](https://github.com/raspberrypi/firmware)
+* [Official Raspberry Pi Kernel on github](https://github.com/raspberrypi/linux)
+* [U-BOOT git repository](http://git.denx.de/?p=u-boot.git;a=summary)
+* [Xorg DDX driver fbturbo](https://github.com/ssvb/xf86-video-fbturbo)
+* [RPi3 Wireless interface firmware](https://github.com/RPi-Distro/firmware-nonfree/tree/master/brcm80211/brcm)
+* [Collabora RPi2 Kernel precompiled](https://repositories.collabora.co.uk/debian/)

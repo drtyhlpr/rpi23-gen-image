@@ -1,7 +1,7 @@
 # Set device tree fdtfile
 setenv dtbfile bcm2709-rpi-2-b.dtb
 
-# Tell Linux that it is booting on a Raspberry Pi2
+# Tell Linux that it is booting on a Raspberry Pi2/3
 setenv machid 0x00000c42
 
 # Save these changes to u-boot's environment

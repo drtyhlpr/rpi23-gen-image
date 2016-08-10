@@ -1,9 +1,9 @@
 #!/bin/sh
 
 ########################################################################
-# rpi2-gen-image.sh					       2015-2016
+# rpi23-gen-image.sh					       2015-2016
 #
-# Advanced Debian "jessie" and "stretch"  bootstrap script for RPi2
+# Advanced Debian "jessie" and "stretch"  bootstrap script for RPi2/3
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -32,8 +32,15 @@ fi
 
 # Introduce settings
 set -e
-echo -n -e "\n#\n# RPi2 Bootstrap Settings\n#\n"
+echo -n -e "\n#\n# RPi2/3 Bootstrap Settings\n#\n"
 set -x
+
+# Raspberry Pi model configuration
+RPI_MODEL=${RPI_MODEL:=2}
+RPI2_DTB_FILE=${RPI2_DTB_FILE:=bcm2709-rpi-2-b.dtb}
+RPI2_UBOOT_CONFIG=${RPI2_UBOOT_CONFIG:=rpi_2_defconfig}
+RPI3_DTB_FILE=${RPI3_DTB_FILE:=bcm2710-rpi-3-b.dtb}
+RPI3_UBOOT_CONFIG=${RPI3_UBOOT_CONFIG:=rpi_3_32b_defconfig}
 
 # Debian release
 RELEASE=${RELEASE:=jessie}
@@ -43,13 +50,12 @@ CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
 COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
 KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
 KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
-DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
-UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
 QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
 
 # URLs
 KERNEL_URL=${KERNEL_URL:=https://github.com/raspberrypi/linux}
 FIRMWARE_URL=${FIRMWARE_URL:=https://github.com/raspberrypi/firmware/raw/master/boot}
+WLAN_FIRMWARE_URL=${WLAN_FIRMWARE_URL:=https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm80211/brcm}
 COLLABORA_URL=${COLLABORA_URL:=https://repositories.collabora.co.uk/debian}
 FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=git://git.denx.de/u-boot.git}
@@ -60,19 +66,17 @@ BUILDDIR="${BASEDIR}/build"
 
 # Chroot directories
 R="${BUILDDIR}/chroot"
-ETCDIR="${R}/etc"
-LIBDIR="${R}/lib"
-BOOTDIR="${R}/boot/firmware"
-KERNELDIR="${R}/usr/src/linux"
+ETC_DIR="${R}/etc"
+LIB_DIR="${R}/lib"
+BOOT_DIR="${R}/boot/firmware"
+KERNEL_DIR="${R}/usr/src/linux"
+WLAN_FIRMWARE_DIR="${R}/lib/firmware/brcm"
 
 # Firmware directory: Blank if download from github
-FIRMWAREDIR=${FIRMWAREDIR:=""}
-
-# Packages for gcc/c++ inside the chroot
-COMPILER_PACKAGES=${COMPILER_PACKAGES:="linux-compiler-gcc-4.8-arm g++ make bc"}
+RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
 
 # General settings
-HOSTNAME=${HOSTNAME:=rpi2-${RELEASE}}
+HOSTNAME=${HOSTNAME:=rpi${RPI_MODEL}-${RELEASE}}
 PASSWORD=${PASSWORD:=raspberry}
 DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
 TIMEZONE=${TIMEZONE:="Europe/Berlin"}
@@ -105,6 +109,7 @@ ENABLE_CONSOLE=${ENABLE_CONSOLE:=true}
 ENABLE_IPV6=${ENABLE_IPV6:=true}
 ENABLE_SSHD=${ENABLE_SSHD:=true}
 ENABLE_NONFREE=${ENABLE_NONFREE:=false}
+ENABLE_WIRELESS=${ENABLE_WIRELESS:=false}
 ENABLE_SOUND=${ENABLE_SOUND:=true}
 ENABLE_DBUS=${ENABLE_DBUS:=true}
 ENABLE_HWRANDOM=${ENABLE_HWRANDOM:=true}
@@ -175,10 +180,34 @@ MISSING_PACKAGES=""
 
 set +x
 
-# Build latest RPi2 Linux kernel if required by Debian release
-if [ "$RELEASE" = "stretch" ] ; then
+# Set Raspberry Pi model specific configuration
+if [ "$RPI_MODEL" = 2 ] ; then
+  DTB_FILE=${RPI2_DTB_FILE}
+  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+elif [ "$RPI_MODEL" = 3 ] ; then
+  DTB_FILE=${RPI3_DTB_FILE}
+  UBOOT_CONFIG=${RPI3_UBOOT_CONFIG}
   BUILD_KERNEL=true
-  COMPILER_PACKAGES=$(echo $COMPILER_PACKAGES | sed s/-4.8-arm/-5-arm/)
+else
+  echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
+  exit 1
+fi
+
+# Check if the internal wireless interface is supported by the RPi model
+if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" != 3 ] ; then
+  echo "error: The selected Raspberry Pi model has no internal wireless interface"
+  exit 1
+fi
+
+# Set compiler packages and build RPi2/3 Linux kernel if required by Debian release
+if [ "$RELEASE" = "jessie" ] ; then
+  COMPILER_PACKAGES="linux-compiler-gcc-4.8-arm g++ make bc"
+elif [ "$RELEASE" = "stretch" ] ; then
+  COMPILER_PACKAGES="linux-compiler-gcc-5-arm g++ make bc"
+  BUILD_KERNEL=true
+else
+  echo "error: Debian release ${RELEASE} is not supported!"
+  exit 1
 fi
 
 # Add packages required for kernel cross compilation
@@ -399,7 +428,7 @@ fi
 # Generate required machine-id
 MACHINE_ID=$(dbus-uuidgen)
 echo -n "${MACHINE_ID}" > "${R}/var/lib/dbus/machine-id"
-echo -n "${MACHINE_ID}" > "${ETCDIR}/machine-id"
+echo -n "${MACHINE_ID}" > "${ETC_DIR}/machine-id"
 
 # APT Cleanup
 chroot_exec apt-get -y clean
@@ -415,13 +444,13 @@ rm -rf "${R}/run/*"
 rm -rf "${R}/tmp/*"
 
 # Clean up files
-rm -f "${ETCDIR}/ssh/ssh_host_*"
-rm -f "${ETCDIR}/dropbear/dropbear_*"
-rm -f "${ETCDIR}/apt/sources.list.save"
-rm -f "${ETCDIR}/resolvconf/resolv.conf.d/original"
-rm -f "${ETCDIR}/*-"
-rm -f "${ETCDIR}/apt/apt.conf.d/10proxy"
-rm -f "${ETCDIR}/resolv.conf"
+rm -f "${ETC_DIR}/ssh/ssh_host_*"
+rm -f "${ETC_DIR}/dropbear/dropbear_*"
+rm -f "${ETC_DIR}/apt/sources.list.save"
+rm -f "${ETC_DIR}/resolvconf/resolv.conf.d/original"
+rm -f "${ETC_DIR}/*-"
+rm -f "${ETC_DIR}/apt/apt.conf.d/10proxy"
+rm -f "${ETC_DIR}/resolv.conf"
 rm -f "${R}/root/.bash_history"
 rm -f "${R}/var/lib/urandom/random-seed"
 rm -f "${R}/initrd.img"
