@@ -1,6 +1,6 @@
 # rpi23-gen-image
 ## Introduction
-`rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for Raspberry Pi 2 (RPi2) and Raspberry Pi 3 (RPi3) computers. The script at this time supports the bootstrapping of the Debian releases "jessie" and "stretch". Raspberry Pi 3 images are currently generated for 32-bit mode only.
+`rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for Raspberry Pi 2 (RPi2) and Raspberry Pi 3 (RPi3) computers. The script at this time supports the bootstrapping of the Debian releases `jessie` and `stretch`. Raspberry Pi 3 images are currently generated for 32-bit mode only.
 
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
@@ -44,7 +44,7 @@ Specifiy the target Raspberry Pi hardware model. The script at this time support
 ##### `RELEASE`="jessie"
 Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases "jessie" and "stretch". `BUILD_KERNEL`=true will automatically be set if the Debian release `stretch` is used.
 
-##### `HOSTNAME`="rpi${RPI_MODEL}-${RELEASE}"
+##### `HOSTNAME`="rpi$RPI_MODEL-$RELEASE"
 Set system host name. It's recommended that the host name is unique in the corresponding subnet.
 
 ##### `PASSWORD`="raspberry"
@@ -118,7 +118,7 @@ Install and enable OpenSSH service. The default configuration of the service doe
 Allow the installation of non-free Debian packages that do not comply with the DFSG. This is required to install closed-source firmware binary blobs.
 
 ##### `ENABLE_WIRELESS`=false
-Download and install the [closed-source firmware binary blob](https://github.com/RPi-Distro/firmware-nonfree/tree/master/brcm80211/brcm) that is required to run the internal wireless interface of the Rasberry Pi model `3`. This parameter is ignored if the specified `RPI_MODEL` is not `3`.
+Download and install the [closed-source firmware binary blob](https://github.com/RPi-Distro/firmware-nonfree/tree/master/brcm80211/brcm) that is required to run the internal wireless interface of the Raspberry Pi model `3`. This parameter is ignored if the specified `RPI_MODEL` is not `3`.
 
 ##### `ENABLE_RSYSLOG`=true
 If set to false, disable and uninstall rsyslog (so logs will be available only
