@@ -71,6 +71,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
 
+      if [ ! -z "$KERNELUSR_CONFIG" ] ; then    
+        cp $KERNELUSR_CONFIG ${KERNEL_DIR}/.config 
+      fi
+
       # Start menu-driven kernel configuration (interactive)
       if [ "$KERNEL_MENUCONFIG" = true ] ; then
         make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" menuconfig
