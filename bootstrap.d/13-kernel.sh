@@ -133,6 +133,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
   # Remove kernel sources
   if [ "$KERNEL_REMOVESRC" = true ] ; then
     rm -fr "${KERNEL_DIR}"
+  else
+    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" mrproper
+    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" oldconfig
+    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" modules_prepare
   fi
 
   if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
