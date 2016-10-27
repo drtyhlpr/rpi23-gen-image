@@ -212,7 +212,7 @@ fi
 
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
-  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf bc"
 fi
 
 # Add libncurses5 to enable kernel menuconfig
