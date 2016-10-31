@@ -11,11 +11,17 @@ mkdir -p "${R}/usr/src"
 
 # Copy existing kernel sources into chroot directory
 if [ -n "$KERNELSRC_DIR" ] && [ -d "$KERNELSRC_DIR" ] ; then
+
+  # Check if kernel compilation was successful
+  if [ ! -r "${KERNELSRC_DIR}/arch/${KERNEL_ARCH}/boot/zImage" ] ; then
+    echo "error: kernel compilation failed! (zImage not found)"
+    cleanup
+    exit 1
+  fi
+
   # Copy kernel sources
   cp -rL "${KERNELSRC_DIR}" "${R}/usr/src"
-
-  # Clean the kernel sources
-  make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" mrproper
+  
 else
   echo "error: $KERNELSRC_DIR not existing!"
   cleanup
@@ -23,12 +29,7 @@ else
 fi
 
 
-# Check if kernel compilation was successful
-if [ ! -r "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/zImage" ] ; then
-  echo "error: kernel compilation failed! (zImage not found)"
-  cleanup
-  exit 1
-fi
+
 
 # Install kernel modules
 if [ "$ENABLE_REDUCE" = true ] ; then
@@ -44,6 +45,9 @@ fi
 if [ "$KERNEL_HEADERS" = true ] && [ "$KERNEL_REDUCE" = false ] ; then
   make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_HDR_PATH=../.. headers_install
 fi
+
+
+
 
 # Prepare boot (firmware) directory
 mkdir "${BOOT_DIR}"
@@ -66,6 +70,11 @@ else
   # Copy zImage kernel to the boot directory
   install_readonly "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/zImage" "${BOOT_DIR}/${KERNEL_IMAGE}"
 fi
+
+
+# Clean the kernel sources in the chroot
+make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" mrproper
+
 
 # Remove kernel sources
 if [ "$KERNEL_REMOVESRC" = true ] ; then
