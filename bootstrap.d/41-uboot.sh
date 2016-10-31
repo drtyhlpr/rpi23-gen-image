@@ -11,13 +11,15 @@ if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ] ; then
   chroot_exec apt-get -q -y --force-yes --no-install-recommends install ${COMPILER_PACKAGES}
 fi
 
+THREADS=$(grep -c processor /proc/cpuinfo)
+
 # Fetch and build U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
   # Fetch U-Boot bootloader sources
   git -C "${R}/tmp" clone "${UBOOT_URL}"
 
   # Build and install U-Boot inside chroot
-  chroot_exec make -C /tmp/u-boot/ ${UBOOT_CONFIG} all
+  chroot_exec make -j${THREADS} -C /tmp/u-boot/ ${UBOOT_CONFIG} all
 
   # Copy compiled bootloader binary and set config.txt to load it
   install_exec "${R}/tmp/u-boot/tools/mkimage" "${R}/usr/sbin/mkimage"
