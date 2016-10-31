@@ -2,6 +2,14 @@
 ## Introduction
 `rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for Raspberry Pi 2 (RPi2) and Raspberry Pi 3 (RPi3) computers. The script at this time supports the bootstrapping of the Debian releases `jessie` and `stretch`. Raspberry Pi 3 images are currently generated for 32-bit mode only.
 
+### Note
+
+This is a fork of the original. In this fork, the kernel must be the official/mainline/vanilla Linux kernel from Torvalds, and must be pre-compiled. In addition, the installation of the entire system to the SD card must be done manually by rsync'ing files because I found that this is an easier and quicker method and that resizing live partitions is troublesome and would always corrupt the filesystem.
+
+For usage of this fork, see my blog post:
+
+https://michaelfranzl.com/2016/10/31/raspberry-pi-debian-stretch/
+
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
 
@@ -10,22 +18,6 @@ The following list of Debian packages must be installed on the build system beca
 ## Command-line parameters
 The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi23-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi23-gen-image.sh` script.
 
-#####Command-line examples:
-```shell
-ENABLE_UBOOT=true ./rpi23-gen-image.sh
-ENABLE_CONSOLE=false ENABLE_IPV6=false ./rpi23-gen-image.sh
-ENABLE_WM=xfce4 ENABLE_FBTURBO=true ENABLE_MINBASE=true ./rpi23-gen-image.sh
-ENABLE_HARDNET=true ENABLE_IPTABLES=true /rpi23-gen-image.sh
-APT_SERVER=ftp.de.debian.org APT_PROXY="http://127.0.0.1:3142/" ./rpi23-gen-image.sh
-ENABLE_MINBASE=true ./rpi23-gen-image.sh
-BUILD_KERNEL=true ENABLE_MINBASE=true ENABLE_IPV6=false ./rpi23-gen-image.sh
-BUILD_KERNEL=true KERNELSRC_DIR=/tmp/linux ./rpi23-gen-image.sh
-ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi23-gen-image.sh
-ENABLE_CRYPTFS=true CRYPTFS_PASSWORD=changeme EXPANDROOT=false ENABLE_MINBASE=true ENABLE_REDUCE=true ENABLE_MINGPU=true BUILD_KERNEL=true ./rpi23-gen-image.sh
-RELEASE=stretch BUILD_KERNEL=true ./rpi23-gen-image.sh
-RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNEL=true ./rpi23-gen-image.sh
-RELEASE=stretch RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNEL=true ./rpi23-gen-image.sh
-```
 
 #### APT settings:
 ##### `APT_SERVER`="ftp.debian.org"
