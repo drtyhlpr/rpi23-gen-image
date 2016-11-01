@@ -47,8 +47,6 @@ RELEASE=${RELEASE:=jessie}
 KERNEL_ARCH=${KERNEL_ARCH:=arm}
 RELEASE_ARCH=${RELEASE_ARCH:=armhf}
 CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
-COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
-KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
 KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
 QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
 
@@ -56,7 +54,6 @@ QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
 KERNEL_URL=${KERNEL_URL:=https://github.com/raspberrypi/linux}
 FIRMWARE_URL=${FIRMWARE_URL:=https://github.com/raspberrypi/firmware/raw/master/boot}
 WLAN_FIRMWARE_URL=${WLAN_FIRMWARE_URL:=https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm80211/brcm}
-COLLABORA_URL=${COLLABORA_URL:=https://repositories.collabora.co.uk/debian}
 FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=git://git.denx.de/u-boot.git}
 
@@ -212,7 +209,7 @@ fi
 
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
-  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf bc"
 fi
 
 # Add libncurses5 to enable kernel menuconfig
@@ -457,114 +454,3 @@ rm -f "${R}/initrd.img"
 rm -f "${R}/vmlinuz"
 rm -f "${R}${QEMU_BINARY}"
 
-# Calculate size of the chroot directory in KB
-CHROOT_SIZE=$(expr `du -s "${R}" | awk '{ print $1 }'`)
-
-# Calculate the amount of needed 512 Byte sectors
-TABLE_SECTORS=$(expr 1 \* 1024 \* 1024 \/ 512)
-FRMW_SECTORS=$(expr 64 \* 1024 \* 1024 \/ 512)
-ROOT_OFFSET=$(expr ${TABLE_SECTORS} + ${FRMW_SECTORS})
-
-# The root partition is EXT4
-# This means more space than the actual used space of the chroot is used.
-# As overhead for journaling and reserved blocks 25% are added.
-ROOT_SECTORS=$(expr $(expr ${CHROOT_SIZE} + ${CHROOT_SIZE} \/ 100 \* 25) \* 1024 \/ 512)
-
-# Calculate required image size in 512 Byte sectors
-IMAGE_SECTORS=$(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS})
-
-# Prepare date string for image file name
-DATE="$(date +%Y-%m-%d)"
-
-# Prepare image file
-if [ "$ENABLE_SPLITFS" = true ] ; then
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" bs=512 count=0 seek=${FRMW_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-root.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-root.img" bs=512 count=0 seek=${ROOT_SECTORS}
-
-  # Write firmware/boot partition tables
-  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" 2> /dev/null <<EOM
-${TABLE_SECTORS},${FRMW_SECTORS},c,*
-EOM
-
-  # Write root partition table
-  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-debian-${RELEASE}-root.img" 2> /dev/null <<EOM
-${TABLE_SECTORS},${ROOT_SECTORS},83
-EOM
-
-  # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-frmw.img)"
-  ROOT_LOOP="$(losetup -o 1M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-root.img)"
-else # ENABLE_SPLITFS=false
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=0 seek=${IMAGE_SECTORS}
-
-  # Write partition table
-  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-debian-${RELEASE}.img" 2> /dev/null <<EOM
-${TABLE_SECTORS},${FRMW_SECTORS},c,*
-${ROOT_OFFSET},${ROOT_SECTORS},83
-EOM
-
-  # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
-  ROOT_LOOP="$(losetup -o 65M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
-fi
-
-if [ "$ENABLE_CRYPTFS" = true ] ; then
-  # Create dummy ext4 fs
-  mkfs.ext4 "$ROOT_LOOP"
-
-  # Setup password keyfile
-  echo -n ${CRYPTFS_PASSWORD} > .password
-  chmod 600 .password
-
-  # Initialize encrypted partition
-  echo "YES" | cryptsetup luksFormat "${ROOT_LOOP}" -c "${CRYPTFS_CIPHER}" -s "${CRYPTFS_XTSKEYSIZE}" .password
-
-  # Open encrypted partition and setup mapping
-  cryptsetup luksOpen "${ROOT_LOOP}" -d .password "${CRYPTFS_MAPPING}"
-
-  # Secure delete password keyfile
-  shred -zu .password
-
-  # Update temporary loop device
-  ROOT_LOOP="/dev/mapper/${CRYPTFS_MAPPING}"
-
-  # Wipe encrypted partition (encryption cipher is used for randomness)
-  dd if=/dev/zero of="${ROOT_LOOP}" bs=512 count=$(blockdev --getsz "${ROOT_LOOP}")
-fi
-
-# Build filesystems
-mkfs.vfat "$FRMW_LOOP"
-mkfs.ext4 "$ROOT_LOOP"
-
-# Mount the temporary loop devices
-mkdir -p "$BUILDDIR/mount"
-mount "$ROOT_LOOP" "$BUILDDIR/mount"
-
-mkdir -p "$BUILDDIR/mount/boot/firmware"
-mount "$FRMW_LOOP" "$BUILDDIR/mount/boot/firmware"
-
-# Copy all files from the chroot to the loop device mount point directory
-rsync -a "${R}/" "$BUILDDIR/mount/"
-
-# Unmount all temporary loop devices and mount points
-cleanup
-
-# Create block map file(s) of image(s)
-if [ "$ENABLE_SPLITFS" = true ] ; then
-  # Create block map files for "bmaptool"
-  bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img"
-  bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}-root.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}-root.img"
-
-  # Image was successfully created
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}-root.img ($(expr \( ${TABLE_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
-else
-  # Create block map file for "bmaptool"
-  bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}.img"
-
-  # Image was successfully created
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
-fi

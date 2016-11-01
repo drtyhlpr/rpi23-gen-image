@@ -5,6 +5,11 @@
 # uncomment if you get no picture on HDMI for a default "safe" mode
 #hdmi_safe=1
 
+
+# CONFIG_DRM_VC4: This driver requires that "avoid_warnings=2" be present in
+# the config.txt for the firmware, to keep it from smashing our display setup.
+avoid_warnings=2
+
 # uncomment this if your display has a black border of unused pixels visible
 # and your display can output without overscan
 #disable_overscan=1
