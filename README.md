@@ -164,7 +164,7 @@ Create non-root user with password raspberry. Unless overridden with `USER_NAME`
 ##### `USER_NAME`=pi
 Non-root user to create.  Ignored if `ENABLE_USER`=false
 
-##### `ENABLE_ROOT`=true
+##### `ENABLE_ROOT`=false
 Set root user password so root login will be enabled
 
 ##### `ENABLE_ROOT_SSH`=true
