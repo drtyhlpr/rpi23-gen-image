@@ -214,8 +214,11 @@ Clean the existing kernel sources directory `KERNELSRC_DIR` (using `make mrprope
 ##### `KERNELSRC_CONFIG`=true
 Run `make bcm2709_defconfig` (and optional `make menuconfig`) to configure the kernel sources before building. This parameter is automatically set to `true` if no existing kernel sources directory was specified using `KERNELSRC_DIR`. This parameter is ignored if `KERNELSRC_PREBUILT`=true.
 
+##### `KERNELSRC_USRCONFIG`=""
+Copy own config file to kernel `.config`. If `KERNEL_MENUCONFIG`=true then running after copy.
+
 ##### `KERNELSRC_PREBUILT`=false
-With this parameter set to true the script expects the existing kernel sources directory to be already successfully cross-compiled. The parameters `KERNELSRC_CLEAN`, `KERNELSRC_CONFIG` and `KERNEL_MENUCONFIG` are ignored and no kernel compilation tasks are performed.
+With this parameter set to true the script expects the existing kernel sources directory to be already successfully cross-compiled. The parameters `KERNELSRC_CLEAN`, `KERNELSRC_CONFIG`, `KERNELSRC_USRCONFIG` and `KERNEL_MENUCONFIG` are ignored and no kernel compilation tasks are performed.
 
 ##### `RPI_FIRMWARE_DIR`=""
 The directory containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.

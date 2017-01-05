@@ -71,6 +71,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
 
+      if [ ! -z "$KERNELSRC_USRCONFIG" ] ; then    
+        cp $KERNELSRC_USRCONFIG ${KERNEL_DIR}/.config 
+      fi
+
       # Start menu-driven kernel configuration (interactive)
       if [ "$KERNEL_MENUCONFIG" = true ] ; then
         make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" menuconfig
@@ -129,6 +133,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
   # Remove kernel sources
   if [ "$KERNEL_REMOVESRC" = true ] ; then
     rm -fr "${KERNEL_DIR}"
+  else
+    #make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" oldconfig
+    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" modules_prepare
+    #make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" mrproper
   fi
 
   if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
@@ -304,3 +312,8 @@ fi
 
 # Install sysctl.d configuration files
 install_readonly files/sysctl.d/81-rpi-vm.conf "${ETC_DIR}/sysctl.d/81-rpi-vm.conf"
+
+# make symlinks
+ln -sf "${KERNEL_DIR}" "${R}/lib/modules/${KERNEL_VERSION}/build"
+ln -sf "${KERNEL_DIR}" "${R}/lib/modules/${KERNEL_VERSION}/source"
+
