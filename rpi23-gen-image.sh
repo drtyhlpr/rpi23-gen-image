@@ -249,7 +249,7 @@ for package in $REQUIRED_PACKAGES ; do
   fi
 done
 
-# Ask if missing packages should get installed right now
+# If there are missing packages ask confirmation for install, or exit
 if [ -n "$MISSING_PACKAGES" ] ; then
   echo "the following packages needed by this script are not installed:"
   echo "$MISSING_PACKAGES"
@@ -257,10 +257,10 @@ if [ -n "$MISSING_PACKAGES" ] ; then
   echo -n "\ndo you want to install the missing packages right now? [y/n] "
   read confirm
   [ "$confirm" != "y" ] && exit 1
-fi
 
-# Make sure all required packages are installed
-apt-get -qq -y install ${REQUIRED_PACKAGES}
+  # Make sure all missing required packages are installed
+  apt-get -qq -y install ${MISSING_PACKAGES}
+fi
 
 # Check if ./bootstrap.d directory exists
 if [ ! -d "./bootstrap.d/" ] ; then
