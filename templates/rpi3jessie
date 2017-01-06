@@ -1,0 +1,4 @@
+# Configuration template file used by rpi23-gen-image.sh
+RPI_MODEL=3
+RELEASE=jessie
+BUILD_KERNEL=true

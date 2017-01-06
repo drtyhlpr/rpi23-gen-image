@@ -30,6 +30,11 @@ fi
 # Load utility functions
 . ./functions.sh
 
+# Load parameters from configuration template file
+if [ ! -z "$CONFIG_TEMPLATE" ] ; then
+  use_template
+fi
+
 # Introduce settings
 set -e
 echo -n -e "\n#\n# RPi2/3 Bootstrap Settings\n#\n"
