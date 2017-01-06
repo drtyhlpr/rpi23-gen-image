@@ -48,7 +48,10 @@ Set the desired Debian release name. The script at this time supports the bootst
 Set system host name. It's recommended that the host name is unique in the corresponding subnet.
 
 ##### `PASSWORD`="raspberry"
-Set system `root` password. The same password is used for the created user `pi`. It's **STRONGLY** recommended that you choose a custom password.
+Set system `root` password. It's **STRONGLY** recommended that you choose a custom password.
+
+##### `USER_PASSWORD`="raspberry"
+Set password for the created non-root user `USER_NAME`=pi. Ignored if `ENABLE_USER`=false. It's **STRONGLY** recommended that you choose a custom password.
 
 ##### `DEFLOCAL`="en_US.UTF-8"
 Set default system locale. This setting can also be changed inside the running OS using the `dpkg-reconfigure locales` command. Please note that on using this parameter the script will automatically install the required packages `locales`, `keyboard-configuration` and `console-setup`.
@@ -159,7 +162,7 @@ Install and enable the [hardware accelerated Xorg video driver](https://github.c
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
 
 ##### `ENABLE_USER`=true
-Create non-root user with password raspberry. Unless overridden with `USER_NAME`=user, username will be `pi`.
+Create non-root user with password `USER_PASSWORD`=raspberry. Unless overridden with `USER_NAME`=user, username will be `pi`.
 
 ##### `USER_NAME`=pi
 Non-root user to create.  Ignored if `ENABLE_USER`=false
