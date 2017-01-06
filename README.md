@@ -7,6 +7,19 @@ The following list of Debian packages must be installed on the build system beca
 
   ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc```
 
+It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandetory. Kernel compilation and linking will be performed on the build system using an ARM (armhf) cross-compiler toolchain.
+
+The script has been tested using the default `crossbuild-essential-armhf` toolchain meta package on Debian Linux `jessie` and `stretch` build systems. Please check the [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains) for futher information.
+
+If a Debian Linux `jessie` build system is used it will be required to add the [Debian Cross-toolchains repository](http://emdebian.org/tools/debian/) first:
+
+```
+echo "deb http://emdebian.org/tools/debian/ jessie main" > /etc/apt/sources.list.d/crosstools.list
+sudo -u nobody wget -O - http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add -
+dpkg --add-architecture armhf
+apt-get update
+```
+
 ## Command-line parameters
 The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi23-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi23-gen-image.sh` script.
 
