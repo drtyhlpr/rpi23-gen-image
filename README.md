@@ -9,7 +9,7 @@ The following list of Debian packages must be installed on the build system beca
 
 It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandetory. Kernel compilation and linking will be performed on the build system using an ARM (armhf) cross-compiler toolchain.
 
-The script has been tested using the default `crossbuild-essential-armhf` toolchain meta package on Debian Linux `jessie` and `stretch` build systems. Please check the [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains) for futher information.
+The script has been tested using the default `crossbuild-essential-armhf` toolchain meta package on Debian Linux `jessie` and `stretch` build systems. Please check the [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains) for further information.
 
 If a Debian Linux `jessie` build system is used it will be required to add the [Debian Cross-toolchains repository](http://emdebian.org/tools/debian/) first:
 
@@ -319,6 +319,7 @@ All the required configuration files that will be copied to the generated OS ima
 | `sysctl.d` | Swapping and Network Hardening configuration |
 | `xorg` | fbturbo Xorg driver configuration |
 
+## Custom packages and scripts
 Debian custom packages, i.e. those not in the debian repositories, can be installed by placing them in the `packages` directory. They are installed immediately after packages from the repositories are installed. Any dependencies listed in the custom packages will be downloaded automatically from the repositories. Do not list these custom packages in `APT_INCLUDES`.
 
 Scripts in the custom.d directory will be executed after all other installation is complete but before the image is created.
@@ -347,6 +348,7 @@ bmaptool copy ./images/jessie/2015-12-13-debian-jessie-root.img /dev/sdc
 ## External links and references
 * [Debian worldwide mirror sites](https://www.debian.org/mirror/list)
 * [Debian Raspberry Pi 2 Wiki](https://wiki.debian.org/RaspberryPi2)
+* [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains)
 * [Official Raspberry Pi Firmware on github](https://github.com/raspberrypi/firmware)
 * [Official Raspberry Pi Kernel on github](https://github.com/raspberrypi/linux)
 * [U-BOOT git repository](http://git.denx.de/?p=u-boot.git;a=summary)
