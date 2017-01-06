@@ -242,6 +242,11 @@ if [ "$ENABLE_INITRAMFS" = true ] && [ "$BUILD_KERNEL" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},initramfs-tools"
 fi
 
+# Add device-tree-compiler required for building the U-Boot bootloader
+if [ "$ENABLE_UBOOT" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},device-tree-compiler"
+fi
+
 # Check if all required packages are installed on the build system
 for package in $REQUIRED_PACKAGES ; do
   if [ "`dpkg-query -W -f='${Status}' $package`" != "install ok installed" ] ; then
