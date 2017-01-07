@@ -40,6 +40,16 @@ RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNEL=true ./rpi23-g
 RELEASE=stretch RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNEL=true ./rpi23-gen-image.sh
 ```
 
+## Configuration template files
+To avoid long lists of command-line parameters and to help to store the favourite parameter configurations the `rpi23-gen-image.sh` script supports so called configuration template files (`CONFIG_TEMPLATE`=template). These are simple text files located in the `./templates` directory that contain the list of configuration parameters that will be used. New configuration template files can be added to the `./templates` directory.
+
+#####Command-line examples:
+```shell
+CONFIG_TEMPLATE=rpi3stretch ./rpi23-gen-image.sh
+CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
+```
+
+## Supported parameters and settings
 #### APT settings:
 ##### `APT_SERVER`="ftp.debian.org"
 Set Debian packages server address. Choose a server from the list of Debian worldwide [mirror sites](https://www.debian.org/mirror/list). Using a nearby server will probably speed-up all required downloads within the bootstrapping process.
