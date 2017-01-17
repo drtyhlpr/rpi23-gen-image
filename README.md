@@ -197,6 +197,15 @@ Set root user password so root login will be enabled
 Enable password root login via SSH. May be a security risk with default
 password, use only in trusted environments.
 
+##### `SSH_USER_KEYS`=""
+Path to a file containing SSH-keys to grant user access for, one per line. Point 
+this to your public key (usually ~/.ssh/id_rsa.pub) to enable passwordless SSH.
+
+##### `SSH_ROOT_KEYS`=""
+Path to a file containing SSH-keys to grant root access for, one per line. Point 
+this to your public key to enable passwordless SSH. Logging in with a key will 
+work, even if `ENABLE_ROOT_SSH`=false.
+
 ##### `ENABLE_HARDNET`=false
 Enable IPv4/IPv6 network stack hardening settings.
 
@@ -309,6 +318,7 @@ The functions of this script that are required for the different stages of the b
 | `41-uboot.sh` | Build and Setup U-Boot |
 | `42-fbturbo.sh` | Build and Setup fbturbo Xorg driver |
 | `50-firstboot.sh` | First boot actions |
+| `60-authorize-keys.sh` | SSH key authorization |
 | `99-reduce.sh` | Reduce the disk space usage |
 
 All the required configuration files that will be copied to the generated OS image are located inside the `files` directory. It is not recommended to modify these configuration files manually.
