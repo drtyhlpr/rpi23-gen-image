@@ -30,6 +30,11 @@ fi
 # Load utility functions
 . ./functions.sh
 
+# Load parameters from configuration template file
+if [ ! -z "$CONFIG_TEMPLATE" ] ; then
+  use_template
+fi
+
 # Introduce settings
 set -e
 echo -n -e "\n#\n# RPi2/3 Bootstrap Settings\n#\n"
@@ -78,6 +83,7 @@ RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
 # General settings
 HOSTNAME=${HOSTNAME:=rpi${RPI_MODEL}-${RELEASE}}
 PASSWORD=${PASSWORD:=raspberry}
+USER_PASSWORD=${USER_PASSWORD:=raspberry}
 DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
 TIMEZONE=${TIMEZONE:="Europe/Berlin"}
 EXPANDROOT=${EXPANDROOT:=true}
@@ -175,7 +181,7 @@ APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
 
 # Packages required for bootstrapping
-REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git"
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc"
 MISSING_PACKAGES=""
 
 set +x
@@ -242,6 +248,11 @@ if [ "$ENABLE_INITRAMFS" = true ] && [ "$BUILD_KERNEL" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},initramfs-tools"
 fi
 
+# Add device-tree-compiler required for building the U-Boot bootloader
+if [ "$ENABLE_UBOOT" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},device-tree-compiler"
+fi
+
 # Check if all required packages are installed on the build system
 for package in $REQUIRED_PACKAGES ; do
   if [ "`dpkg-query -W -f='${Status}' $package`" != "install ok installed" ] ; then
@@ -249,7 +260,7 @@ for package in $REQUIRED_PACKAGES ; do
   fi
 done
 
-# Ask if missing packages should get installed right now
+# If there are missing packages ask confirmation for install, or exit
 if [ -n "$MISSING_PACKAGES" ] ; then
   echo "the following packages needed by this script are not installed:"
   echo "$MISSING_PACKAGES"
@@ -257,10 +268,10 @@ if [ -n "$MISSING_PACKAGES" ] ; then
   echo -n "\ndo you want to install the missing packages right now? [y/n] "
   read confirm
   [ "$confirm" != "y" ] && exit 1
-fi
 
-# Make sure all required packages are installed
-apt-get -qq -y install ${REQUIRED_PACKAGES}
+  # Make sure all missing required packages are installed
+  apt-get -qq -y install ${MISSING_PACKAGES}
+fi
 
 # Check if ./bootstrap.d directory exists
 if [ ! -d "./bootstrap.d/" ] ; then

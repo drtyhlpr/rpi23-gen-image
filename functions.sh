@@ -42,3 +42,14 @@ install_exec() {
   # Install file with root exec permissions
   install -o root -g root -m 744 $*
 }
+
+use_template () {
+  # Test if configuration template file exists
+  if [ ! -r "./templates/${CONFIG_TEMPLATE}" ] ; then
+    echo "error: configuration template ${CONFIG_TEMPLATE} not found"
+    exit 1
+  fi
+
+  # Load template configuration parameters
+  . "./templates/${CONFIG_TEMPLATE}"
+}

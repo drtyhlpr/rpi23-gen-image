@@ -1,11 +1,24 @@
 # rpi23-gen-image
 ## Introduction
-`rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for Raspberry Pi 2 (RPi2) and Raspberry Pi 3 (RPi3) computers. The script at this time supports the bootstrapping of the Debian releases `jessie` and `stretch`. Raspberry Pi 3 images are currently generated for 32-bit mode only.
+`rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for Raspberry Pi 2 (RPi2) and Raspberry Pi 3 (RPi3) computers. The script at this time supports the bootstrapping of the Debian (armhf) releases `jessie` and `stretch`. Raspberry Pi 3 images are currently generated for 32-bit mode only.
 
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
 
-  ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git```
+  ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc```
+
+It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandetory. Kernel compilation and linking will be performed on the build system using an ARM (armhf) cross-compiler toolchain.
+
+The script has been tested using the default `crossbuild-essential-armhf` toolchain meta package on Debian Linux `jessie` and `stretch` build systems. Please check the [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains) for further information.
+
+If a Debian Linux `jessie` build system is used it will be required to add the [Debian Cross-toolchains repository](http://emdebian.org/tools/debian/) first:
+
+```
+echo "deb http://emdebian.org/tools/debian/ jessie main" > /etc/apt/sources.list.d/crosstools.list
+sudo -u nobody wget -O - http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add -
+dpkg --add-architecture armhf
+apt-get update
+```
 
 ## Command-line parameters
 The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi23-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi23-gen-image.sh` script.
@@ -27,6 +40,16 @@ RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNEL=true ./rpi23-g
 RELEASE=stretch RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNEL=true ./rpi23-gen-image.sh
 ```
 
+## Configuration template files
+To avoid long lists of command-line parameters and to help to store the favourite parameter configurations the `rpi23-gen-image.sh` script supports so called configuration template files (`CONFIG_TEMPLATE`=template). These are simple text files located in the `./templates` directory that contain the list of configuration parameters that will be used. New configuration template files can be added to the `./templates` directory.
+
+#####Command-line examples:
+```shell
+CONFIG_TEMPLATE=rpi3stretch ./rpi23-gen-image.sh
+CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
+```
+
+## Supported parameters and settings
 #### APT settings:
 ##### `APT_SERVER`="ftp.debian.org"
 Set Debian packages server address. Choose a server from the list of Debian worldwide [mirror sites](https://www.debian.org/mirror/list). Using a nearby server will probably speed-up all required downloads within the bootstrapping process.
@@ -48,7 +71,10 @@ Set the desired Debian release name. The script at this time supports the bootst
 Set system host name. It's recommended that the host name is unique in the corresponding subnet.
 
 ##### `PASSWORD`="raspberry"
-Set system `root` password. The same password is used for the created user `pi`. It's **STRONGLY** recommended that you choose a custom password.
+Set system `root` password. It's **STRONGLY** recommended that you choose a custom password.
+
+##### `USER_PASSWORD`="raspberry"
+Set password for the created non-root user `USER_NAME`=pi. Ignored if `ENABLE_USER`=false. It's **STRONGLY** recommended that you choose a custom password.
 
 ##### `DEFLOCAL`="en_US.UTF-8"
 Set default system locale. This setting can also be changed inside the running OS using the `dpkg-reconfigure locales` command. Please note that on using this parameter the script will automatically install the required packages `locales`, `keyboard-configuration` and `console-setup`.
@@ -159,12 +185,12 @@ Install and enable the [hardware accelerated Xorg video driver](https://github.c
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
 
 ##### `ENABLE_USER`=true
-Create non-root user with password raspberry. Unless overridden with `USER_NAME`=user, username will be `pi`.
+Create non-root user with password `USER_PASSWORD`=raspberry. Unless overridden with `USER_NAME`=user, username will be `pi`.
 
 ##### `USER_NAME`=pi
 Non-root user to create.  Ignored if `ENABLE_USER`=false
 
-##### `ENABLE_ROOT`=true
+##### `ENABLE_ROOT`=false
 Set root user password so root login will be enabled
 
 ##### `ENABLE_ROOT_SSH`=true
@@ -220,8 +246,11 @@ Clean the existing kernel sources directory `KERNELSRC_DIR` (using `make mrprope
 ##### `KERNELSRC_CONFIG`=true
 Run `make bcm2709_defconfig` (and optional `make menuconfig`) to configure the kernel sources before building. This parameter is automatically set to `true` if no existing kernel sources directory was specified using `KERNELSRC_DIR`. This parameter is ignored if `KERNELSRC_PREBUILT`=true.
 
+##### `KERNELSRC_USRCONFIG`=""
+Copy own config file to kernel `.config`. If `KERNEL_MENUCONFIG`=true then running after copy.
+
 ##### `KERNELSRC_PREBUILT`=false
-With this parameter set to true the script expects the existing kernel sources directory to be already successfully cross-compiled. The parameters `KERNELSRC_CLEAN`, `KERNELSRC_CONFIG` and `KERNEL_MENUCONFIG` are ignored and no kernel compilation tasks are performed.
+With this parameter set to true the script expects the existing kernel sources directory to be already successfully cross-compiled. The parameters `KERNELSRC_CLEAN`, `KERNELSRC_CONFIG`, `KERNELSRC_USRCONFIG` and `KERNEL_MENUCONFIG` are ignored and no kernel compilation tasks are performed.
 
 ##### `RPI_FIRMWARE_DIR`=""
 The directory containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.
@@ -306,6 +335,7 @@ All the required configuration files that will be copied to the generated OS ima
 | `sysctl.d` | Swapping and Network Hardening configuration |
 | `xorg` | fbturbo Xorg driver configuration |
 
+## Custom packages and scripts
 Debian custom packages, i.e. those not in the debian repositories, can be installed by placing them in the `packages` directory. They are installed immediately after packages from the repositories are installed. Any dependencies listed in the custom packages will be downloaded automatically from the repositories. Do not list these custom packages in `APT_INCLUDES`.
 
 Scripts in the custom.d directory will be executed after all other installation is complete but before the image is created.
@@ -334,6 +364,7 @@ bmaptool copy ./images/jessie/2015-12-13-debian-jessie-root.img /dev/sdc
 ## External links and references
 * [Debian worldwide mirror sites](https://www.debian.org/mirror/list)
 * [Debian Raspberry Pi 2 Wiki](https://wiki.debian.org/RaspberryPi2)
+* [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains)
 * [Official Raspberry Pi Firmware on github](https://github.com/raspberrypi/firmware)
 * [Official Raspberry Pi Kernel on github](https://github.com/raspberrypi/linux)
 * [U-BOOT git repository](http://git.denx.de/?p=u-boot.git;a=summary)
