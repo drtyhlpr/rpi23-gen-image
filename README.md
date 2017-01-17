@@ -309,6 +309,7 @@ The functions of this script that are required for the different stages of the b
 | `41-uboot.sh` | Build and Setup U-Boot |
 | `42-fbturbo.sh` | Build and Setup fbturbo Xorg driver |
 | `50-firstboot.sh` | First boot actions |
+| `60-authorize-keys.sh` | SSH key authorization |
 | `99-reduce.sh` | Reduce the disk space usage |
 
 All the required configuration files that will be copied to the generated OS image are located inside the `files` directory. It is not recommended to modify these configuration files manually.
