@@ -1,4 +1,3 @@
-. ./functions.sh
 
 #
 # Authorize SSH keys.
