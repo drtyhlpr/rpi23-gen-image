@@ -9,8 +9,9 @@
 #
 authorize() {
     [ -n "${3}" ] || return 64
-    install -D -o root -g root -m 600 "${3}" "${R}/${2}/.ssh/authorized_keys"
-    chroot_exec chown -R "${1}:${1}" "/${2}/.ssh/authorized_keys"
+    install -D -o root -g root -m 600 "${3}" "${R}/${2}/.ssh/authorized_keys" \
+        && chroot_exec chown -R "${1}:${1}" "/${2}/.ssh/authorized_keys" \
+        || return 73
 }
 
 ##
