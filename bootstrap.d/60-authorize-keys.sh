@@ -2,15 +2,24 @@
 # Authorize SSH keys.
 #
 
-if [ -n "${SSH_ROOT_KEYS}" ]
-then
-    echo "Authorizing SSH keys..."
-    mkdir "${R}/root/.ssh/"
-    install \
-            -o root \
-            -g root \
-            -m 600 \
-            "${SSH_ROOT_KEYS}" \
-            "${R}/root/.ssh/authorized_keys"
-fi
+# Add a given key file for a given user to a given home directory.
+#
+# Syntax:
+#   authorize <user> <home-directory> <key-file>
+#
+authorize() {
+    [ -n "${3}" ] || return 64
+    echo "Authorizing SSH keys for ${1}..."
+    mkdir "${R}/${2}/.ssh/"
+    install -o ${1} -g ${1} -m 600 "${3}" "${R}/${2}/.ssh/authorized_keys"
+}
+
+##
+#
+# Main routine.
+#
+##
+
+authorize root root "${SSH_ROOT_KEYS}"
+authorize "${USER_NAME}" "home/${USER_NAME}" "${SSH_USER_KEYS}"
 
