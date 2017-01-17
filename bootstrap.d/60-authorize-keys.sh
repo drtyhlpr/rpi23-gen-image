@@ -10,8 +10,7 @@
 authorize() {
     [ -n "${3}" ] || return 64
     echo "Authorizing SSH keys for ${1}..."
-    mkdir "${R}/${2}/.ssh/"
-    install -o ${1} -g ${1} -m 600 "${3}" "${R}/${2}/.ssh/authorized_keys"
+    install -D -o ${1} -g ${1} -m 600 "${3}" "${R}/${2}/.ssh/authorized_keys"
 }
 
 ##
