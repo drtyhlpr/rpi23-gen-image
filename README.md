@@ -197,12 +197,6 @@ Set root user password so root login will be enabled
 Enable password root login via SSH. May be a security risk with default
 password, use only in trusted environments.
 
-##### `AUTHORIZE_SSH_KEYS`=false
-Add all SSH keys authorized for the root user on the build system to the 
-authorized keys for the root user of the new system. This will allow the user 
-building the image to log into the new device, removing the need for setting any 
-passwords, provided their SSH-key is authorized for root on the build server.
-
 ##### `ENABLE_HARDNET`=false
 Enable IPv4/IPv6 network stack hardening settings.
 
