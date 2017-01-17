@@ -197,6 +197,11 @@ Set root user password so root login will be enabled
 Enable password root login via SSH. May be a security risk with default
 password, use only in trusted environments.
 
+##### `SSH_ROOT_KEYS`=""
+Path to a file containing SSH-keys to grant root access for, one per line. Point 
+this to your public key to enable passwordless SSH. Logging in with a key will 
+work, even if `ENABLE_ROOT_SSH`=false.
+
 ##### `ENABLE_HARDNET`=false
 Enable IPv4/IPv6 network stack hardening settings.
 
