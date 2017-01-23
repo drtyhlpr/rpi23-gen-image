@@ -11,18 +11,13 @@ ENCRYPTED_USER_PASSWORD=`mkpasswd -m sha-512 "${USER_PASSWORD}"`
 
 # Setup default user
 if [ "$ENABLE_USER" = true ] ; then
-  chroot_exec adduser --gecos $USER_NAME --add_extra_groups \
-	--disabled-password $USER_NAME 
+  chroot_exec adduser --gecos $USER_NAME --add_extra_groups --disabled-password $USER_NAME
   chroot_exec usermod -a -G sudo -p "${ENCRYPTED_USER_PASSWORD}" $USER_NAME
 fi
 
 # Setup root password or not
 if [ "$ENABLE_ROOT" = true ] ; then
   chroot_exec usermod -p "${ENCRYPTED_PASSWORD}" root
-
-  if [ "$ENABLE_ROOT_SSH" = true ] ; then
-    sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin yes|g" "${ETC_DIR}/ssh/sshd_config"
-  fi
 else
   # Set no root password to disable root login
   chroot_exec usermod -p \'!\' root

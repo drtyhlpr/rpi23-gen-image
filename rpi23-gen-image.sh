@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ########################################################################
-# rpi23-gen-image.sh					       2015-2016
+# rpi23-gen-image.sh					       2015-2017
 #
 # Advanced Debian "jessie" and "stretch"  bootstrap script for RPi2/3
 #
@@ -126,7 +126,15 @@ ENABLE_RSYSLOG=${ENABLE_RSYSLOG:=true}
 ENABLE_USER=${ENABLE_USER:=true}
 USER_NAME=${USER_NAME:="pi"}
 ENABLE_ROOT=${ENABLE_ROOT:=false}
-ENABLE_ROOT_SSH=${ENABLE_ROOT_SSH:=false}
+
+# SSH settings
+SSH_ENABLE_ROOT=${SSH_ENABLE_ROOT:=false}
+SSH_DISABLE_PASSWORD_AUTH=${SSH_DISABLE_PASSWORD_AUTH:=false}
+SSH_LIMIT_USERS=${SSH_LIMIT_USERS:=false}
+SSH_ROOT_AUTHORIZED_KEYS=${SSH_ROOT_AUTHORIZED_KEYS:=""}
+SSH_USER_AUTHORIZED_KEYS=${SSH_USER_AUTHORIZED_KEYS:=""}
+SSH_ROOT_PUB_KEY=${SSH_ROOT_PUB_KEY:=""}
+SSH_USER_PUB_KEY=${SSH_USER_PUB_KEY:=""}
 
 # Advanced settings
 ENABLE_MINBASE=${ENABLE_MINBASE:=false}
@@ -251,6 +259,38 @@ fi
 # Add device-tree-compiler required for building the U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},device-tree-compiler"
+fi
+
+# Check if root SSH (v2) authorized keys file exists
+if [ ! -z "$SSH_ROOT_AUTHORIZED_KEYS" ] ; then
+  if [ ! -f "$SSH_ROOT_AUTHORIZED_KEYS" ] ; then
+    echo "error: '$SSH_ROOT_AUTHORIZED_KEYS' specified SSH authorized keys file not found (SSH_ROOT_AUTHORIZED_KEYS)!"
+    exit 1
+  fi
+fi
+
+# Check if $USER_NAME SSH (v2) authorized keys file exists
+if [ ! -z "$SSH_USER_AUTHORIZED_KEYS" ] ; then
+  if [ ! -f "$SSH_USER_AUTHORIZED_KEYS" ] ; then
+    echo "error: '$SSH_USER_AUTHORIZED_KEYS' specified SSH authorized keys file not found (SSH_USER_AUTHORIZED_KEYS)!"
+    exit 1
+  fi
+fi
+
+# Check if root SSH (v2) public key file exists
+if [ ! -z "$SSH_ROOT_PUB_KEY" ] ; then
+  if [ ! -f "$SSH_ROOT_PUB_KEY" ] ; then
+    echo "error: '$SSH_ROOT_PUB_KEY' specified SSH public key file not found (SSH_ROOT_PUB_KEY)!"
+    exit 1
+  fi
+fi
+
+# Check if $USER_NAME SSH (v2) public key file exists
+if [ ! -z "$SSH_USER_PUB_KEY" ] ; then
+  if [ ! -f "$SSH_USER_PUB_KEY" ] ; then
+    echo "error: '$SSH_USER_PUB_KEY' specified SSH public key file not found (SSH_USER_PUB_KEY)!"
+    exit 1
+  fi
 fi
 
 # Check if all required packages are installed on the build system
@@ -489,37 +529,37 @@ DATE="$(date +%Y-%m-%d)"
 
 # Prepare image file
 if [ "$ENABLE_SPLITFS" = true ] ; then
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" bs=512 count=0 seek=${FRMW_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-root.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}-root.img" bs=512 count=0 seek=${ROOT_SECTORS}
+  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img" bs=512 count=${TABLE_SECTORS}
+  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img" bs=512 count=0 seek=${FRMW_SECTORS}
+  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img" bs=512 count=${TABLE_SECTORS}
+  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img" bs=512 count=0 seek=${ROOT_SECTORS}
 
   # Write firmware/boot partition tables
-  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img" 2> /dev/null <<EOM
+  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img" 2> /dev/null <<EOM
 ${TABLE_SECTORS},${FRMW_SECTORS},c,*
 EOM
 
   # Write root partition table
-  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-debian-${RELEASE}-root.img" 2> /dev/null <<EOM
+  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img" 2> /dev/null <<EOM
 ${TABLE_SECTORS},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-frmw.img)"
-  ROOT_LOOP="$(losetup -o 1M -f --show $BASEDIR/${DATE}-debian-${RELEASE}-root.img)"
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img)"
+  ROOT_LOOP="$(losetup -o 1M -f --show $BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img)"
 else # ENABLE_SPLITFS=false
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-debian-${RELEASE}.img" bs=512 count=0 seek=${IMAGE_SECTORS}
+  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img" bs=512 count=${TABLE_SECTORS}
+  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img" bs=512 count=0 seek=${IMAGE_SECTORS}
 
   # Write partition table
-  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-debian-${RELEASE}.img" 2> /dev/null <<EOM
+  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img" 2> /dev/null <<EOM
 ${TABLE_SECTORS},${FRMW_SECTORS},c,*
 ${ROOT_OFFSET},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
-  ROOT_LOOP="$(losetup -o 65M -f --show $BASEDIR/${DATE}-debian-${RELEASE}.img)"
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img)"
+  ROOT_LOOP="$(losetup -o 65M -f --show $BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img)"
 fi
 
 if [ "$ENABLE_CRYPTFS" = true ] ; then
@@ -566,16 +606,16 @@ cleanup
 # Create block map file(s) of image(s)
 if [ "$ENABLE_SPLITFS" = true ] ; then
   # Create block map files for "bmaptool"
-  bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img"
-  bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}-root.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}-root.img"
+  bmaptool create -o "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.bmap" "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img"
+  bmaptool create -o "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.bmap" "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img"
 
   # Image was successfully created
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}-frmw.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}-root.img ($(expr \( ${TABLE_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img ($(expr \( ${TABLE_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
 else
   # Create block map file for "bmaptool"
-  bmaptool create -o "$BASEDIR/${DATE}-debian-${RELEASE}.bmap" "$BASEDIR/${DATE}-debian-${RELEASE}.img"
+  bmaptool create -o "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.bmap" "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img"
 
   # Image was successfully created
-  echo "$BASEDIR/${DATE}-debian-${RELEASE}.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
 fi

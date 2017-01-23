@@ -193,10 +193,6 @@ Non-root user to create.  Ignored if `ENABLE_USER`=false
 ##### `ENABLE_ROOT`=false
 Set root user password so root login will be enabled
 
-##### `ENABLE_ROOT_SSH`=true
-Enable password root login via SSH. May be a security risk with default
-password, use only in trusted environments.
-
 ##### `ENABLE_HARDNET`=false
 Enable IPv4/IPv6 network stack hardening settings.
 
@@ -211,6 +207,28 @@ Create an initramfs that that will be loaded during the Linux startup process. `
 
 ##### `ENABLE_IFNAMES`=true
 Enable automatic assignment of predictable, stable network interface names for all local Ethernet, WLAN interfaces. This might create complex and long interface names. This parameter is only supported if the Debian release `stretch` is used.
+
+#### SSH settings
+##### `SSH_ENABLE_ROOT`=false
+Enable password root login via SSH. This may be a security risk with default password, use only in trusted environments. `ENABLE_ROOT` must be set to `true`.
+
+##### `SSH_DISABLE_PASSWORD_AUTH`=false
+Disable password based SSH authentication. Only public key based SSH (v2) authentication will be supported.
+
+##### `SSH_LIMIT_USERS`=false
+Limit the users that are allowed to login via SSH. Only allow user `USER_NAME`=pi and root if `SSH_ENABLE_ROOT`=true to login.
+
+##### `SSH_ROOT_AUTHORIZED_KEYS`=""
+Add specified SSH `authorized_keys2` file that contains keys for public key based SSH (v2) authentication of user `root`. SSH protocol version 1 is not supported. `ENABLE_ROOT` **and** `SSH_ENABLE_ROOT` must be set to `true`.
+
+##### `SSH_ROOT_PUB_KEY`=""
+Add specified SSH (v2) public key file to `authorized_keys2` file to enable public key based SSH (v2) authentication of user `root`. SSH protocol version 1 is not supported. `ENABLE_ROOT` **and** `SSH_ENABLE_ROOT` must be set to `true`.
+
+##### `SSH_USER_AUTHORIZED_KEYS`=""
+Add specified SSH `authorized_keys2` file that contains keys for public key based SSH (v2) authentication of user `USER_NAME`=pi. SSH protocol version 1 is not supported.
+
+##### `SSH_USER_PUB_KEY`=""
+Add specified SSH (v2) public key file to `authorized_keys2` file to enable public key based SSH (v2) authentication of user `USER_NAME`=pi. SSH protocol version 1 is not supported.
 
 #### Kernel compilation:
 ##### `BUILD_KERNEL`=false
@@ -306,6 +324,7 @@ The functions of this script that are required for the different stages of the b
 | `21-firewall.sh` | Setup Firewall |
 | `30-security.sh` | Setup Users and Security settings |
 | `31-logging.sh` | Setup Logging |
+| `32-sshd.sh` | Setup SSH and public keys |
 | `41-uboot.sh` | Build and Setup U-Boot |
 | `42-fbturbo.sh` | Build and Setup fbturbo Xorg driver |
 | `50-firstboot.sh` | First boot actions |
