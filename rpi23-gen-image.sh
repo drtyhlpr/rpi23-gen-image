@@ -261,7 +261,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},device-tree-compiler"
 fi
 
-# Check if root SSH (v2) authorized keys file exists
+# Check if root SSH authorized keys file exists
 if [ ! -z "$SSH_ROOT_AUTHORIZED_KEYS" ] ; then
   if [ ! -f "$SSH_ROOT_AUTHORIZED_KEYS" ] ; then
     echo "error: '$SSH_ROOT_AUTHORIZED_KEYS' specified SSH authorized keys file not found (SSH_ROOT_AUTHORIZED_KEYS)!"
@@ -269,7 +269,7 @@ if [ ! -z "$SSH_ROOT_AUTHORIZED_KEYS" ] ; then
   fi
 fi
 
-# Check if $USER_NAME SSH (v2) authorized keys file exists
+# Check if $USER_NAME SSH authorized keys file exists
 if [ ! -z "$SSH_USER_AUTHORIZED_KEYS" ] ; then
   if [ ! -f "$SSH_USER_AUTHORIZED_KEYS" ] ; then
     echo "error: '$SSH_USER_AUTHORIZED_KEYS' specified SSH authorized keys file not found (SSH_USER_AUTHORIZED_KEYS)!"
