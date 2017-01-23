@@ -508,6 +508,16 @@ rm -f "${R}/initrd.img"
 rm -f "${R}/vmlinuz"
 rm -f "${R}${QEMU_BINARY}"
 
+# Remove root .ssh directory if it's empty
+if [ -d "${R}/root/.ssh" ] ; then
+  rmdir --ignore-fail-on-non-empty "${R}/root/.ssh"
+fi
+
+# Remove $USER_NAME .ssh directory if it's empty
+if [ -d "${R}/home/${USER_NAME}/.ssh" ] ; then
+  rmdir --ignore-fail-on-non-empty "${R}/home/${USER_NAME}/.ssh"
+fi
+
 # Calculate size of the chroot directory in KB
 CHROOT_SIZE=$(expr `du -s "${R}" | awk '{ print $1 }'`)
 
