@@ -42,38 +42,47 @@ if [ "$ENABLE_SSHD" = true ] ; then
     fi
   fi
 
-  # Create $USER_NAME SSH config directory
-  mkdir -p "${R}/home/${USER_NAME}/.ssh"
+  if [ "$ENABLE_USER" = true ] ; then
+    # Create $USER_NAME SSH config directory
+    mkdir -p "${R}/home/${USER_NAME}/.ssh"
 
-  # Set permissions of $USER_NAME SSH config directory
-  chroot_exec chmod 700 "/home/${USER_NAME}/.ssh"
-  chroot_exec chown ${USER_NAME}:${USER_NAME} "/home/${USER_NAME}/.ssh"
+    # Set permissions of $USER_NAME SSH config directory
+    chroot_exec chmod 700 "/home/${USER_NAME}/.ssh"
+    chroot_exec chown ${USER_NAME}:${USER_NAME} "/home/${USER_NAME}/.ssh"
 
-  # Install SSH (v2) authorized keys file for user $USER_NAME
-  if [ ! -z "$SSH_USER_AUTHORIZED_KEYS" ] ; then
-    install_readonly "$SSH_USER_AUTHORIZED_KEYS" "${R}/home/${USER_NAME}/.ssh/authorized_keys2"
-  fi
+    # Install SSH (v2) authorized keys file for user $USER_NAME
+    if [ ! -z "$SSH_USER_AUTHORIZED_KEYS" ] ; then
+      install_readonly "$SSH_USER_AUTHORIZED_KEYS" "${R}/home/${USER_NAME}/.ssh/authorized_keys2"
+    fi
 
-  # Add SSH (v2) public key for user $USER_NAME
-  if [ ! -z "$SSH_USER_PUB_KEY" ] ; then
-    cat "$SSH_USER_PUB_KEY" >> "${R}/home/${USER_NAME}/.ssh/authorized_keys2"
-  fi
+    # Add SSH (v2) public key for user $USER_NAME
+    if [ ! -z "$SSH_USER_PUB_KEY" ] ; then
+      cat "$SSH_USER_PUB_KEY" >> "${R}/home/${USER_NAME}/.ssh/authorized_keys2"
+    fi
 
-  # Set permissions of $USER_NAME SSH authorized keys file
-  if [ -f  "${R}/home/${USER_NAME}/.ssh/authorized_keys2" ] ; then
-    chroot_exec chmod 600 "/home/${USER_NAME}/.ssh/authorized_keys2"
-    chroot_exec chown ${USER_NAME}:${USER_NAME} "/home/${USER_NAME}/.ssh/authorized_keys2"
+    # Set permissions of $USER_NAME SSH authorized keys file
+    if [ -f  "${R}/home/${USER_NAME}/.ssh/authorized_keys2" ] ; then
+      chroot_exec chmod 600 "/home/${USER_NAME}/.ssh/authorized_keys2"
+      chroot_exec chown ${USER_NAME}:${USER_NAME} "/home/${USER_NAME}/.ssh/authorized_keys2"
 
-    # Allow SSH public key authentication
-    sed -i "s|[#]*PubkeyAuthentication.*|PubkeyAuthentication yes|g" "${ETC_DIR}/ssh/sshd_config"
+      # Allow SSH public key authentication
+      sed -i "s|[#]*PubkeyAuthentication.*|PubkeyAuthentication yes|g" "${ETC_DIR}/ssh/sshd_config"
+    fi
   fi
 
   # Limit the users that are allowed to login via SSH
   if [ "$SSH_LIMIT_USERS" = true ] ; then
+    allowed_users=""
     if [ "$ENABLE_ROOT" = true ] && [ "$SSH_ENABLE_ROOT" = true ] ; then
-      echo "AllowUsers root ${USER_NAME}" >> "${ETC_DIR}/ssh/sshd_config"
-    else
-      echo "AllowUsers ${USER_NAME}" >> "${ETC_DIR}/ssh/sshd_config"
+      allowed_users="root"
+    fi
+
+    if [ "$ENABLE_USER" = true ] ; then
+      allowed_users="${allowed_users} ${USER_NAME}"
+    fi
+
+    if [ ! -z "$allowed_users" ] ; then
+      echo "AllowUsers ${allowed_users}" >> "${ETC_DIR}/ssh/sshd_config"
     fi
   fi
 
