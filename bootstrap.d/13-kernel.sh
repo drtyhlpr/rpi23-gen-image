@@ -257,6 +257,22 @@ if [ "$ENABLE_SOUND" = true ] ; then
   sed -i "s/^# snd_bcm2835/snd_bcm2835/" "${R}/lib/modules-load.d/rpi2.conf"
 fi
 
+# Enable I2C interface
+if [ "$ENABLE_I2C" = true ] ; then
+  echo "dtparam=i2c_arm=on" >> "${BOOT_DIR}/config.txt"
+  sed -i "s/^# i2c-bcm2708/i2c-bcm2708/" "${R}/lib/modules-load.d/rpi2.conf"
+  sed -i "s/^# i2c-dev/i2c-dev/" "${R}/lib/modules-load.d/rpi2.conf"
+fi
+
+# Enable SPI interface
+if [ "$ENABLE_SPI" = true ] ; then
+  echo "dtparam=spi=on" >> "${BOOT_DIR}/config.txt"
+  echo "spi-bcm2708" >> "${R}/lib/modules-load.d/rpi2.conf"
+  if [ "$RPI_MODEL" = 3 ] ; then
+    sed -i "s/spi-bcm2708/spi-bcm2835/" "${R}/lib/modules-load.d/rpi2.conf"
+  fi
+fi
+
 # Install kernel modules blacklist
 mkdir -p "${ETC_DIR}/modprobe.d/"
 install_readonly files/modules/raspi-blacklist.conf "${ETC_DIR}/modprobe.d/raspi-blacklist.conf"
