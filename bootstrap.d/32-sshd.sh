@@ -15,25 +15,19 @@ if [ "$ENABLE_SSHD" = true ] ; then
     # Permit SSH root login
     sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin yes|g" "${ETC_DIR}/ssh/sshd_config"
 
-    # Create root SSH config directory
-    mkdir -p "${R}/root/.ssh"
-
-    # Set permissions of root SSH config directory
-    chroot_exec chmod 700 "/root/.ssh"
-    chroot_exec chown root:root "/root/.ssh"
-
-    # Install SSH (v2) authorized keys file for user root
-    if [ ! -z "$SSH_ROOT_AUTHORIZED_KEYS" ] ; then
-      install_readonly "$SSH_ROOT_AUTHORIZED_KEYS" "${R}/root/.ssh/authorized_keys"
-    fi
-
     # Add SSH (v2) public key for user root
     if [ ! -z "$SSH_ROOT_PUB_KEY" ] ; then
-      cat "$SSH_ROOT_PUB_KEY" >> "${R}/root/.ssh/authorized_keys"
-    fi
+      # Create root SSH config directory
+      mkdir -p "${R}/root/.ssh"
 
-    # Set permissions of root SSH authorized keys file
-    if [ -f "${R}/root/.ssh/authorized_keys" ] ; then
+      # Set permissions of root SSH config directory
+      chroot_exec chmod 700 "/root/.ssh"
+      chroot_exec chown root:root "/root/.ssh"
+
+      # Add SSH (v2) public key(s) to authorized_keys file
+      cat "$SSH_ROOT_PUB_KEY" >> "${R}/root/.ssh/authorized_keys"
+
+      # Set permissions of root SSH authorized_keys file
       chroot_exec chmod 600 "/root/.ssh/authorized_keys"
       chroot_exec chown root:root "/root/.ssh/authorized_keys"
 
@@ -43,25 +37,19 @@ if [ "$ENABLE_SSHD" = true ] ; then
   fi
 
   if [ "$ENABLE_USER" = true ] ; then
-    # Create $USER_NAME SSH config directory
-    mkdir -p "${R}/home/${USER_NAME}/.ssh"
-
-    # Set permissions of $USER_NAME SSH config directory
-    chroot_exec chmod 700 "/home/${USER_NAME}/.ssh"
-    chroot_exec chown ${USER_NAME}:${USER_NAME} "/home/${USER_NAME}/.ssh"
-
-    # Install SSH (v2) authorized keys file for user $USER_NAME
-    if [ ! -z "$SSH_USER_AUTHORIZED_KEYS" ] ; then
-      install_readonly "$SSH_USER_AUTHORIZED_KEYS" "${R}/home/${USER_NAME}/.ssh/authorized_keys"
-    fi
-
     # Add SSH (v2) public key for user $USER_NAME
     if [ ! -z "$SSH_USER_PUB_KEY" ] ; then
-      cat "$SSH_USER_PUB_KEY" >> "${R}/home/${USER_NAME}/.ssh/authorized_keys"
-    fi
+      # Create $USER_NAME SSH config directory
+      mkdir -p "${R}/home/${USER_NAME}/.ssh"
 
-    # Set permissions of $USER_NAME SSH authorized keys file
-    if [ -f  "${R}/home/${USER_NAME}/.ssh/authorized_keys" ] ; then
+      # Set permissions of $USER_NAME SSH config directory
+      chroot_exec chmod 700 "/home/${USER_NAME}/.ssh"
+      chroot_exec chown ${USER_NAME}:${USER_NAME} "/home/${USER_NAME}/.ssh"
+
+      # Add SSH (v2) public key(s) to authorized_keys file
+      cat "$SSH_USER_PUB_KEY" >> "${R}/home/${USER_NAME}/.ssh/authorized_keys"
+
+      # Set permissions of $USER_NAME SSH config directory
       chroot_exec chmod 600 "/home/${USER_NAME}/.ssh/authorized_keys"
       chroot_exec chown ${USER_NAME}:${USER_NAME} "/home/${USER_NAME}/.ssh/authorized_keys"
 

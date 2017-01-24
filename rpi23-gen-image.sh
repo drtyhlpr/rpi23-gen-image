@@ -133,8 +133,6 @@ ENABLE_ROOT=${ENABLE_ROOT:=false}
 SSH_ENABLE_ROOT=${SSH_ENABLE_ROOT:=false}
 SSH_DISABLE_PASSWORD_AUTH=${SSH_DISABLE_PASSWORD_AUTH:=false}
 SSH_LIMIT_USERS=${SSH_LIMIT_USERS:=false}
-SSH_ROOT_AUTHORIZED_KEYS=${SSH_ROOT_AUTHORIZED_KEYS:=""}
-SSH_USER_AUTHORIZED_KEYS=${SSH_USER_AUTHORIZED_KEYS:=""}
 SSH_ROOT_PUB_KEY=${SSH_ROOT_PUB_KEY:=""}
 SSH_USER_PUB_KEY=${SSH_USER_PUB_KEY:=""}
 
@@ -261,22 +259,6 @@ fi
 # Add device-tree-compiler required for building the U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},device-tree-compiler"
-fi
-
-# Check if root SSH authorized keys file exists
-if [ ! -z "$SSH_ROOT_AUTHORIZED_KEYS" ] ; then
-  if [ ! -f "$SSH_ROOT_AUTHORIZED_KEYS" ] ; then
-    echo "error: '$SSH_ROOT_AUTHORIZED_KEYS' specified SSH authorized keys file not found (SSH_ROOT_AUTHORIZED_KEYS)!"
-    exit 1
-  fi
-fi
-
-# Check if $USER_NAME SSH authorized keys file exists
-if [ ! -z "$SSH_USER_AUTHORIZED_KEYS" ] ; then
-  if [ ! -f "$SSH_USER_AUTHORIZED_KEYS" ] ; then
-    echo "error: '$SSH_USER_AUTHORIZED_KEYS' specified SSH authorized keys file not found (SSH_USER_AUTHORIZED_KEYS)!"
-    exit 1
-  fi
 fi
 
 # Check if root SSH (v2) public key file exists
@@ -509,16 +491,6 @@ rm -f "${R}/var/lib/urandom/random-seed"
 rm -f "${R}/initrd.img"
 rm -f "${R}/vmlinuz"
 rm -f "${R}${QEMU_BINARY}"
-
-# Remove root .ssh directory if it's empty
-if [ -d "${R}/root/.ssh" ] ; then
-  rmdir --ignore-fail-on-non-empty "${R}/root/.ssh"
-fi
-
-# Remove $USER_NAME .ssh directory if it's empty
-if [ -d "${R}/home/${USER_NAME}/.ssh" ] ; then
-  rmdir --ignore-fail-on-non-empty "${R}/home/${USER_NAME}/.ssh"
-fi
 
 # Calculate size of the chroot directory in KB
 CHROOT_SIZE=$(expr `du -s "${R}" | awk '{ print $1 }'`)

@@ -224,17 +224,11 @@ Disable password based SSH authentication. Only public key based SSH (v2) authen
 ##### `SSH_LIMIT_USERS`=false
 Limit the users that are allowed to login via SSH. Only allow user `USER_NAME`=pi and root if `SSH_ENABLE_ROOT`=true to login.
 
-##### `SSH_ROOT_AUTHORIZED_KEYS`=""
-Add specified SSH `authorized_keys` file that contains keys for public key based SSH (v2) authentication of user `root`. SSH protocol version 1 is not supported. `ENABLE_ROOT` **and** `SSH_ENABLE_ROOT` must be set to `true`.
-
 ##### `SSH_ROOT_PUB_KEY`=""
-Add specified SSH (v2) public key file to `authorized_keys` file to enable public key based SSH (v2) authentication of user `root`. SSH protocol version 1 is not supported. `ENABLE_ROOT` **and** `SSH_ENABLE_ROOT` must be set to `true`.
-
-##### `SSH_USER_AUTHORIZED_KEYS`=""
-Add specified SSH `authorized_keys` file that contains keys for public key based SSH (v2) authentication of user `USER_NAME`=pi. SSH protocol version 1 is not supported.
+Add specified SSH (v2) public key from file to `authorized_keys` file to enable public key based SSH (v2) authentication of user `root`. The specified file can also contain multiple SSH (v2) public keys. SSH protocol version 1 is not supported. `ENABLE_ROOT` **and** `SSH_ENABLE_ROOT` must be set to `true`.
 
 ##### `SSH_USER_PUB_KEY`=""
-Add specified SSH (v2) public key file to `authorized_keys` file to enable public key based SSH (v2) authentication of user `USER_NAME`=pi. SSH protocol version 1 is not supported.
+Add specified SSH (v2) public key from file to `authorized_keys` file to enable public key based SSH (v2) authentication of user `USER_NAME`=pi. The specified file can also contain multiple SSH (v2) public keys. SSH protocol version 1 is not supported.
 
 #### Kernel compilation:
 ##### `BUILD_KERNEL`=false
