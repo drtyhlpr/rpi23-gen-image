@@ -215,9 +215,11 @@ if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" != 3 ] ; then
 fi
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
-if [ "$DISABLE_UNDERVOLT_WARNINGS" != 1 ] && [ "$DISABLE_UNDERVOLT_WARNINGS" != 2 ] ; then
-  echo "error: DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS} is not supported"
-  exit 1
+if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
+  if [ "$DISABLE_UNDERVOLT_WARNINGS" != 1 ] && [ "$DISABLE_UNDERVOLT_WARNINGS" != 2 ] ; then
+    echo "error: DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS} is not supported"
+    exit 1
+  fi
 fi
 
 # Set compiler packages and build RPi2/3 Linux kernel if required by Debian release
