@@ -60,6 +60,8 @@ Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will sp
 ##### `APT_INCLUDES`=""
 A comma separated list of additional packages to be installed during bootstrapping.
 
+---
+
 #### General system settings:
 ##### `RPI_MODEL`=2
 Specifiy the target Raspberry Pi hardware model. The script at this time supports the Raspberry Pi models `2` and `3`. `BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` is used.
@@ -85,6 +87,8 @@ Set default system timezone. All available timezones can be found in the `/usr/s
 ##### `EXPANDROOT`=true
 Expand the root partition and filesystem automatically on first boot.
 
+---
+
 #### Keyboard settings:
 These options are used to configure keyboard layout in `/etc/default/keyboard` for console and Xorg. These settings can also be changed inside the running OS using the `dpkg-reconfigure keyboard-configuration` command.
 
@@ -100,11 +104,15 @@ Set the supported variant(s) of the keyboard layout(s).
 ##### `XKB_OPTIONS`=""
 Set extra xkb configuration options.
 
+---
+
 #### Networking settings (DHCP):
 This parameter is used to set up networking auto configuration in `/etc/systemd/network/eth.network`. The default location of network configuration files in the Debian `stretch` release was changed to `/lib/systemd/network`.`
 
 #####`ENABLE_DHCP`=true
 Set the system to use DHCP. This requires an DHCP server.
+
+---
 
 #### Networking settings (static):
 These parameters are used to set up a static networking configuration in `/etc/systemd/network/eth.network`. The following static networking parameters are only supported if `ENABLE_DHCP` was set to `false`. The default location of network configuration files in the Debian `stretch` release was changed to `/lib/systemd/network`.
@@ -129,6 +137,8 @@ Set the IP address for the first NTP server.
 
 #####`NET_NTP_2`=""
 Set the IP address for the second NTP server.
+
+---
 
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
@@ -174,6 +184,8 @@ Install Xorg open-source X Window System.
 ##### `ENABLE_WM`=""
 Install a user defined window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_WM` is used. The `rpi23-gen-image.sh` script has been tested with the following list of window managers: `blackbox`, `openbox`, `fluxbox`, `jwm`, `dwm`, `xfce4`, `awesome`.
 
+---
+
 #### Advanced system features:
 ##### `ENABLE_MINBASE`=false
 Use debootstrap script variant `minbase` which only includes essential packages and apt. This will reduce the disk usage by about 65 MB.
@@ -217,6 +229,8 @@ Enable automatic assignment of predictable, stable network interface names for a
 ##### `DISABLE_UNDERVOLT_WARNINGS`=
 Disable RPi2/3 under-voltage warnings and overlays. Setting the parameter to `1` will disable the warning overlay. Setting it to `2` will additionally allow RPi2/3 turbo mode when low-voltage is present.
 
+---
+
 #### SSH settings:
 ##### `SSH_ENABLE_ROOT`=false
 Enable password root login via SSH. This may be a security risk with default password, use only in trusted environments. `ENABLE_ROOT` must be set to `true`.
@@ -232,6 +246,8 @@ Add SSH (v2) public key(s) from specified file to `authorized_keys` file to enab
 
 ##### `SSH_USER_PUB_KEY`=""
 Add SSH (v2) public key(s) from specified file to `authorized_keys` file to enable public key based SSH (v2) authentication of user `USER_NAME`=pi. The specified file can also contain multiple SSH (v2) public keys. SSH protocol version 1 is not supported.
+
+---
 
 #### Kernel compilation:
 ##### `BUILD_KERNEL`=false
@@ -270,6 +286,8 @@ With this parameter set to true the script expects the existing kernel sources d
 ##### `RPI_FIRMWARE_DIR`=""
 The directory containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.
 
+---
+
 #### Reduce disk usage:
 The following list of parameters is ignored if `ENABLE_REDUCE`=false.
 
@@ -297,8 +315,9 @@ Replace `openssh-server` with `dropbear`.
 ##### `REDUCE_LOCALE`=true
 Remove all `locale` translation files.
 
-#### Encrypted root partition:
+---
 
+#### Encrypted root partition:
 ##### `ENABLE_CRYPTFS`=false
 Enable full system encryption with dm-crypt. Setup a fully LUKS encrypted root partition (aes-xts-plain64:sha512) and generate required initramfs. The /boot directory will not be encrypted. This parameter will be ignored if `BUILD_KERNEL`=false. `ENABLE_CRYPTFS` is experimental. SSH-to-initramfs is currently not supported but will be soon - feel free to help.
 
