@@ -123,6 +123,11 @@ if [ "$ENABLE_SPI" = true ] ; then
   fi
 fi
 
+# Disable RPi2/3 under-voltage warnings
+if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
+  echo "avoid_warnings=${DISABLE_UNDERVOLT_WARNINGS}" >> "${BOOT_DIR}/config.txt"
+fi
+
 # Install kernel modules blacklist
 mkdir -p "${ETC_DIR}/modprobe.d/"
 install_readonly files/modules/raspi-blacklist.conf "${ETC_DIR}/modprobe.d/raspi-blacklist.conf"

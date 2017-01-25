@@ -214,6 +214,9 @@ Create an initramfs that that will be loaded during the Linux startup process. `
 ##### `ENABLE_IFNAMES`=true
 Enable automatic assignment of predictable, stable network interface names for all local Ethernet, WLAN interfaces. This might create complex and long interface names. This parameter is only supported if the Debian release `stretch` is used.
 
+##### `DISABLE_UNDERVOLT_WARNINGS`=
+Disable RPi2/3 under-voltage warnings and overlays. Setting the parameter to ´1´ will disable the warning overlay. Setting it to ´2´ will additionally allow RPi2/3 turbo mode when low-voltage is present.
+
 #### SSH settings:
 ##### `SSH_ENABLE_ROOT`=false
 Enable password root login via SSH. This may be a security risk with default password, use only in trusted environments. `ENABLE_ROOT` must be set to `true`.

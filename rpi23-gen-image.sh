@@ -146,6 +146,7 @@ ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 ENABLE_INITRAMFS=${ENABLE_INITRAMFS:=false}
 ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
+DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS:=}
 
 # Kernel compilation settings
 BUILD_KERNEL=${BUILD_KERNEL:=false}
@@ -210,6 +211,12 @@ fi
 # Check if the internal wireless interface is supported by the RPi model
 if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" != 3 ] ; then
   echo "error: The selected Raspberry Pi model has no internal wireless interface"
+  exit 1
+fi
+
+# Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
+if [ "$DISABLE_UNDERVOLT_WARNINGS" != 1 ] && [ "$DISABLE_UNDERVOLT_WARNINGS" != 2 ] ; then
+  echo "error: DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS} is not supported"
   exit 1
 fi
 
