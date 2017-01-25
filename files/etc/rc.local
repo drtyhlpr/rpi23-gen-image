@@ -11,13 +11,4 @@
 #
 # By default this script does nothing.
 
-if [ ! -e /var/cfengine/policy_server.dat ] ; then
-	while ! ping -c 1 -q zcu.cz; do sleep 2s; done
-        rm -f /var/cfengine/ppkeys/*
-        /var/cfengine/bin/cf-key
-        /var/cfengine/bin/cf-agent --bootstrap cf.civ.zcu.cz
-        /var/cfengine/bin/cf-agent -Kf update.cf -D FORCE_update
-        /var/cfengine/bin/cf-agent -Kf update.cf -D FORCE_update
-fi
-
 exit 0
