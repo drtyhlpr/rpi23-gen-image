@@ -17,7 +17,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   git -C "${R}/tmp" clone "${UBOOT_URL}"
 
   # Build and install U-Boot inside chroot
-  chroot_exec make -C /tmp/u-boot/ ${UBOOT_CONFIG} all
+  chroot_exec make -j${KERNEL_THREADS} -C /tmp/u-boot/ ${UBOOT_CONFIG} all
 
   # Copy compiled bootloader binary and set config.txt to load it
   install_exec "${R}/tmp/u-boot/tools/mkimage" "${R}/usr/sbin/mkimage"
