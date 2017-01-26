@@ -15,28 +15,16 @@
 # Big thanks for patches and enhancements by 10+ github contributors!
 ########################################################################
 
-# Are we running as root?
-if [ "$(id -u)" -ne "0" ] ; then
-  echo "error: this script must be executed with root privileges!"
-  exit 1
-fi
-
-# Check if ./functions.sh script exists
-if [ ! -r "./functions.sh" ] ; then
-  echo "error: './functions.sh' required script not found!"
-  exit 1
-fi
-
-# Carregar Funções
-. ./functions.sh
-. ./config.sh
+# Configs
+. ./scripts/checking.sh
+. ./scripts/functions.sh
+. ./scripts/config.sh
 
 # Load parameters from configuration template file
 if [ ! -z "$CONFIG_TEMPLATE" ] ; then
   use_template
 fi
 
-# Introduce settings
 set -e
 echo -n -e "\n#\n# RPi2/3 Bootstrap Settings\n#\n"
 set -x
@@ -75,7 +63,13 @@ fi
 
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
-  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+	REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+	clear
+	echo
+	echo "Download Source Linux Kernel"
+	echo
+	cd /opt/
+	git clone --depth=1 https://github.com/raspberrypi/linux --branch $KERNELSRC_BRANCH
 fi
 
 # Add libncurses5 to enable kernel menuconfig
@@ -128,18 +122,6 @@ if [ -n "$MISSING_PACKAGES" ] ; then
 
   # Make sure all missing required packages are installed
   apt-get -qq -y install ${MISSING_PACKAGES}
-fi
-
-# Check if ./bootstrap.d directory exists
-if [ ! -d "./bootstrap.d/" ] ; then
-  echo "error: './bootstrap.d' required directory not found!"
-  exit 1
-fi
-
-# Check if ./files directory exists
-if [ ! -d "./files/" ] ; then
-  echo "error: './files' required directory not found!"
-  exit 1
 fi
 
 # Check if specified KERNELSRC_DIR directory exists
