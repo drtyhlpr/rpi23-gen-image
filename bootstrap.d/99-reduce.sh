@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 # Reduce the image size by various operations
 if [ "$ENABLE_REDUCE" = true ] ; then

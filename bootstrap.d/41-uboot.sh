@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 # Install gcc/c++ build environment inside the chroot
 if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ] ; then

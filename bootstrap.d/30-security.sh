@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 # Generate crypt(3) password string
 ENCRYPTED_PASSWORD=`mkpasswd -m sha-512 "${PASSWORD}"`

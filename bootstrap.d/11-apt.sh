@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 # Install and setup APT proxy configuration
 if [ -z "$APT_PROXY" ] ; then

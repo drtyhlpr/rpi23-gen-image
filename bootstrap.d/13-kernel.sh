@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 # Fetch and build latest raspberry kernel
 if [ "$BUILD_KERNEL" = true ] ; then

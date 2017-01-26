@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 if [ "$ENABLE_IPTABLES" = true ] ; then
   # Create iptables configuration directory

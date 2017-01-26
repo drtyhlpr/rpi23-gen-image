@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 if [ "$ENABLE_FBTURBO" = true ] ; then
   # Fetch fbturbo driver sources

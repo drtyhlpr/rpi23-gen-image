@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 # Prepare rc.firstboot script
 cat files/firstboot/10-begin.sh > "${ETC_DIR}/rc.firstboot"

@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 # Disable rsyslog
 if [ "$ENABLE_RSYSLOG" = false ] ; then

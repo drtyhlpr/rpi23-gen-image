@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 # Install and setup hostname
 install_readonly files/network/hostname "${ETC_DIR}/hostname"

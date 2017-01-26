@@ -3,7 +3,7 @@
 #
 
 # Load utility functions
-. ./functions.sh
+. ./scripts/functions.sh
 
 # Install and setup timezone
 echo ${TIMEZONE} > "${ETC_DIR}/timezone"
