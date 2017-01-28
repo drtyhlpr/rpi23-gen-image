@@ -354,7 +354,8 @@ The functions of this script that are required for the different stages of the b
 | `11-apt.sh` | Setup APT repositories |
 | `12-locale.sh` | Setup Locales and keyboard settings |
 | `13-kernel.sh` | Build and install RPi2/3 Kernel |
-| `14-rpi-config.sh` | Setup RPi2/3 config and cmdline |
+| `14-fstab.sh` | Setup fstab and initramfs |
+| `15-rpi-config.sh` | Setup RPi2/3 config and cmdline |
 | `20-networking.sh` | Setup Networking |
 | `21-firewall.sh` | Setup Firewall |
 | `30-security.sh` | Setup Users and Security settings |
