@@ -66,8 +66,11 @@ FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=git://git.denx.de/u-boot.git}
 
 # Build directories
-BASEDIR="$(pwd)/images/${RELEASE}"
+BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
 BUILDDIR="${BASEDIR}/build"
+# Prepare date string for default image file name
+DATE="$(date +%Y-%m-%d)"
+IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-rpi${RPI_MODEL}-${RELEASE}}
 
 # Chroot directories
 R="${BUILDDIR}/chroot"
@@ -524,42 +527,39 @@ ROOT_SECTORS=$(expr $(expr ${CHROOT_SIZE} + ${CHROOT_SIZE} \/ 100 \* 25) \* 1024
 # Calculate required image size in 512 Byte sectors
 IMAGE_SECTORS=$(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS})
 
-# Prepare date string for image file name
-DATE="$(date +%Y-%m-%d)"
-
 # Prepare image file
 if [ "$ENABLE_SPLITFS" = true ] ; then
-  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img" bs=512 count=0 seek=${FRMW_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img" bs=512 count=0 seek=${ROOT_SECTORS}
+  dd if=/dev/zero of="$IMAGE_NAME-frmw.img" bs=512 count=${TABLE_SECTORS}
+  dd if=/dev/zero of="$IMAGE_NAME-frmw.img" bs=512 count=0 seek=${FRMW_SECTORS}
+  dd if=/dev/zero of="$IMAGE_NAME-root.img" bs=512 count=${TABLE_SECTORS}
+  dd if=/dev/zero of="$IMAGE_NAME-root.img" bs=512 count=0 seek=${ROOT_SECTORS}
 
   # Write firmware/boot partition tables
-  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img" 2> /dev/null <<EOM
+  sfdisk -q -L -uS -f "$IMAGE_NAME-frmw.img" 2> /dev/null <<EOM
 ${TABLE_SECTORS},${FRMW_SECTORS},c,*
 EOM
 
   # Write root partition table
-  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img" 2> /dev/null <<EOM
+  sfdisk -q -L -uS -f "$IMAGE_NAME-root.img" 2> /dev/null <<EOM
 ${TABLE_SECTORS},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img)"
-  ROOT_LOOP="$(losetup -o 1M -f --show $BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img)"
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $IMAGE_NAME-frmw.img)"
+  ROOT_LOOP="$(losetup -o 1M -f --show $IMAGE_NAME-root.img)"
 else # ENABLE_SPLITFS=false
-  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img" bs=512 count=0 seek=${IMAGE_SECTORS}
+  dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count=${TABLE_SECTORS}
+  dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count=0 seek=${IMAGE_SECTORS}
 
   # Write partition table
-  sfdisk -q -L -uS -f "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img" 2> /dev/null <<EOM
+  sfdisk -q -L -uS -f "$IMAGE_NAME.img" 2> /dev/null <<EOM
 ${TABLE_SECTORS},${FRMW_SECTORS},c,*
 ${ROOT_OFFSET},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img)"
-  ROOT_LOOP="$(losetup -o 65M -f --show $BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img)"
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $IMAGE_NAME.img)"
+  ROOT_LOOP="$(losetup -o 65M -f --show $IMAGE_NAME.img)"
 fi
 
 if [ "$ENABLE_CRYPTFS" = true ] ; then
@@ -606,16 +606,16 @@ cleanup
 # Create block map file(s) of image(s)
 if [ "$ENABLE_SPLITFS" = true ] ; then
   # Create block map files for "bmaptool"
-  bmaptool create -o "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.bmap" "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img"
-  bmaptool create -o "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.bmap" "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img"
+  bmaptool create -o "$IMAGE_NAME-frmw.bmap" "$IMAGE_NAME-frmw.img"
+  bmaptool create -o "$IMAGE_NAME-root.bmap" "$IMAGE_NAME-root.img"
 
   # Image was successfully created
-  echo "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-frmw.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
-  echo "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}-root.img ($(expr \( ${TABLE_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$IMAGE_NAME-frmw.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$IMAGE_NAME-root.img ($(expr \( ${TABLE_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
 else
   # Create block map file for "bmaptool"
-  bmaptool create -o "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.bmap" "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img"
+  bmaptool create -o "$IMAGE_NAME.bmap" "$IMAGE_NAME.img"
 
   # Image was successfully created
-  echo "$BASEDIR/${DATE}-rpi${RPI_MODEL}-${RELEASE}.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$IMAGE_NAME.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
 fi
