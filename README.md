@@ -333,6 +333,12 @@ Set cipher specification string. `aes-xts*` ciphers are strongly recommended.
 ##### `CRYPTFS_XTSKEYSIZE`=512
 Sets key size in bits. The argument has to be a multiple of 8.
 
+---
+
+#### Build settings:
+##### `BASEDIR`=$(pwd)/images/${RELEASE}
+Path to a directory where the script stores all temporary files during generating the image.
+
 ## Understanding the script
 The functions of this script that are required for the different stages of the bootstrapping are split up into single files located inside the `bootstrap.d` directory. During the bootstrapping every script in this directory gets executed in lexicographical order:
 

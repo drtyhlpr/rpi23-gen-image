@@ -66,7 +66,7 @@ FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=git://git.denx.de/u-boot.git}
 
 # Build directories
-BASEDIR="$(pwd)/images/${RELEASE}"
+BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
 BUILDDIR="${BASEDIR}/build"
 
 # Chroot directories
