@@ -337,7 +337,10 @@ Sets key size in bits. The argument has to be a multiple of 8.
 
 #### Build settings:
 ##### `BASEDIR`=$(pwd)/images/${RELEASE}
-Path to a directory where the script stores all temporary files during generating the image.
+Set a path to a working directory used by the script to generate an image.
+
+##### `IMAGE_NAME`=${BASEDIR}/${DATE}-rpi${RPI_MODEL}-${RELEASE}
+Set a filename for the output file(s). Note: the script will create $IMAGE_NAME.img if `ENABLE_SPLITFS`=false or $IMAGE_NAME-frmw.img and $IMAGE_NAME-root.img if `ENABLE_SPLITFS`=true.
 
 ## Understanding the script
 The functions of this script that are required for the different stages of the bootstrapping are split up into single files located inside the `bootstrap.d` directory. During the bootstrapping every script in this directory gets executed in lexicographical order:
