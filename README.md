@@ -196,6 +196,9 @@ Reduce the disk space usage by deleting packages and files. See `REDUCE_*` param
 ##### `ENABLE_UBOOT`=false
 Replace the default RPi2/3 second stage bootloader (bootcode.bin) with [U-Boot bootloader](http://git.denx.de/?p=u-boot.git;a=summary). U-Boot can boot images via the network using the BOOTP/TFTP protocol.
 
+##### `UBOOTSRC_DIR`=""
+Path to a directory of [U-Boot bootloader sources](http://git.denx.de/?p=u-boot.git;a=summary) that will be copied, configured, build and installed inside the chroot.
+
 ##### `ENABLE_FBTURBO`=false
 Install and enable the [hardware accelerated Xorg video driver](https://github.com/ssvb/xf86-video-fbturbo) `fbturbo`. Please note that this driver is currently limited to hardware accelerated window moving and scrolling.
 

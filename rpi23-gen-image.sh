@@ -140,6 +140,7 @@ SSH_USER_PUB_KEY=${SSH_USER_PUB_KEY:=""}
 ENABLE_MINBASE=${ENABLE_MINBASE:=false}
 ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
+UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
 ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
@@ -226,7 +227,7 @@ fi
 if [ "$RELEASE" = "jessie" ] ; then
   COMPILER_PACKAGES="linux-compiler-gcc-4.8-arm g++ make bc"
 elif [ "$RELEASE" = "stretch" ] ; then
-  COMPILER_PACKAGES="linux-compiler-gcc-5-arm g++ make bc"
+  COMPILER_PACKAGES="g++ make bc"
   BUILD_KERNEL=true
 else
   echo "error: Debian release ${RELEASE} is not supported!"
@@ -321,6 +322,12 @@ fi
 # Check if specified KERNELSRC_DIR directory exists
 if [ -n "$KERNELSRC_DIR" ] && [ ! -d "$KERNELSRC_DIR" ] ; then
   echo "error: '${KERNELSRC_DIR}' specified directory not found (KERNELSRC_DIR)!"
+  exit 1
+fi
+
+# Check if specified UBOOTSRC_DIR directory exists
+if [ -n "$UBOOTSRC_DIR" ] && [ ! -d "$UBOOTSRC_DIR" ] ; then
+  echo "error: '${UBOOTSRC_DIR}' specified directory not found (UBOOTSRC_DIR)!"
   exit 1
 fi
 

@@ -13,8 +13,14 @@ fi
 
 # Fetch and build U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
-  # Fetch U-Boot bootloader sources
-  git -C "${R}/tmp" clone "${UBOOT_URL}"
+  # Copy existing U-Boot sources into chroot directory
+  if [ -n "$UBOOTSRC_DIR" ] && [ -d "$UBOOTSRC_DIR" ] ; then
+    # Copy local U-Boot sources
+    cp -r "${UBOOTSRC_DIR}" "${R}/tmp"
+  else
+    # Fetch U-Boot sources
+    git -C "${R}/tmp" clone "${UBOOT_URL}"
+  fi
 
   # Build and install U-Boot inside chroot
   chroot_exec make -j${KERNEL_THREADS} -C /tmp/u-boot/ ${UBOOT_CONFIG} all
