@@ -5,7 +5,7 @@
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
 
-  ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus```
+  ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo```
 
 It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandetory. Kernel compilation and linking will be performed on the build system using an ARM (armhf) cross-compiler toolchain.
 
@@ -197,10 +197,13 @@ Reduce the disk space usage by deleting packages and files. See `REDUCE_*` param
 Replace the default RPi2/3 second stage bootloader (bootcode.bin) with [U-Boot bootloader](http://git.denx.de/?p=u-boot.git;a=summary). U-Boot can boot images via the network using the BOOTP/TFTP protocol.
 
 ##### `UBOOTSRC_DIR`=""
-Path to a directory of [U-Boot bootloader sources](http://git.denx.de/?p=u-boot.git;a=summary) that will be copied, configured, build and installed inside the chroot.
+Path to a directory (`u-boot`) of [U-Boot bootloader sources](http://git.denx.de/?p=u-boot.git;a=summary) that will be copied, configured, build and installed inside the chroot.
 
 ##### `ENABLE_FBTURBO`=false
 Install and enable the [hardware accelerated Xorg video driver](https://github.com/ssvb/xf86-video-fbturbo) `fbturbo`. Please note that this driver is currently limited to hardware accelerated window moving and scrolling.
+
+##### `FBTURBOSRC_DIR`=""
+Path to a directory (`xf86-video-fbturbo`) of [hardware accelerated Xorg video driver sources](https://github.com/ssvb/xf86-video-fbturbo) that will be copied, configured, build and installed inside the chroot.
 
 ##### `ENABLE_IPTABLES`=false
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
@@ -242,7 +245,7 @@ Enable password root login via SSH. This may be a security risk with default pas
 Disable password based SSH authentication. Only public key based SSH (v2) authentication will be supported.
 
 ##### `SSH_LIMIT_USERS`=false
-Limit the users that are allowed to login via SSH. Only allow user `USER_NAME`=pi and root if `SSH_ENABLE_ROOT`=true to login.
+Limit the users that are allowed to login via SSH. Only allow user `USER_NAME`=pi and root if `SSH_ENABLE_ROOT`=true to login. This parameter will be ignored if `dropbear` SSH is used (`REDUCE_SSHD`=true).
 
 ##### `SSH_ROOT_PUB_KEY`=""
 Add SSH (v2) public key(s) from specified file to `authorized_keys` file to enable public key based SSH (v2) authentication of user `root`. The specified file can also contain multiple SSH (v2) public keys. SSH protocol version 1 is not supported. `ENABLE_ROOT` **and** `SSH_ENABLE_ROOT` must be set to `true`.
@@ -272,7 +275,7 @@ Start `make menuconfig` interactive menu-driven kernel configuration. The script
 Remove all kernel sources from the generated OS image after it was built and installed.
 
 ##### `KERNELSRC_DIR`=""
-Path to a directory of [RaspberryPi Linux kernel sources](https://github.com/raspberrypi/linux) that will be copied, configured, build and installed inside the chroot.
+Path to a directory (`linux`) of [RaspberryPi Linux kernel sources](https://github.com/raspberrypi/linux) that will be copied, configured, build and installed inside the chroot.
 
 ##### `KERNELSRC_CLEAN`=false
 Clean the existing kernel sources directory `KERNELSRC_DIR` (using `make mrproper`) after it was copied to the chroot and before the compilation of the kernel has started. This parameter will be ignored if no `KERNELSRC_DIR` was specified or if `KERNELSRC_PREBUILT`=true.
@@ -287,7 +290,7 @@ Copy own config file to kernel `.config`. If `KERNEL_MENUCONFIG`=true then runni
 With this parameter set to true the script expects the existing kernel sources directory to be already successfully cross-compiled. The parameters `KERNELSRC_CLEAN`, `KERNELSRC_CONFIG`, `KERNELSRC_USRCONFIG` and `KERNEL_MENUCONFIG` are ignored and no kernel compilation tasks are performed.
 
 ##### `RPI_FIRMWARE_DIR`=""
-The directory containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.
+The directory (`firmware`) containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.
 
 ---
 

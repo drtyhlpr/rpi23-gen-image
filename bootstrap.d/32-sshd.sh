@@ -6,14 +6,26 @@
 . ./functions.sh
 
 if [ "$ENABLE_SSHD" = true ] ; then
+  DROPBEAR_ARGS=""
+
   if [ "$SSH_ENABLE_ROOT" = false ] ; then
-    # User root is not allowed to log in
-    sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin no|g" "${ETC_DIR}/ssh/sshd_config"
+    if [ "$ENABLE_REDUCE" = false ] || [ "$REDUCE_SSHD" = false ] ; then
+      # User root is not allowed to log in
+      sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin no|g" "${ETC_DIR}/ssh/sshd_config"
+    else
+      # User root is not allowed to log in
+      DROPBEAR_ARGS="-w"
+    fi
   fi
 
   if [ "$ENABLE_ROOT" = true ] && [ "$SSH_ENABLE_ROOT" = true ] ; then
-    # Permit SSH root login
-    sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin yes|g" "${ETC_DIR}/ssh/sshd_config"
+    if [ "$ENABLE_REDUCE" = false ] || [ "$REDUCE_SSHD" = false ] ; then
+      # Permit SSH root login
+      sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin yes|g" "${ETC_DIR}/ssh/sshd_config"
+    else
+      # Permit SSH root login
+      DROPBEAR_ARGS=""
+    fi
 
     # Add SSH (v2) public key for user root
     if [ ! -z "$SSH_ROOT_PUB_KEY" ] ; then
@@ -31,8 +43,10 @@ if [ "$ENABLE_SSHD" = true ] ; then
       chroot_exec chmod 600 "/root/.ssh/authorized_keys"
       chroot_exec chown root:root "/root/.ssh/authorized_keys"
 
-      # Allow SSH public key authentication
-      sed -i "s|[#]*PubkeyAuthentication.*|PubkeyAuthentication yes|g" "${ETC_DIR}/ssh/sshd_config"
+      if [ "$ENABLE_REDUCE" = false ] || [ "$REDUCE_SSHD" = false ] ; then
+        # Allow SSH public key authentication
+        sed -i "s|[#]*PubkeyAuthentication.*|PubkeyAuthentication yes|g" "${ETC_DIR}/ssh/sshd_config"
+      fi
     fi
   fi
 
@@ -53,13 +67,15 @@ if [ "$ENABLE_SSHD" = true ] ; then
       chroot_exec chmod 600 "/home/${USER_NAME}/.ssh/authorized_keys"
       chroot_exec chown ${USER_NAME}:${USER_NAME} "/home/${USER_NAME}/.ssh/authorized_keys"
 
-      # Allow SSH public key authentication
-      sed -i "s|[#]*PubkeyAuthentication.*|PubkeyAuthentication yes|g" "${ETC_DIR}/ssh/sshd_config"
+      if [ "$ENABLE_REDUCE" = false ] || [ "$REDUCE_SSHD" = false ] ; then
+        # Allow SSH public key authentication
+        sed -i "s|[#]*PubkeyAuthentication.*|PubkeyAuthentication yes|g" "${ETC_DIR}/ssh/sshd_config"
+      fi
     fi
   fi
 
   # Limit the users that are allowed to login via SSH
-  if [ "$SSH_LIMIT_USERS" = true ] ; then
+  if [ "$SSH_LIMIT_USERS" = true ] && [ "$ENABLE_REDUCE" = false ] ; then
     allowed_users=""
     if [ "$ENABLE_ROOT" = true ] && [ "$SSH_ENABLE_ROOT" = true ] ; then
       allowed_users="root"
@@ -77,11 +93,24 @@ if [ "$ENABLE_SSHD" = true ] ; then
   # Disable password-based authentication
   if [ "$SSH_DISABLE_PASSWORD_AUTH" = true ] ; then
     if [ "$ENABLE_ROOT" = true ] && [ "$SSH_ENABLE_ROOT" = true ] ; then
-      sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin without-password|g" "${ETC_DIR}/ssh/sshd_config"
+      if [ "$ENABLE_REDUCE" = false ] || [ "$REDUCE_SSHD" = false ] ; then
+        sed -i "s|[#]*PermitRootLogin.*|PermitRootLogin without-password|g" "${ETC_DIR}/ssh/sshd_config"
+      else
+        DROPBEAR_ARGS="-g"
+      fi
     fi
 
-    sed -i "s|[#]*PasswordAuthentication.*|PasswordAuthentication no|g" "${ETC_DIR}/ssh/sshd_config"
-    sed -i "s|[#]*ChallengeResponseAuthentication no.*|ChallengeResponseAuthentication no|g" "${ETC_DIR}/ssh/sshd_config"
-    sed -i "s|[#]*UsePAM.*|UsePAM no|g" "${ETC_DIR}/ssh/sshd_config"
+    if [ "$ENABLE_REDUCE" = false ] || [ "$REDUCE_SSHD" = false ] ; then
+      sed -i "s|[#]*PasswordAuthentication.*|PasswordAuthentication no|g" "${ETC_DIR}/ssh/sshd_config"
+      sed -i "s|[#]*ChallengeResponseAuthentication no.*|ChallengeResponseAuthentication no|g" "${ETC_DIR}/ssh/sshd_config"
+      sed -i "s|[#]*UsePAM.*|UsePAM no|g" "${ETC_DIR}/ssh/sshd_config"
+    else
+      DROPBEAR_ARGS="${DROPBEAR_ARGS} -s"
+    fi
+  fi
+
+  # Update dropbear SSH configuration
+  if [ "$ENABLE_REDUCE" = true ] && [ "$REDUCE_SSHD" = true ] ; then
+    sed "s|^DROPBEAR_EXTRA_ARGS=.*|DROPBEAR_EXTRA_ARGS=\"${DROPBEAR_ARGS}\"|g" "${ETC_DIR}/default/dropbear"
   fi
 fi

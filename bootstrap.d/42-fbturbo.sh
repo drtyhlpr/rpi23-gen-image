@@ -6,11 +6,33 @@
 . ./functions.sh
 
 if [ "$ENABLE_FBTURBO" = true ] ; then
-  # Fetch fbturbo driver sources
-  git -C "${R}/tmp" clone "${FBTURBO_URL}"
+  # Install c/c++ build environment inside the chroot
+  chroot_install_cc
+
+  # Copy existing fbturbo sources into chroot directory
+  if [ -n "$FBTURBOSRC_DIR" ] && [ -d "$FBTURBOSRC_DIR" ] ; then
+    # Copy local fbturbo sources
+    cp -r "${FBTURBOSRC_DIR}" "${R}/tmp"
+  else
+    # Create temporary directory for fbturbo sources
+    temp_dir=$(sudo -u nobody mktemp -d)
+
+    # Fetch fbturbo sources
+    sudo -u nobody git -C "${temp_dir}" clone "${FBTURBO_URL}"
+
+    # Move downloaded fbturbo sources
+    mv "${temp_dir}/xf86-video-fbturbo" "${R}/tmp/"
+
+    # Remove temporary directory for fbturbo sources
+    rm -fr "${temp_dir}"
+  fi
 
   # Install Xorg build dependencies
-  chroot_exec apt-get -q -y --force-yes --no-install-recommends install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
+  if [ "$RELEASE" = "jessie" ] ; then
+    chroot_exec apt-get -q -y --no-install-recommends install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
+  elif [ "$RELEASE" = "stretch" ] ; then
+    chroot_exec apt-get -q -y --no-install-recommends --allow-unauthenticated install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
+  fi
 
   # Build and install fbturbo driver inside chroot
   chroot_exec /bin/bash -x <<'EOF'
@@ -26,9 +48,4 @@ EOF
 
   # Remove Xorg build dependencies
   chroot_exec apt-get -qq -y --auto-remove purge xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
-fi
-
-# Remove gcc/c++ build environment from the chroot
-if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ] ; then
-  chroot_exec apt-get -qq -y --auto-remove purge ${COMPILER_PACKAGES}
 fi

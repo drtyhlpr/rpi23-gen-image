@@ -21,7 +21,7 @@ if [ "$BUILD_KERNEL" = false ] ; then
 
   # Upgrade collabora package index and install collabora keyring
   chroot_exec apt-get -qq -y update
-  chroot_exec apt-get -qq -y --force-yes install collabora-obs-archive-keyring
+  chroot_exec apt-get -qq -y --allow-unauthenticated install collabora-obs-archive-keyring
 else # BUILD_KERNEL=true
   # Install APT sources.list
   install_readonly files/apt/sources.list "${ETC_DIR}/apt/sources.list"

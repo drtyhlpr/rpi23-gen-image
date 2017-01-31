@@ -5,21 +5,30 @@
 # Load utility functions
 . ./functions.sh
 
-# Install gcc/c++ build environment inside the chroot
-if [ "$ENABLE_UBOOT" = true ] || [ "$ENABLE_FBTURBO" = true ] ; then
-  COMPILER_PACKAGES=$(chroot_exec apt-get -s install ${COMPILER_PACKAGES} | grep "^Inst " | awk -v ORS=" " '{ print $2 }')
-  chroot_exec apt-get -q -y --force-yes --no-install-recommends install ${COMPILER_PACKAGES}
-fi
-
 # Fetch and build U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
+  # Install c/c++ build environment inside the chroot
+  chroot_install_cc
+
   # Copy existing U-Boot sources into chroot directory
   if [ -n "$UBOOTSRC_DIR" ] && [ -d "$UBOOTSRC_DIR" ] ; then
     # Copy local U-Boot sources
     cp -r "${UBOOTSRC_DIR}" "${R}/tmp"
   else
+    # Create temporary directory for U-Boot sources
+    temp_dir=$(sudo -u nobody mktemp -d)
+
     # Fetch U-Boot sources
-    git -C "${R}/tmp" clone "${UBOOT_URL}"
+    sudo -u nobody git -C "${temp_dir}" clone "${UBOOT_URL}"
+
+    # Copy downloaded U-Boot sources
+    mv "${temp_dir}/u-boot" "${R}/tmp/"
+
+    # Set permissions of the U-Boot sources
+    chown -R root:root "${R}/tmp/u-boot"
+
+    # Remove temporary directory for U-Boot sources
+    rm -fr "${temp_dir}"
   fi
 
   # Build and install U-Boot inside chroot

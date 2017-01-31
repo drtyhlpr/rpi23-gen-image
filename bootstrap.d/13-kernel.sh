@@ -20,8 +20,20 @@ if [ "$BUILD_KERNEL" = true ] ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" mrproper
     fi
   else # KERNELSRC_DIR=""
-    # Fetch current raspberrypi kernel sources
-    git -C "${R}/usr/src" clone --depth=1 "${KERNEL_URL}"
+    # Create temporary directory for kernel sources
+    temp_dir=$(sudo -u nobody mktemp -d)
+
+    # Fetch current RPi2/3 kernel sources
+    sudo -u nobody git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}"
+
+    # Copy downloaded kernel sources
+    mv "${temp_dir}/linux" "${R}/usr/src/"
+
+    # Remove temporary directory for kernel sources
+    rm -fr "${temp_dir}"
+
+    # Set permissions of the kernel sources
+    chown -R root:root "${R}/usr/src"
   fi
 
   # Calculate optimal number of kernel building threads

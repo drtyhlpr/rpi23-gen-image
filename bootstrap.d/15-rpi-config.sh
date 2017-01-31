@@ -16,14 +16,27 @@ if [ "$BUILD_KERNEL" = true ] ; then
     cp ${RPI_FIRMWARE_DIR}/boot/start_cd.elf ${BOOT_DIR}/start_cd.elf
     cp ${RPI_FIRMWARE_DIR}/boot/start_x.elf ${BOOT_DIR}/start_x.elf
   else
+    # Create temporary directory for boot binaries
+    temp_dir=$(sudo -u nobody mktemp -d)
+
     # Install latest boot binaries from raspberry/firmware github
-    wget -q -O "${BOOT_DIR}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
-    wget -q -O "${BOOT_DIR}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
-    wget -q -O "${BOOT_DIR}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
-    wget -q -O "${BOOT_DIR}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
-    wget -q -O "${BOOT_DIR}/start.elf" "${FIRMWARE_URL}/start.elf"
-    wget -q -O "${BOOT_DIR}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
-    wget -q -O "${BOOT_DIR}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
+    sudo -u nobody wget -q -O "${temp_dir}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
+    sudo -u nobody wget -q -O "${temp_dir}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
+    sudo -u nobody wget -q -O "${temp_dir}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
+    sudo -u nobody wget -q -O "${temp_dir}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
+    sudo -u nobody wget -q -O "${temp_dir}/start.elf" "${FIRMWARE_URL}/start.elf"
+    sudo -u nobody wget -q -O "${temp_dir}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
+    sudo -u nobody wget -q -O "${temp_dir}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
+
+    # Move downloaded boot binaries
+    mv "${temp_dir}/"* "${BOOT_DIR}/"
+
+    # Remove temporary directory for boot binaries
+    rm -fr "${temp_dir}"
+
+    # Set permissions of the boot binaries
+    chown -R root:root "${BOOT_DIR}"
+    chmod -R 600 "${BOOT_DIR}"
   fi
 fi
 
@@ -105,6 +118,8 @@ fi
 # Load sound module at boot
 if [ "$ENABLE_SOUND" = true ] ; then
   sed -i "s/^# snd_bcm2835/snd_bcm2835/" "${R}/lib/modules-load.d/rpi2.conf"
+else
+  echo "dtparam=audio=off" >> "${BOOT_DIR}/config.txt"
 fi
 
 # Enable I2C interface

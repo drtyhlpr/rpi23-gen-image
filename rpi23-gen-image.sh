@@ -145,6 +145,7 @@ ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
 ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
+FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
@@ -194,8 +195,11 @@ APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
 
 # Packages required for bootstrapping
-REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus"
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
 MISSING_PACKAGES=""
+
+# Packages installed for c/c++ build environment in chroot (keep empty)
+COMPILER_PACKAGES=""
 
 set +x
 
@@ -226,15 +230,9 @@ if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
   fi
 fi
 
-# Set compiler packages and build RPi2/3 Linux kernel if required by Debian release
-if [ "$RELEASE" = "jessie" ] ; then
-  COMPILER_PACKAGES="linux-compiler-gcc-4.8-arm g++ make bc"
-elif [ "$RELEASE" = "stretch" ] ; then
-  COMPILER_PACKAGES="g++ make bc"
+# Build RPi2/3 Linux kernel if required by Debian release
+if [ "$RELEASE" = "stretch" ] ; then
   BUILD_KERNEL=true
-else
-  echo "error: Debian release ${RELEASE} is not supported!"
-  exit 1
 fi
 
 # Add packages required for kernel cross compilation
@@ -331,6 +329,12 @@ fi
 # Check if specified UBOOTSRC_DIR directory exists
 if [ -n "$UBOOTSRC_DIR" ] && [ ! -d "$UBOOTSRC_DIR" ] ; then
   echo "error: '${UBOOTSRC_DIR}' specified directory not found (UBOOTSRC_DIR)!"
+  exit 1
+fi
+
+# Check if specified FBTURBOSRC_DIR directory exists
+if [ -n "$FBTURBOSRC_DIR" ] && [ ! -d "$FBTURBOSRC_DIR" ] ; then
+  echo "error: '${FBTURBOSRC_DIR}' specified directory not found (FBTURBOSRC_DIR)!"
   exit 1
 fi
 
@@ -474,6 +478,9 @@ EOF
   rm -rf "${R}/chroot_scripts"
 fi
 
+# Remove c/c++ build environment from the chroot
+chroot_remove_cc
+
 # Remove apt-utils
 if [ "$RELEASE" = "jessie" ] ; then
   chroot_exec apt-get purge -qq -y --force-yes apt-utils
@@ -567,8 +574,9 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   mkfs.ext4 "$ROOT_LOOP"
 
   # Setup password keyfile
-  echo -n ${CRYPTFS_PASSWORD} > .password
+  touch .password
   chmod 600 .password
+  echo -n ${CRYPTFS_PASSWORD} > .password
 
   # Initialize encrypted partition
   echo "YES" | cryptsetup luksFormat "${ROOT_LOOP}" -c "${CRYPTFS_CIPHER}" -s "${CRYPTFS_XTSKEYSIZE}" .password
