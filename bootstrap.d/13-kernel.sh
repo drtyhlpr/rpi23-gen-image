@@ -24,7 +24,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     temp_dir=$(sudo -u nobody mktemp -d)
 
     # Fetch current RPi2/3 kernel sources
-    sudo -u nobody git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}"
+    sudo -E -u nobody git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}"
 
     # Copy downloaded kernel sources
     mv "${temp_dir}/linux" "${R}/usr/src/"
