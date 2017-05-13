@@ -69,6 +69,9 @@ Specifiy the target Raspberry Pi hardware model. The script at this time support
 ##### `RELEASE`="jessie"
 Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases "jessie" and "stretch". `BUILD_KERNEL`=true will automatically be set if the Debian release `stretch` is used.
 
+##### `RELEASE_ARCH`="armhf"
+Set the desired Debian release architecture.
+
 ##### `HOSTNAME`="rpi$RPI_MODEL-$RELEASE"
 Set system host name. It's recommended that the host name is unique in the corresponding subnet.
 
@@ -259,6 +262,24 @@ Add SSH (v2) public key(s) from specified file to `authorized_keys` file to enab
 ##### `BUILD_KERNEL`=false
 Build and install the latest RPi2/3 Linux kernel. Currently only the default RPi2/3 kernel configuration is used. `BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` is used.
 
+##### `CROSS_COMPILE`="arm-linux-gnueabihf-"
+This sets the cross compile enviornment for the compiler.
+
+##### `KERNEL_ARCH`="arm"
+This sets the kernel architecture for the compiler.
+
+##### `KERNEL_IMAGE`="kernel7.img"
+Name of the image file in the boot partition.
+
+##### `KERNEL_BRANCH`=""
+Name of the requested branch from the GIT location for the RPi Kernel. Default is using the current default branch from the GIT site.
+
+##### `QEMU_BINARY`="/usr/bin/qemu-arm-static"
+Sets the QEMU enviornment for the Debian archive.
+
+##### `KERNEL_DEFCONFIG`="bcm2709_defconfig"
+Sets the default config for kernel compiling.
+
 ##### `KERNEL_REDUCE`=false
 Reduce the size of the generated kernel by removing unwanted device, network and filesystem drivers (experimental).
 
@@ -345,8 +366,8 @@ Sets key size in bits. The argument has to be a multiple of 8.
 ##### `BASEDIR`=$(pwd)/images/${RELEASE}
 Set a path to a working directory used by the script to generate an image.
 
-##### `IMAGE_NAME`=${BASEDIR}/${DATE}-rpi${RPI_MODEL}-${RELEASE}
-Set a filename for the output file(s). Note: the script will create $IMAGE_NAME.img if `ENABLE_SPLITFS`=false or $IMAGE_NAME-frmw.img and $IMAGE_NAME-root.img if `ENABLE_SPLITFS`=true.
+##### `IMAGE_NAME`=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}
+Set a filename for the output file(s). Note: the script will create $IMAGE_NAME.img if `ENABLE_SPLITFS`=false or $IMAGE_NAME-frmw.img and $IMAGE_NAME-root.img if `ENABLE_SPLITFS`=true. Note 2: If the KERNEL_BRANCH is not set, the word "CURRENT" is used.
 
 ## Understanding the script
 The functions of this script that are required for the different stages of the bootstrapping are split up into single files located inside the `bootstrap.d` directory. During the bootstrapping every script in this directory gets executed in lexicographical order:
