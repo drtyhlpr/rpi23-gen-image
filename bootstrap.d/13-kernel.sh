@@ -178,3 +178,6 @@ else # BUILD_KERNEL=false
     cleanup
     exit 1
   fi
+  # Copy vmlinuz kernel to the boot directory
+  install_readonly "${VMLINUZ}" "${BOOT_DIR}/${KERNEL_IMAGE}"
+fi
