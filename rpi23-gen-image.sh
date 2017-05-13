@@ -56,6 +56,7 @@ COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
 KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
 KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
 QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
+KERNEL_BRANCH=${KERNEL_BRANCH:=""}
 
 # URLs
 KERNEL_URL=${KERNEL_URL:=https://github.com/raspberrypi/linux}
@@ -68,9 +69,14 @@ UBOOT_URL=${UBOOT_URL:=git://git.denx.de/u-boot.git}
 # Build directories
 BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
 BUILDDIR="${BASEDIR}/build"
+
 # Prepare date string for default image file name
 DATE="$(date +%Y-%m-%d)"
-IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-rpi${RPI_MODEL}-${RELEASE}}
+if [ -z "$KERNEL_BRANCH" ] ; then
+  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
+else
+  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
+fi
 
 # Chroot directories
 R="${BUILDDIR}/chroot"
@@ -160,6 +166,7 @@ KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
 KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
 KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
+KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="zImage"}
 
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}
@@ -237,7 +244,11 @@ fi
 
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
-  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+  if [ "$KERNEL_ARCH" = "arm" ] ; then
+    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+  else
+    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
+  fi
 fi
 
 # Add libncurses5 to enable kernel menuconfig
