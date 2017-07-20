@@ -24,11 +24,17 @@ if [ "$RELEASE" = "stretch" ] ; then
   EXCLUDES="--exclude=init,systemd-sysv"
 fi
 
+# Exclude packages if required by Debian buster release
+if [ "$RELEASE" = "buster" ] ; then
+  EXCLUDES="--exclude=init,systemd-sysv"
+fi
+  
 # Base debootstrap (unpack only)
 http_proxy=${APT_PROXY} debootstrap ${EXCLUDES} --arch="${RELEASE_ARCH}" --foreign ${VARIANT} --components="${COMPONENTS}" --include="${APT_INCLUDES}" "${RELEASE}" "${R}" "http://${APT_SERVER}/debian"
 
-# Copy qemu emulator binary to chroot
-install_exec "${QEMU_BINARY}" "${R}${QEMU_BINARY}"
+# Copy qemu emulator binary to chroot modified for changes in _apt management in buster
+#install_exec "${QEMU_BINARY}" "${R}${QEMU_BINARY}"
+install -m 755 -o root -g root "${QEMU_BINARY}" "${R}${QEMU_BINARY}"
 
 # Copy debian-archive-keyring.pgp
 mkdir -p "${R}/usr/share/keyrings"
