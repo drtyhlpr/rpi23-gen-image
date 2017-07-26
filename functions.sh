@@ -59,10 +59,8 @@ chroot_install_cc() {
   if [ -z "${COMPILER_PACKAGES}" ] ; then
     COMPILER_PACKAGES=$(chroot_exec apt-get -s install g++ make bc | grep "^Inst " | awk -v ORS=" " '{ print $2 }')
 
-    if [ "$RELEASE" = "jessie" ] ; then
+    if [ "$RELEASE" = "jessie" ] || [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
       chroot_exec apt-get -q -y --no-install-recommends install ${COMPILER_PACKAGES}
-    elif [ "$RELEASE" = "stretch" ] ; then
-      chroot_exec apt-get -q -y --allow-unauthenticated --no-install-recommends install ${COMPILER_PACKAGES}
     fi
   fi
 }
