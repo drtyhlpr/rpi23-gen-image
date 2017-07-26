@@ -1,2 +1,0 @@
-# Configuration template file used by rpi23-gen-image.sh
-RELEASE=jessie
