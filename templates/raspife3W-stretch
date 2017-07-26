@@ -1,0 +1,92 @@
+# Configuration file raspi3 Stretch IFÉ 2017/04/15
+#
+APT_SERVER=ftp.fr.debian.org
+APT_INCLUDES="debian-archive-keyring,debian-keyring,automake,autoconf,autogen,gawk,gnupg,gnupg2, \
+build-essential,git,cmake,libjson-c-dev,unzip,\
+bison,libboost-all-dev,libtool,libtool-bin,pkg-config,checkinstall,libnotify-bin,pandoc, \
+python3,python3-dev,python,python-dev,python-configobj,python-cheetah, \
+python-imaging,python-serial,python-usb,python-tk,python3-tk,python3-scipy, \
+python-pypandoc,python3-pypandoc,python-pandocfilters,python3-pandocfilters, \
+python-geopy,python3-geopy,python-pip,python3-pip,python-smbus, \
+libudev-dev,libzzip-dev,zlib1g-dev,libnss-myhostname,libpng16-16,nmap \
+libltdl-dev,usbutils,pmount,ntpdate,texlive,texlive-xetex,nginx-extras,policykit-1"
+#firehol"
+#ffmpeg,console-data,keyboard-configuration,openjdk-8-jdk, \
+#openjdk-8-jre,openjdk-8-jre-headless,pcre2-utils,libpcre++-dev,libpcre2-dev,libjpeg-dev,i2c-tools, \
+#libcanberra-gtk-module,libqtwebkit-dev,libqt5webkit5-dev,libfreetype6-dev"
+#,policykit-1,inetutils-ping,firmware-linux-nonfree,firmware-linux
+#----------------------
+RPI_MODEL=3 
+RELEASE="stretch" 
+HOSTNAME="raspwife3" 
+PASSWORD="**************"
+USER_PASSWORD="*************"
+DEFLOCAL="fr_FR.UTF-8" 
+TIMEZONE="Europe/Paris"
+EXPANDROOT=false
+#-----------------------
+XKB_MODEL="pc105" 
+XKB_LAYOUT="fr"  
+XKB_VARIANT="latin9" 
+XKB_OPTIONS=""
+#------------------------
+ENABLE_DHCP=false 
+NET_ADDRESS="192.168.***.**/**"
+NET_GATEWAY="192.168.***.1"
+NET_DNS_1="192.168.***.1" 
+NET_DNS_2="8.8.8.8" 
+#------------------------
+ENABLE_CONSOLE=false
+ENABLE_I2C=true
+ENABLE_SPI=true
+ENABLE_IPV6=true 
+ENABLE_SSHD=true 
+ENABLE_NONFREE=true 
+ENABLE_WIRELESS=true
+ENABLE_RSYSLOG=true 
+ENABLE_SOUND=true 
+ENABLE_HWRANDOM=true 
+ENABLE_MINGPU=true 
+ENABLE_DBUS=true 
+ENABLE_XORG=false
+ENABLE_WM=""
+#------------------------
+ENABLE_MINBASE=false
+ENABLE_REDUCE=false
+ENABLE_UBOOT=false
+ENABLE_FBTURBO=false
+ENABLE_IPTABLES=false
+ENABLE_USER=true 
+USER_NAME=ens-ife
+ENABLE_ROOT=true 
+ENABLE_HARDNET=true
+ENABLE_INITRAMFS=true 
+ENABLE_IFNAMES=true
+#------------------------
+ENABLE_ROOT_SSH=false  
+SSH_LIMIT_USERS=false
+SSH_ROOT_PUB_KEY="/home/********/.ssh/authorized_keys"
+SSH_USER_PUB_KEY="/home/********/.ssh/authorized_keys"
+#------------------------
+BUILD_KERNEL=true 
+KERNEL_REDUCE=false
+KERNEL_HEADERS=true
+KERNEL_REMOVESRC=true
+KERNELSRC_CLEAN=true
+KERNELSRC_CONFIG=true
+#------------------------
+REDUCE_APT=false 
+REDUCE_DOC=true 
+REDUCE_MAN=false 
+REDUCE_HWDB=true
+REDUCE_BASH=false 
+REDUCE_SSHD=false
+REDUCE_LOCALE=false
+#-------------------------
+ENABLE_CRYPTFS=false
+#-------------------------
+BASEDIR=/data/RpiGenImage/Images/${RELEASE}
+DATE=`date +%Y-%m-%d`
+IMAGE_NAME=${BASEDIR}/${DATE}-rpiw${RPI_MODEL}-${RELEASE}
+
+
