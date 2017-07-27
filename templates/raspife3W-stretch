@@ -1,26 +1,23 @@
-# Configuration file raspi3 Stretch IFÉ 2017/04/15
+# Configuration file raspi3 Stretch Weewx IFÉ 2017/07/26
 #
 APT_SERVER=ftp.fr.debian.org
-APT_INCLUDES="debian-archive-keyring,debian-keyring,automake,autoconf,autogen,gawk,gnupg,gnupg2, \
+APT_INCLUDES="debian-archive-keyring,debian-keyring,automake,autoconf,autogen,gawk,gnupg,gnupg2,\
 build-essential,git,cmake,libjson-c-dev,unzip,\
-bison,libboost-all-dev,libtool,libtool-bin,pkg-config,checkinstall,libnotify-bin,pandoc, \
-python3,python3-dev,python,python-dev,python-configobj,python-cheetah, \
-python-imaging,python-serial,python-usb,python-tk,python3-tk,python3-scipy, \
-python-pypandoc,python3-pypandoc,python-pandocfilters,python3-pandocfilters, \
-python-geopy,python3-geopy,python-pip,python3-pip,python-smbus, \
-libudev-dev,libzzip-dev,zlib1g-dev,libnss-myhostname,libpng16-16,nmap \
-libltdl-dev,usbutils,pmount,ntpdate,texlive,texlive-xetex,nginx-extras,policykit-1"
-#firehol"
-#ffmpeg,console-data,keyboard-configuration,openjdk-8-jdk, \
-#openjdk-8-jre,openjdk-8-jre-headless,pcre2-utils,libpcre++-dev,libpcre2-dev,libjpeg-dev,i2c-tools, \
-#libcanberra-gtk-module,libqtwebkit-dev,libqt5webkit5-dev,libfreetype6-dev"
-#,policykit-1,inetutils-ping,firmware-linux-nonfree,firmware-linux
+bison,libboost-all-dev,libtool,libtool-bin,pkg-config,checkinstall,libnotify-bin,pandoc,\
+python3,python3-dev,python,python-dev,python-configobj,python-cheetah,\
+python-imaging,python-serial,python-usb,python-tk,python3-tk,python3-scipy,\
+python-pypandoc,python3-pypandoc,python-pandocfilters,python3-pandocfilters,\
+python-geopy,python3-geopy,python-pip,python3-pip,python-smbus,\
+libudev-dev,libzzip-dev,zlib1g-dev,libnss-myhostname,libpng16-16,nmap,\
+libltdl-dev,usbutils,pmount,ntpdate,texlive,texlive-xetex,nginx-extras,policykit-1,\
+openjdk-8-jdk-headless,openjdk-8-jre-headless,\
+pcre2-utils,libpcre++-dev,libpcre2-dev,libjpeg-dev,i2c-tools"
 #----------------------
 RPI_MODEL=3 
 RELEASE="stretch" 
 HOSTNAME="raspwife3" 
-PASSWORD="**************"
-USER_PASSWORD="*************"
+PASSWORD="************"
+USER_PASSWORD="************"
 DEFLOCAL="fr_FR.UTF-8" 
 TIMEZONE="Europe/Paris"
 EXPANDROOT=false
@@ -31,9 +28,9 @@ XKB_VARIANT="latin9"
 XKB_OPTIONS=""
 #------------------------
 ENABLE_DHCP=false 
-NET_ADDRESS="192.168.***.**/**"
-NET_GATEWAY="192.168.***.1"
-NET_DNS_1="192.168.***.1" 
+NET_ADDRESS="192.168.221.41/24"
+NET_GATEWAY="192.168.221.1"
+NET_DNS_1="192.168.221.1" 
 NET_DNS_2="8.8.8.8" 
 #------------------------
 ENABLE_CONSOLE=false
@@ -65,8 +62,8 @@ ENABLE_IFNAMES=true
 #------------------------
 ENABLE_ROOT_SSH=false  
 SSH_LIMIT_USERS=false
-SSH_ROOT_PUB_KEY="/home/********/.ssh/authorized_keys"
-SSH_USER_PUB_KEY="/home/********/.ssh/authorized_keys"
+SSH_ROOT_PUB_KEY="/home/*******/.ssh/authorized_keys"
+SSH_USER_PUB_KEY="/home/*******/.ssh/authorized_keys"
 #------------------------
 BUILD_KERNEL=true 
 KERNEL_REDUCE=false

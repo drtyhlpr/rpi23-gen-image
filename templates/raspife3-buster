@@ -22,8 +22,8 @@ tightvncserver,geany,geany-plugin-py,geany-plugin-markdown,firefox-esr,firefox-e
 RPI_MODEL=3 
 RELEASE="buster" 
 HOSTNAME="raspife3" 
-PASSWORD="**************"
-USER_PASSWORD="***************"
+PASSWORD="***********"
+USER_PASSWORD="***********"
 DEFLOCAL="fr_FR.UTF-8" 
 TIMEZONE="Europe/Paris"
 EXPANDROOT=false

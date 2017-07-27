@@ -1,24 +1,29 @@
-# Configuration file raspi3 Stretch IFÉ 2017/04/15
+# Configuration file raspi3 Stretch IFÉ 2017/07/26
 #
 APT_SERVER=ftp.fr.debian.org 
-APT_INCLUDES="gnupg,gnupg2,firmware-linux-nonfree,firmware-linux,xutils-dev,\
-gettext, tightvncserver,build-essential,git,cmake,libjson-c-dev,unzip,\
-bison,libboost-all-dev,automake,autoconf,autogen,libtool,libtool-bin,pkg-config,checkinstall,menulibre,libnotify-bin, \
-python3,python3-dev,python,python-dev,python-configobj,python-cheetah,python-imaging,python-serial,python-usb,\
-python-tk,python3-tk,python3-scipy,pandoc,python-pypandoc,python3-pypandoc,python-pandocfilters,python3-pandocfilters, \
-python-geopy,python3-geopy,python-pip,python3-pip, \
-pcre2-utils,libpcre++-dev,libpcre2-dev,libjpeg-dev,jed,i2c-tools,python-smbus,policykit-1,usbutils,\
-pmount,geany,geany-plugin-py,geany-plugin-markdown,firefox-esr,firefox-esr-l10n-fr,ntpdate, \
-texlive,texlive-xetex,nginx-extras,ffmpeg,wicd,wicd-gtk,console-data,keyboard-configuration, \
+APT_INCLUDES="gnupg,gnupg2,firmware-linux-nonfree,firmware-linux,dh-autoreconf,\
+gettext,build-essential,git,cmake,libjson-c-dev,unzip,usbutils,\
+bison,libboost-all-dev,automake,autoconf,autogen,libtool,libtool-bin,\
+pkg-config,checkinstall,menulibre,libnotify-bin,pandoc,\
+python3,python3-dev,python3-pypandoc,python3-scipy,python3-tk,python3-pandocfilters,\
+python,python-dev,python-pypandoc,python-scipy,python-tk,python-pandocfilters,\
+python3-geopy,python3-pip,\
+python-geopy,python-pip,\
+python-configobj,python-cheetah,python-imaging,python-serial,python-usb,\
+pcre2-utils,libpcre++-dev,libpcre2-dev,libjpeg-dev,jed,i2c-tools,python-smbus,policykit-1,\
+pmount,ntpdate,\
+texlive,texlive-xetex,nginx-extras,ffmpeg,wicd,wicd-gtk,console-data,keyboard-configuration,\
 icedtea-8-plugin,openjdk-8-jdk,openjdk-8-jre,openjdk-8-jre-headless,libqtwebkit-dev,libqt5webkit5-dev,\
 libudev-dev,libzzip-dev,zlib1g-dev,libcanberra-gtk-module,libnss-myhostname,libfreetype6-dev,libpng16-16,\
-nmap,libltdl-dev,lxsession,openbox-lxde-session,lxde,dbus-user-session,debian-archive-keyring"
+nmap,libltdl-dev,dbus-user-session,debian-archive-keyring,\
+xutils-dev,lxsession,openbox-lxde-session,lxde,x11proto-randr-dev,lxrandr,\
+tightvncserver,geany,geany-plugin-py,geany-plugin-markdown,firefox-esr,firefox-esr-l10n-fr"
 #----------------------
 RPI_MODEL=3 
 RELEASE="stretch" 
 HOSTNAME="raspife3" 
-PASSWORD="**********"
-USER_PASSWORD="**********"
+PASSWORD="**************"
+USER_PASSWORD="***************"
 DEFLOCAL="fr_FR.UTF-8" 
 TIMEZONE="Europe/Paris"
 EXPANDROOT=false
@@ -48,7 +53,7 @@ ENABLE_WM="lxdm"
 ENABLE_MINBASE=false
 ENABLE_REDUCE=false
 ENABLE_UBOOT=false
-ENABLE_FBTURBO=false
+ENABLE_FBTURBO=true
 ENABLE_IPTABLES=false
 ENABLE_USER=true 
 USER_NAME=ens-ife
