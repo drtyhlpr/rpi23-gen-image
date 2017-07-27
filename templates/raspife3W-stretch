@@ -28,9 +28,9 @@ XKB_VARIANT="latin9"
 XKB_OPTIONS=""
 #------------------------
 ENABLE_DHCP=false 
-NET_ADDRESS="192.168.221.41/24"
-NET_GATEWAY="192.168.221.1"
-NET_DNS_1="192.168.221.1" 
+NET_ADDRESS="192.168.***.***/24"
+NET_GATEWAY="192.168.***.1"
+NET_DNS_1="192.168.***.1" 
 NET_DNS_2="8.8.8.8" 
 #------------------------
 ENABLE_CONSOLE=false
