@@ -20,13 +20,13 @@ if [ "$BUILD_KERNEL" = true ] ; then
     temp_dir=$(sudo -u nobody mktemp -d)
 
     # Install latest boot binaries from raspberry/firmware github
-    sudo -u nobody wget -q -O "${temp_dir}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
-    sudo -u nobody wget -q -O "${temp_dir}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
-    sudo -u nobody wget -q -O "${temp_dir}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
-    sudo -u nobody wget -q -O "${temp_dir}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
-    sudo -u nobody wget -q -O "${temp_dir}/start.elf" "${FIRMWARE_URL}/start.elf"
-    sudo -u nobody wget -q -O "${temp_dir}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
-    sudo -u nobody wget -q -O "${temp_dir}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
+    sudo -E -u nobody wget -q -O "${temp_dir}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
+    sudo -E -u nobody wget -q -O "${temp_dir}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
+    sudo -E -u nobody wget -q -O "${temp_dir}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
+    sudo -E -u nobody wget -q -O "${temp_dir}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
+    sudo -E -u nobody wget -q -O "${temp_dir}/start.elf" "${FIRMWARE_URL}/start.elf"
+    sudo -E -u nobody wget -q -O "${temp_dir}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
+    sudo -E -u nobody wget -q -O "${temp_dir}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
 
     # Move downloaded boot binaries
     mv "${temp_dir}/"* "${BOOT_DIR}/"

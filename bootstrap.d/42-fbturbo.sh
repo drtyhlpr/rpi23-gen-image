@@ -18,7 +18,7 @@ if [ "$ENABLE_FBTURBO" = true ] ; then
     temp_dir=$(sudo -u nobody mktemp -d)
 
     # Fetch fbturbo sources
-    sudo -u nobody git -C "${temp_dir}" clone "${FBTURBO_URL}"
+    sudo -E -u nobody git -C "${temp_dir}" clone "${FBTURBO_URL}"
 
     # Move downloaded fbturbo sources
     mv "${temp_dir}/xf86-video-fbturbo" "${R}/tmp/"

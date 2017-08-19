@@ -25,9 +25,9 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
     # Fetch current RPi2/3 kernel sources
     if [ -z "${KERNEL_BRANCH}" ] ; then
-      sudo -u nobody git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}"
+      sudo -E -u nobody git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}"
     else
-      sudo -u nobody git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}"
+      sudo -E -u nobody git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}"
     fi
 
     # Copy downloaded kernel sources
