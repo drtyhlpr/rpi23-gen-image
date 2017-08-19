@@ -23,7 +23,7 @@ apt-get update
 ## Command-line parameters
 The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi23-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi23-gen-image.sh` script.
 
-#####Command-line examples:
+##### Command-line examples:
 ```shell
 ENABLE_UBOOT=true ./rpi23-gen-image.sh
 ENABLE_CONSOLE=false ENABLE_IPV6=false ./rpi23-gen-image.sh
@@ -43,7 +43,7 @@ RELEASE=stretch RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNE
 ## Configuration template files
 To avoid long lists of command-line parameters and to help to store the favourite parameter configurations the `rpi23-gen-image.sh` script supports so called configuration template files (`CONFIG_TEMPLATE`=template). These are simple text files located in the `./templates` directory that contain the list of configuration parameters that will be used. New configuration template files can be added to the `./templates` directory.
 
-#####Command-line examples:
+##### Command-line examples:
 ```shell
 CONFIG_TEMPLATE=rpi3stretch ./rpi23-gen-image.sh
 CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
@@ -92,7 +92,7 @@ Expand the root partition and filesystem automatically on first boot.
 
 ---
 
-#### Keyboard settings:
+#### Keyboard settings:
 These options are used to configure keyboard layout in `/etc/default/keyboard` for console and Xorg. These settings can also be changed inside the running OS using the `dpkg-reconfigure keyboard-configuration` command.
 
 ##### `XKB_MODEL`=""
@@ -112,7 +112,7 @@ Set extra xkb configuration options.
 #### Networking settings (DHCP):
 This parameter is used to set up networking auto configuration in `/etc/systemd/network/eth.network`. The default location of network configuration files in the Debian `stretch` release was changed to `/lib/systemd/network`.`
 
-#####`ENABLE_DHCP`=true
+##### `ENABLE_DHCP`=true
 Set the system to use DHCP. This requires an DHCP server.
 
 ---
@@ -120,25 +120,25 @@ Set the system to use DHCP. This requires an DHCP server.
 #### Networking settings (static):
 These parameters are used to set up a static networking configuration in `/etc/systemd/network/eth.network`. The following static networking parameters are only supported if `ENABLE_DHCP` was set to `false`. The default location of network configuration files in the Debian `stretch` release was changed to `/lib/systemd/network`.
 
-#####`NET_ADDRESS`=""
+##### `NET_ADDRESS`=""
 Set a static IPv4 or IPv6 address and its prefix, separated by "/", eg. "192.169.0.3/24".
 
-#####`NET_GATEWAY`=""
+##### `NET_GATEWAY`=""
 Set the IP address for the default gateway.
 
-#####`NET_DNS_1`=""
+##### `NET_DNS_1`=""
 Set the IP address for the first DNS server.
 
-#####`NET_DNS_2`=""
+##### `NET_DNS_2`=""
 Set the IP address for the second DNS server.
 
-#####`NET_DNS_DOMAINS`=""
+##### `NET_DNS_DOMAINS`=""
 Set the default DNS search domains to use for non fully qualified host names.
 
-#####`NET_NTP_1`=""
+##### `NET_NTP_1`=""
 Set the IP address for the first NTP server.
 
-#####`NET_NTP_2`=""
+##### `NET_NTP_2`=""
 Set the IP address for the second NTP server.
 
 ---
@@ -423,7 +423,7 @@ script -c 'APT_SERVER=ftp.de.debian.org ./rpi23-gen-image.sh' ./build.log
 ## Flashing the image file
 After the image file was successfully created by the `rpi23-gen-image.sh` script it can be copied to the microSD card that will be used by the RPi2/3 computer. This can be performed by using the tools `bmaptool` or `dd`. Using `bmaptool` will probably speed-up the copy process because `bmaptool` copies more wisely than `dd`.
 
-#####Flashing examples:
+##### Flashing examples:
 ```shell
 bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie.img /dev/mmcblk0
 dd bs=4M if=./images/jessie/2017-01-23-rpi3-jessie.img of=/dev/mmcblk0
