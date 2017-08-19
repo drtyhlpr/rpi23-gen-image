@@ -433,6 +433,9 @@ If you have set `ENABLE_SPLITFS`, copy the `-frmw` image on the microSD card, th
 bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie-frmw.img /dev/mmcblk0
 bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie-root.img /dev/sdc
 ```
+## Weekly image builds
+The image files are provided by JRWR'S I/O PORT and are built once a Sunday at midnight UTC!
+* [Debian Stretch Raspberry Pi2/3 Weekly Image Builds](https://jrwr.io/doku.php?id=projects:debianpi)
 
 ## External links and references
 * [Debian worldwide mirror sites](https://www.debian.org/mirror/list)
