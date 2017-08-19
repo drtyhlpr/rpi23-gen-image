@@ -19,7 +19,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     temp_dir=$(sudo -u nobody mktemp -d)
 
     # Fetch U-Boot sources
-    sudo -u nobody git -C "${temp_dir}" clone "${UBOOT_URL}"
+    sudo -E -u nobody git -C "${temp_dir}" clone "${UBOOT_URL}"
 
     # Copy downloaded U-Boot sources
     mv "${temp_dir}/u-boot" "${R}/tmp/"
