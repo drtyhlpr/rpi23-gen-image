@@ -21,10 +21,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
     fi
   else # KERNELSRC_DIR=""
     # Create temporary directory for kernel sources
-    temp_dir=$(sudo -u nobody mktemp -d)
+    temp_dir=$(as_nobody mktemp -d)
 
     # Fetch current RPi2/3 kernel sources
-    sudo -u nobody git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}"
+    as_nobody git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}"
 
     # Copy downloaded kernel sources
     mv "${temp_dir}/linux" "${R}/usr/src/"
