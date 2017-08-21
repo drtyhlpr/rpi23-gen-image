@@ -58,7 +58,10 @@ Set Debian packages server address. Choose a server from the list of Debian worl
 Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once.
 
 ##### `APT_INCLUDES`=""
-A comma separated list of additional packages to be installed during bootstrapping.
+A comma separated list of additional packages to be installed by debootstrap during bootstrapping.
+
+##### `APT_INCLUDES_LATE`=""
+A comma separated list of additional packages to be installed by apt after bootstrapping and after APT sources are set up.  This is useful for packages with pre-depends, which debootstrap do not handle well.
 
 ---
 
