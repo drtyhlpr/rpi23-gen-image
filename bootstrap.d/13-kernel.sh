@@ -98,7 +98,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     fi
 
     # Cross compile kernel and modules
-    make -C "${KERNEL_DIR}" -j${KERNEL_THREADS} ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_BIN_IMAGE}" modules dtbs
+    make -C "${KERNEL_DIR}" -j${KERNEL_THREADS} ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_BIN_IMAGE}" modules dtbs deb-pkg
   fi
 
   # Check if kernel compilation was successful
