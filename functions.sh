@@ -35,7 +35,7 @@ chroot_exec() {
 
 as_nobody() {
   # Exec command as user nobody
-  sudo -u nobody LANG=C LC_ALL=C $*
+  sudo -E -u nobody LANG=C LC_ALL=C $*
 }
 
 install_readonly() {
