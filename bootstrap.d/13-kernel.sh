@@ -160,8 +160,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
     make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" modules_prepare
 
     # Create symlinks for kernel modules
-    ln -sf "${KERNEL_DIR}" "${R}/lib/modules/${KERNEL_VERSION}/build"
-    ln -sf "${KERNEL_DIR}" "${R}/lib/modules/${KERNEL_VERSION}/source"
+    chroot_exec ln -sf /usr/src/linux "/lib/modules/${KERNEL_VERSION}/build"
+    chroot_exec ln -sf /usr/src/linux "/lib/modules/${KERNEL_VERSION}/source"
   fi
 
 else # BUILD_KERNEL=false
