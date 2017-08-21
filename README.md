@@ -23,7 +23,7 @@ apt-get update
 ## Command-line parameters
 The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi23-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi23-gen-image.sh` script.
 
-#####Command-line examples:
+##### Command-line examples:
 ```shell
 ENABLE_UBOOT=true ./rpi23-gen-image.sh
 ENABLE_CONSOLE=false ENABLE_IPV6=false ./rpi23-gen-image.sh
@@ -43,7 +43,7 @@ RELEASE=stretch RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNE
 ## Configuration template files
 To avoid long lists of command-line parameters and to help to store the favourite parameter configurations the `rpi23-gen-image.sh` script supports so called configuration template files (`CONFIG_TEMPLATE`=template). These are simple text files located in the `./templates` directory that contain the list of configuration parameters that will be used. New configuration template files can be added to the `./templates` directory.
 
-#####Command-line examples:
+##### Command-line examples:
 ```shell
 CONFIG_TEMPLATE=rpi3stretch ./rpi23-gen-image.sh
 CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
@@ -58,7 +58,10 @@ Set Debian packages server address. Choose a server from the list of Debian worl
 Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once.
 
 ##### `APT_INCLUDES`=""
-A comma separated list of additional packages to be installed during bootstrapping.
+A comma separated list of additional packages to be installed by debootstrap during bootstrapping.
+
+##### `APT_INCLUDES_LATE`=""
+A comma separated list of additional packages to be installed by apt after bootstrapping and after APT sources are set up.  This is useful for packages with pre-depends, which debootstrap do not handle well.
 
 ---
 
@@ -68,6 +71,9 @@ Specifiy the target Raspberry Pi hardware model. The script at this time support
 
 ##### `RELEASE`="jessie"
 Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases "jessie" and "stretch". `BUILD_KERNEL`=true will automatically be set if the Debian release `stretch` is used.
+
+##### `RELEASE_ARCH`="armhf"
+Set the desired Debian release architecture.
 
 ##### `HOSTNAME`="rpi$RPI_MODEL-$RELEASE"
 Set system host name. It's recommended that the host name is unique in the corresponding subnet.
@@ -89,7 +95,7 @@ Expand the root partition and filesystem automatically on first boot.
 
 ---
 
-#### Keyboard settings:
+#### Keyboard settings:
 These options are used to configure keyboard layout in `/etc/default/keyboard` for console and Xorg. These settings can also be changed inside the running OS using the `dpkg-reconfigure keyboard-configuration` command.
 
 ##### `XKB_MODEL`=""
@@ -109,7 +115,7 @@ Set extra xkb configuration options.
 #### Networking settings (DHCP):
 This parameter is used to set up networking auto configuration in `/etc/systemd/network/eth.network`. The default location of network configuration files in the Debian `stretch` release was changed to `/lib/systemd/network`.`
 
-#####`ENABLE_DHCP`=true
+##### `ENABLE_DHCP`=true
 Set the system to use DHCP. This requires an DHCP server.
 
 ---
@@ -117,25 +123,25 @@ Set the system to use DHCP. This requires an DHCP server.
 #### Networking settings (static):
 These parameters are used to set up a static networking configuration in `/etc/systemd/network/eth.network`. The following static networking parameters are only supported if `ENABLE_DHCP` was set to `false`. The default location of network configuration files in the Debian `stretch` release was changed to `/lib/systemd/network`.
 
-#####`NET_ADDRESS`=""
+##### `NET_ADDRESS`=""
 Set a static IPv4 or IPv6 address and its prefix, separated by "/", eg. "192.169.0.3/24".
 
-#####`NET_GATEWAY`=""
+##### `NET_GATEWAY`=""
 Set the IP address for the default gateway.
 
-#####`NET_DNS_1`=""
+##### `NET_DNS_1`=""
 Set the IP address for the first DNS server.
 
-#####`NET_DNS_2`=""
+##### `NET_DNS_2`=""
 Set the IP address for the second DNS server.
 
-#####`NET_DNS_DOMAINS`=""
+##### `NET_DNS_DOMAINS`=""
 Set the default DNS search domains to use for non fully qualified host names.
 
-#####`NET_NTP_1`=""
+##### `NET_NTP_1`=""
 Set the IP address for the first NTP server.
 
-#####`NET_NTP_2`=""
+##### `NET_NTP_2`=""
 Set the IP address for the second NTP server.
 
 ---
@@ -259,6 +265,24 @@ Add SSH (v2) public key(s) from specified file to `authorized_keys` file to enab
 ##### `BUILD_KERNEL`=false
 Build and install the latest RPi2/3 Linux kernel. Currently only the default RPi2/3 kernel configuration is used. `BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` is used.
 
+##### `CROSS_COMPILE`="arm-linux-gnueabihf-"
+This sets the cross compile enviornment for the compiler.
+
+##### `KERNEL_ARCH`="arm"
+This sets the kernel architecture for the compiler.
+
+##### `KERNEL_IMAGE`="kernel7.img"
+Name of the image file in the boot partition.
+
+##### `KERNEL_BRANCH`=""
+Name of the requested branch from the GIT location for the RPi Kernel. Default is using the current default branch from the GIT site.
+
+##### `QEMU_BINARY`="/usr/bin/qemu-arm-static"
+Sets the QEMU enviornment for the Debian archive.
+
+##### `KERNEL_DEFCONFIG`="bcm2709_defconfig"
+Sets the default config for kernel compiling.
+
 ##### `KERNEL_REDUCE`=false
 Reduce the size of the generated kernel by removing unwanted device, network and filesystem drivers (experimental).
 
@@ -345,8 +369,8 @@ Sets key size in bits. The argument has to be a multiple of 8.
 ##### `BASEDIR`=$(pwd)/images/${RELEASE}
 Set a path to a working directory used by the script to generate an image.
 
-##### `IMAGE_NAME`=${BASEDIR}/${DATE}-rpi${RPI_MODEL}-${RELEASE}
-Set a filename for the output file(s). Note: the script will create $IMAGE_NAME.img if `ENABLE_SPLITFS`=false or $IMAGE_NAME-frmw.img and $IMAGE_NAME-root.img if `ENABLE_SPLITFS`=true.
+##### `IMAGE_NAME`=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}
+Set a filename for the output file(s). Note: the script will create $IMAGE_NAME.img if `ENABLE_SPLITFS`=false or $IMAGE_NAME-frmw.img and $IMAGE_NAME-root.img if `ENABLE_SPLITFS`=true. Note 2: If the KERNEL_BRANCH is not set, the word "CURRENT" is used.
 
 ## Understanding the script
 The functions of this script that are required for the different stages of the bootstrapping are split up into single files located inside the `bootstrap.d` directory. During the bootstrapping every script in this directory gets executed in lexicographical order:
@@ -402,7 +426,7 @@ script -c 'APT_SERVER=ftp.de.debian.org ./rpi23-gen-image.sh' ./build.log
 ## Flashing the image file
 After the image file was successfully created by the `rpi23-gen-image.sh` script it can be copied to the microSD card that will be used by the RPi2/3 computer. This can be performed by using the tools `bmaptool` or `dd`. Using `bmaptool` will probably speed-up the copy process because `bmaptool` copies more wisely than `dd`.
 
-#####Flashing examples:
+##### Flashing examples:
 ```shell
 bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie.img /dev/mmcblk0
 dd bs=4M if=./images/jessie/2017-01-23-rpi3-jessie.img of=/dev/mmcblk0
@@ -412,6 +436,9 @@ If you have set `ENABLE_SPLITFS`, copy the `-frmw` image on the microSD card, th
 bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie-frmw.img /dev/mmcblk0
 bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie-root.img /dev/sdc
 ```
+## Weekly image builds
+The image files are provided by JRWR'S I/O PORT and are built once a Sunday at midnight UTC!
+* [Debian Stretch Raspberry Pi2/3 Weekly Image Builds](https://jrwr.io/doku.php?id=projects:debianpi)
 
 ## External links and references
 * [Debian worldwide mirror sites](https://www.debian.org/mirror/list)
