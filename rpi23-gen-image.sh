@@ -53,9 +53,18 @@ KERNEL_ARCH=${KERNEL_ARCH:=arm}
 RELEASE_ARCH=${RELEASE_ARCH:=armhf}
 CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
 COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
-KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
-KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
-QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
+if [ "$KERNEL_ARCH" = "arm64" ] ; then
+  KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
+  KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
+else
+  KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
+  KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
+fi
+if [ "$RELEASE_ARCH" = "arm64" ] ; then
+  QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
+else
+  QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
+fi
 KERNEL_BRANCH=${KERNEL_BRANCH:=""}
 
 # URLs
@@ -166,7 +175,11 @@ KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
 KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
 KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
-KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="zImage"}
+if [ "$KERNEL_ARCH" = "arm64" ] ; then
+  KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="Image"}
+else
+  KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="zImage"}
+fi
 
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}

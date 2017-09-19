@@ -272,16 +272,16 @@ This sets the cross compile enviornment for the compiler.
 This sets the kernel architecture for the compiler.
 
 ##### `KERNEL_IMAGE`="kernel7.img"
-Name of the image file in the boot partition.
+Name of the image file in the boot partition. If not set, `KERNEL_IMAGE` will be set to "kernel8.img" automatically if building for arm64.
 
 ##### `KERNEL_BRANCH`=""
 Name of the requested branch from the GIT location for the RPi Kernel. Default is using the current default branch from the GIT site.
 
 ##### `QEMU_BINARY`="/usr/bin/qemu-arm-static"
-Sets the QEMU enviornment for the Debian archive.
+Sets the QEMU enviornment for the Debian archive. If not set, `QEMU_BINARY` will be set to "/usr/bin/qemu-aarch64-static" automatically if building for arm64.
 
 ##### `KERNEL_DEFCONFIG`="bcm2709_defconfig"
-Sets the default config for kernel compiling.
+Sets the default config for kernel compiling. If not set, `KERNEL_DEFCONFIG` will be set to "bcmrpi3\_defconfig" automatically if building for arm64.
 
 ##### `KERNEL_REDUCE`=false
 Reduce the size of the generated kernel by removing unwanted device, network and filesystem drivers (experimental).
