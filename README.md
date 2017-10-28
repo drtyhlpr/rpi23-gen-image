@@ -7,7 +7,7 @@ The following list of Debian packages must be installed on the build system beca
 
   ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo```
 
-It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandetory. Kernel compilation and linking will be performed on the build system using an ARM (armhf) cross-compiler toolchain.
+It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandatory. Kernel compilation and linking will be performed on the build system using an ARM (armhf) cross-compiler toolchain.
 
 The script has been tested using the default `crossbuild-essential-armhf` toolchain meta package on Debian Linux `jessie` and `stretch` build systems. Please check the [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains) for further information.
 
