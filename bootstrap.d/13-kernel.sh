@@ -8,12 +8,12 @@
 # Fetch and build latest raspberry kernel
 if [ "$BUILD_KERNEL" = true ] ; then
   # Setup source directory
-  mkdir -p "${R}/usr/src"
+  mkdir -p "${R}/usr/src/linux"
 
   # Copy existing kernel sources into chroot directory
   if [ -n "$KERNELSRC_DIR" ] && [ -d "$KERNELSRC_DIR" ] ; then
     # Copy kernel sources
-    cp -r "${KERNELSRC_DIR}" "${R}/usr/src"
+    cp -r "${KERNELSRC_DIR}/*" "${R}/usr/src/linux"
 
     # Clean the kernel sources
     if [ "$KERNELSRC_CLEAN" = true ] && [ "$KERNELSRC_PREBUILT" = false ] ; then
@@ -25,9 +25,9 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
     # Fetch current RPi2/3 kernel sources
     if [ -z "${KERNEL_BRANCH}" ] ; then
-      as_nobody -u nobody git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}"
+      as_nobody -u nobody git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}" linux
     else
-      as_nobody -u nobody git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}"
+      as_nobody -u nobody git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}" linux
     fi
     
     # Copy downloaded kernel sources
