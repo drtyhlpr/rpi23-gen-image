@@ -212,13 +212,14 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
-# apt-transport-https has been removed from repositories
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
+
+# Package apt-transport-https has been removed from Debian Buster release
 # this induces qemu error 383 which does not prevent building an image
 if [ "$RELEASE" = "buster" ] ; then
-  APT_INCLUDES="${APT_INCLUDES},apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
-else
-  APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
+  APT_INCLUDES="$(echo ${APT_INCLUDES} | sed "s/apt-transport-https,/l/")"
 fi
+
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
 MISSING_PACKAGES=""
