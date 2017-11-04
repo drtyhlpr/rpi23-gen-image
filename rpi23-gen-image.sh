@@ -217,7 +217,7 @@ APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debi
 # Package apt-transport-https has been removed from Debian Buster release
 # this induces qemu error 383 which does not prevent building an image
 if [ "$RELEASE" = "buster" ] ; then
-  APT_INCLUDES="$(echo ${APT_INCLUDES} | sed "s/apt-transport-https,/l/")"
+  APT_INCLUDES="$(echo ${APT_INCLUDES} | sed "s/apt-transport-https,//")"
 fi
 
 # Packages required for bootstrapping
