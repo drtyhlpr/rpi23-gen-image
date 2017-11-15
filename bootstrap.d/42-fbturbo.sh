@@ -30,7 +30,7 @@ if [ "$ENABLE_FBTURBO" = true ] ; then
   # Install Xorg build dependencies
   if [ "$RELEASE" = "jessie" ] ; then
     chroot_exec apt-get -q -y --no-install-recommends install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
-  elif [ "$RELEASE" = "stretch" ] ; then
+  elif [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
     chroot_exec apt-get -q -y --no-install-recommends --allow-unauthenticated install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake libdrm-dev
   fi
 

@@ -74,7 +74,7 @@ else
 fi
 
 # Set init to systemd if required by Debian release
-if [ "$RELEASE" = "stretch" ] ; then
+if [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
   CMDLINE="${CMDLINE} init=/bin/systemd"
 fi
 

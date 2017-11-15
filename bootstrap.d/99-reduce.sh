@@ -46,7 +46,7 @@ if [ "$ENABLE_REDUCE" = true ] ; then
 
   # Replace bash shell by dash shell (experimental)
   if [ "$REDUCE_BASH" = true ] ; then
-    if [ "$RELEASE" = "stretch" ] ; then
+    if [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
       echo "Yes, do as I say!" | chroot_exec apt-get purge -qq -y --allow-remove-essential bash
     else
       echo "Yes, do as I say!" | chroot_exec apt-get purge -qq -y --force-yes bash

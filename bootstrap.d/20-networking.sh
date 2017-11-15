@@ -57,7 +57,7 @@ fi
 sed -i "/.*=\$/d" "${ETC_DIR}/systemd/network/eth.network"
 
 # Move systemd network configuration if required by Debian release
-if [ "$RELEASE" = "stretch" ] ; then
+if [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
   mv -v "${ETC_DIR}/systemd/network/eth.network" "${LIB_DIR}/systemd/network/10-eth.network"
   rm -fr "${ETC_DIR}/systemd/network"
 fi

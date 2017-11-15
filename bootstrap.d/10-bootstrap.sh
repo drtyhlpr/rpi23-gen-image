@@ -20,7 +20,7 @@ if [ "$ENABLE_MINBASE" = true ] ; then
 fi
 
 # Exclude packages if required by Debian release
-if [ "$RELEASE" = "stretch" ] ; then
+if [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
   EXCLUDES="--exclude=init,systemd-sysv"
 fi
 

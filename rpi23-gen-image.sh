@@ -3,7 +3,7 @@
 ########################################################################
 # rpi23-gen-image.sh					       2015-2017
 #
-# Advanced Debian "jessie" and "stretch"  bootstrap script for RPi2/3
+# Advanced Debian "jessie", "stretch" and "buster" bootstrap script for RPi2/3
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -12,7 +12,7 @@
 #
 # Copyright (C) 2015 Jan Wagner <mail@jwagner.eu>
 #
-# Big thanks for patches and enhancements by 10+ github contributors!
+# Big thanks for patches and enhancements by 20+ github contributors!
 ########################################################################
 
 # Are we running as root?
@@ -214,12 +214,6 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
 
-# Package apt-transport-https has been removed from Debian Buster release
-# this induces qemu error 383 which does not prevent building an image
-if [ "$RELEASE" = "buster" ] ; then
-  APT_INCLUDES="$(echo ${APT_INCLUDES} | sed "s/apt-transport-https,//")"
-fi
-
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
 MISSING_PACKAGES=""
@@ -257,7 +251,7 @@ if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
 fi
 
 # Build RPi2/3 Linux kernel if required by Debian release
-if [ "$RELEASE" = "stretch" ] ; then
+if [ "$RELEASE" = "stretch" ]  || [ "$RELEASE" = "buster" ] ; then
   BUILD_KERNEL=true
 fi
 
