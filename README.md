@@ -530,7 +530,7 @@ CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
 设置期望的 Debian 发行架构.
 
 ##### `HOSTNAME`="rpi$RPI_MODEL-$RELEASE"
-设置系统的主机名称. 建议所在的子网中主机名称是唯一的.
+设置系统的主机名. 建议所在的子网中主机名是唯一的.
 
 ##### `PASSWORD`="raspberry"
 设置系统的 `root` 用户密码.  **强烈**建议选择一个自定义密码 .
@@ -654,10 +654,10 @@ CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
 卸载包、删除文件以减小体积 详情查看 `REDUCE_*` 参数.
 
 ##### `ENABLE_UBOOT`=false
-使用 [U-Boot 引导器](http://git.denx.de/?p=u-boot.git;a=summary) 替代树莓派2/3 默认的第二阶段引导器(bootcode.bin).  U-Boot 可以通过网络使用 BOOTP/TFTP 协议引导镜像文件.
+使用 [U-Boot](http://git.denx.de/?p=u-boot.git;a=summary) 替代树莓派2/3 默认的第二阶段引导器(bootcode.bin).  U-Boot 可以通过网络使用 BOOTP/TFTP 协议引导镜像文件.
 
 ##### `UBOOTSRC_DIR`=""
-存放已下载 [U-Boot 引导器源文件](http://git.denx.de/?p=u-boot.git;a=summary) 的目录(`u-boot`).
+存放已下载 [U-Boot 源文件](http://git.denx.de/?p=u-boot.git;a=summary) 的目录(`u-boot`).
 
 ##### `ENABLE_FBTURBO`=false
 安装并且允许 [硬件加速的 Xorg 显卡驱动](https://github.com/ssvb/xf86-video-fbturbo) `fbturbo`. 当前仅支持窗口的移动和滚动的硬件加速.
@@ -759,7 +759,7 @@ GIT里的树莓派内核源代码分支名称, 默认使用当前默认分支.
 当`KERNELSRC_DIR`被复制到 chroot 之后开始编译之前(使用 `make mrproper`)清理内核源代码. 如果 `KERNELSRC_DIR` 没有设置或者 `KERNELSRC_PREBUILT`=true时忽略此设置.
 
 ##### `KERNELSRC_CONFIG`=true
-在编译前使用 `make bcm2709_defconfig` (也可以选择 `make menuconfig`) 配置内核源代码. 如果`KERNELSRC_DIR`指定的源码存放目录不存在,这个参数自动设为 `true` if no existing kernel sources directory was specified using . 如果 `KERNELSRC_PREBUILT`=true 忽略此参数.
+在编译前使用 `make bcm2709_defconfig` (也可以选择 `make menuconfig`) 配置内核源代码. 如果`KERNELSRC_DIR`指定的源码存放目录不存在,这个参数自动设为 `true` . 如果 `KERNELSRC_PREBUILT`=true 忽略此参数.
 
 ##### `KERNELSRC_USRCONFIG`=""
 复制自己的配置文件到内核的 `.config`. 如果 `KERNEL_MENUCONFIG`=true 拷贝完成后自动运行 make menuconfig.
