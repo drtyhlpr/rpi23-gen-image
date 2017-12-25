@@ -12,8 +12,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Copy existing kernel sources into chroot directory
   if [ -n "$KERNELSRC_DIR" ] && [ -d "$KERNELSRC_DIR" ] ; then
-    # Copy kernel sources
-    cp -r "${KERNELSRC_DIR}/"* "${R}/usr/src/linux"
+    # Copy kernel sources and include hidden files
+    cp -r "${KERNELSRC_DIR}/". "${R}/usr/src/linux"
 
     # Clean the kernel sources
     if [ "$KERNELSRC_CLEAN" = true ] && [ "$KERNELSRC_PREBUILT" = false ] ; then
