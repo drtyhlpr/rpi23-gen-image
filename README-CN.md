@@ -75,7 +75,7 @@ CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
 设置期望的 Debian 发行架构.
 
 ##### `HOSTNAME`="rpi$RPI_MODEL-$RELEASE"
-设置系统的主机名称. 建议所在的子网中主机名称是唯一的.
+设置主机名称. 建议所在的子网中主机名称是唯一的.
 
 ##### `PASSWORD`="raspberry"
 设置系统的 `root` 用户密码.  **强烈**建议选择一个自定义密码 .
@@ -304,7 +304,7 @@ GIT里的树莓派内核源代码分支名称, 默认使用当前默认分支.
 当`KERNELSRC_DIR`被复制到 chroot 之后开始编译之前(使用 `make mrproper`)清理内核源代码. 如果 `KERNELSRC_DIR` 没有设置或者 `KERNELSRC_PREBUILT`=true时忽略此设置.
 
 ##### `KERNELSRC_CONFIG`=true
-在编译前使用 `make bcm2709_defconfig` (也可以选择 `make menuconfig`) 配置内核源代码. 如果`KERNELSRC_DIR`指定的源码存放目录不存在,这个参数自动设为 `true` if no existing kernel sources directory was specified using . 如果 `KERNELSRC_PREBUILT`=true 忽略此参数.
+在编译前使用 `make bcm2709_defconfig` (也可以选择 `make menuconfig`) 配置内核源代码. 如果`KERNELSRC_DIR`指定的源码存放目录不存在,这个参数自动设为 `true`. 如果 `KERNELSRC_PREBUILT`=true 忽略此参数.
 
 ##### `KERNELSRC_USRCONFIG`=""
 复制自己的配置文件到内核的 `.config`. 如果 `KERNEL_MENUCONFIG`=true 拷贝完成后自动运行 make menuconfig.
@@ -327,7 +327,7 @@ GIT里的树莓派内核源代码分支名称, 默认使用当前默认分支.
 移除所有的doc文档文件(harsh). 配置 APT, 将来使用`apt-get`安装deb包时不包括doc文件.
 
 ##### `REDUCE_MAN`=true
-移除所有的man手册页和info文件 (harsh).  配置 APT, 将来使用`apt-get`安装deb包时不包括 man 文件.
+移除所有的man手册页和info文件 (harsh).  配置 APT, 将来使用`apt-get`安装deb包时不包括man手册页.
 
 ##### `REDUCE_VIM`=false
 使用vim的小型克隆 `levee` 替代 `vim-tiny`.
