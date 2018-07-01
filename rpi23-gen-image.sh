@@ -466,6 +466,10 @@ if [ "$ENABLE_REDUCE" = true ] ; then
   fi
 fi
 
+if [ "$RELEASE" != "jessie" ] ; then
+  APT_INCLUDES="${APT_INCLUDES},libnss-systemd"
+fi
+
 # Configure kernel sources if no KERNELSRC_DIR
 if [ "$BUILD_KERNEL" = true ] && [ -z "$KERNELSRC_DIR" ] ; then
   KERNELSRC_CONFIG=true
