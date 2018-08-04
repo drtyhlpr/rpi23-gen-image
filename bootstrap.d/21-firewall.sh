@@ -35,10 +35,10 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
     chroot_exec systemctl daemon-reload
     chroot_exec systemctl enable ip6tables.service
   fi
-fi
-
-if [ "$ENABLE_SSHD" = false ] ; then
- # Remove SSHD related iptables rules
- sed -i "/^#/! {/SSH/ s/^/# /}" "${ETC_DIR}/iptables/iptables.rules" 2> /dev/null
- sed -i "/^#/! {/SSH/ s/^/# /}" "${ETC_DIR}/iptables/ip6tables.rules" 2> /dev/null
+  
+  if [ "$ENABLE_SSHD" = false ] ; then
+   # Remove SSHD related iptables rules
+   sed -i "/^#/! {/SSH/ s/^/# /}" "${ETC_DIR}/iptables/iptables.rules" 2> /dev/null
+   sed -i "/^#/! {/SSH/ s/^/# /}" "${ETC_DIR}/iptables/ip6tables.rules" 2> /dev/null
+  fi
 fi
