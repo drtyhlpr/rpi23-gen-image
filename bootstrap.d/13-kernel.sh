@@ -115,7 +115,9 @@ if [ "$BUILD_KERNEL" = true ] ; then
     make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH=../../.. modules_install
 
     # Install kernel firmware
-    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_FW_PATH=../../../lib firmware_install
+    if [ $(cat ./Makefile | grep "^firmware_install:") ] ; then
+      make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_FW_PATH=../../../lib firmware_install
+    fi
   fi
 
   # Install kernel headers
