@@ -175,6 +175,9 @@ KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
 KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
 KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
+KERNEL_OLDDEFCONFIG=${KERNEL_OLDDEFCONFIG:=false}
+KERNEL_CCACHE=${KERNEL_CCACHE:=false}
+
 if [ "$KERNEL_ARCH" = "arm64" ] ; then
   KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="Image"}
 else
@@ -267,6 +270,11 @@ fi
 # Add libncurses5 to enable kernel menuconfig
 if [ "$KERNEL_MENUCONFIG" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses5-dev"
+fi
+
+# Add ccache compiler cache for (faster) kernel cross (re)compilation
+if [ "$KERNEL_CCACHE" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} ccache"
 fi
 
 # Stop the Crypto Wars

@@ -295,6 +295,12 @@ Install kernel headers with built kernel.
 ##### `KERNEL_MENUCONFIG`=false
 Start `make menuconfig` interactive menu-driven kernel configuration. The script will continue after `make menuconfig` was terminated.
 
+##### `KERNEL_OLDDEFCONFIG`=false
+Run `make olddefconfig` to automatically set all new kernel configuration options to their recommended default values.
+
+##### `KERNEL_CCACHE`=false
+Compile the kernel using ccache. This speeds up kernel recompilation by caching previous compilations and detecting when the same compilation is being done again.
+
 ##### `KERNEL_REMOVESRC`=true
 Remove all kernel sources from the generated OS image after it was built and installed.
 

@@ -25,9 +25,9 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
     # Fetch current RPi2/3 kernel sources
     if [ -z "${KERNEL_BRANCH}" ] ; then
-      as_nobody git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}" linux
+      as_nobody -H git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}" linux
     else
-      as_nobody git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}" linux
+      as_nobody -H git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}" linux
    fi
     
     # Copy downloaded kernel sources
@@ -87,8 +87,14 @@ if [ "$BUILD_KERNEL" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
 
+      # Copy custom kernel configuration file
       if [ ! -z "$KERNELSRC_USRCONFIG" ] ; then
         cp $KERNELSRC_USRCONFIG ${KERNEL_DIR}/.config
+      fi
+
+      # Set kernel configuration parameters to their default values
+      if [ "$KERNEL_OLDDEFCONFIG" = true ] ; then
+        make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" olddefconfig
       fi
 
       # Start menu-driven kernel configuration (interactive)
@@ -97,8 +103,20 @@ if [ "$BUILD_KERNEL" = true ] ; then
       fi
     fi
 
-    # Cross compile kernel and modules
-    make -C "${KERNEL_DIR}" -j${KERNEL_THREADS} ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_BIN_IMAGE}" modules dtbs
+    # Use ccache to cross compile the kernel
+    if [ "$KERNEL_CCACHE" = true ] ; then
+      cc="ccache ${CROSS_COMPILE}gcc"
+    else
+      cc="${CROSS_COMPILE}gcc"
+    fi
+
+    # Cross compile kernel and dtbs
+    make -C "${KERNEL_DIR}" -j${KERNEL_THREADS} ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" "${KERNEL_BIN_IMAGE}" dtbs
+
+    # Cross compile kernel modules
+    if [ $(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config") ] ; then
+      make -C "${KERNEL_DIR}" -j${KERNEL_THREADS} ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" modules
+    fi
   fi
 
   # Check if kernel compilation was successful
@@ -110,12 +128,16 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Install kernel modules
   if [ "$ENABLE_REDUCE" = true ] ; then
-    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=../../.. modules_install
+    if [ $(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config") ] ; then
+      make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=../../.. modules_install
+    fi
   else
-    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH=../../.. modules_install
+    if [ $(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config") ] ; then
+      make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH=../../.. modules_install
+    fi
 
     # Install kernel firmware
-    if [ $(cat ./Makefile | grep "^firmware_install:") ] ; then
+    if [ $(grep "^firmware_install:" "${KERNEL_DIR}/Makefile") ] ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_FW_PATH=../../../lib firmware_install
     fi
   fi
@@ -134,18 +156,36 @@ if [ "$BUILD_KERNEL" = true ] ; then
   # Copy kernel configuration file to the boot directory
   install_readonly "${KERNEL_DIR}/.config" "${R}/boot/config-${KERNEL_VERSION}"
 
-  # Copy dts and dtb device tree sources and binaries
+  # Prepare device tree directory
   mkdir "${BOOT_DIR}/overlays"
   
   # Ensure the proper .dtb is located
   if [ "$KERNEL_ARCH" = "arm" ] ; then
-    install_readonly "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/"*.dtb "${BOOT_DIR}/"
+    for dtb in "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/"*.dtb ; do
+      if [ -f "${dtb}" ] ; then
+        install_readonly "${dtb}" "${BOOT_DIR}/"
+      fi
+    done
   else
-    install_readonly "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/broadcom/"*.dtb "${BOOT_DIR}/"
+    for dtb in "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/broadcom/"*.dtb ; do
+      if [ -f "${dtb}" ] ; then
+        install_readonly "${dtb}" "${BOOT_DIR}/"
+      fi
+    done
   fi
 
-  install_readonly "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtb* "${BOOT_DIR}/overlays/"
-  install_readonly "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/README" "${BOOT_DIR}/overlays/README"
+  # Copy compiled dtb device tree files
+  if [ -d "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays" ] ; then
+    for dtb in "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtb ; do
+      if [ -f "${dtb}" ] ; then
+        install_readonly "${dtb}" "${BOOT_DIR}/overlays/"
+      fi
+    done
+
+    if [ -f "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/README" ] ; then
+      install_readonly "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/README" "${BOOT_DIR}/overlays/README"
+    fi
+  fi
 
   if [ "$ENABLE_UBOOT" = false ] ; then
     # Convert and copy kernel image to the boot directory
@@ -159,11 +199,16 @@ if [ "$BUILD_KERNEL" = true ] ; then
   if [ "$KERNEL_REMOVESRC" = true ] ; then
     rm -fr "${KERNEL_DIR}"
   else
-    make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" modules_prepare
+    # Prepare compiled kernel modules
+    if [ $(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config") ] ; then
+      if [ $(grep "^modules_prepare:" "${KERNEL_DIR}/Makefile") ] ; then
+        make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" modules_prepare
+      fi
 
-    # Create symlinks for kernel modules
-    chroot_exec ln -sf /usr/src/linux "/lib/modules/${KERNEL_VERSION}/build"
-    chroot_exec ln -sf /usr/src/linux "/lib/modules/${KERNEL_VERSION}/source"
+      # Create symlinks for kernel modules
+      chroot_exec ln -sf /usr/src/linux "/lib/modules/${KERNEL_VERSION}/build"
+      chroot_exec ln -sf /usr/src/linux "/lib/modules/${KERNEL_VERSION}/source"
+    fi
   fi
 
 else # BUILD_KERNEL=false
