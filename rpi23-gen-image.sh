@@ -46,6 +46,8 @@ RPI2_DTB_FILE=${RPI2_DTB_FILE:=bcm2709-rpi-2-b.dtb}
 RPI2_UBOOT_CONFIG=${RPI2_UBOOT_CONFIG:=rpi_2_defconfig}
 RPI3_DTB_FILE=${RPI3_DTB_FILE:=bcm2710-rpi-3-b.dtb}
 RPI3_UBOOT_CONFIG=${RPI3_UBOOT_CONFIG:=rpi_3_32b_defconfig}
+RPI3B_DTB_FILE=${RPI3B_DTB_FILE:=bcm2710-rpi-3-b-plus.dtb}
+RPI3B_UBOOT_CONFIG=${RPI3_UBOOT_CONFIG:=rpi_3_32b_defconfig}
 
 # Debian release
 RELEASE=${RELEASE:=jessie}
@@ -207,9 +209,6 @@ CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
 CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
 
-# Stop the Crypto Wars
-DISABLE_FBI=${DISABLE_FBI:=false}
-
 # Chroot scripts directory
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
@@ -234,16 +233,20 @@ elif [ "$RPI_MODEL" = 3 ] ; then
   DTB_FILE=${RPI3_DTB_FILE}
   UBOOT_CONFIG=${RPI3_UBOOT_CONFIG}
   BUILD_KERNEL=true
+elif [ "$RPI_MODEL" = 3B ] ; then
+  DTB_FILE=${RPI3B_DTB_FILE}
+  UBOOT_CONFIG=${RPI3B_UBOOT_CONFIG}
+  BUILD_KERNEL=true
 else
   echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
   exit 1
 fi
 
 # Check if the internal wireless interface is supported by the RPi model
-if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" != 3 ] ; then
+if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" = 2 ]; then
   echo "error: The selected Raspberry Pi model has no internal wireless interface"
   exit 1
-fi
+fi  
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
 if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
@@ -277,15 +280,10 @@ if [ "$KERNEL_CCACHE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} ccache"
 fi
 
-# Stop the Crypto Wars
-if [ "$DISABLE_FBI" = true ] ; then
-  ENABLE_CRYPTFS=true
-fi
-
 # Add cryptsetup package to enable filesystem encryption
 if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
-  APT_INCLUDES="${APT_INCLUDES},cryptsetup"
+  APT_INCLUDES="${APT_INCLUDES},cryptsetup,console-setup"
 
   if [ -z "$CRYPTFS_PASSWORD" ] ; then
     echo "error: no password defined (CRYPTFS_PASSWORD)!"
