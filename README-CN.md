@@ -151,10 +151,10 @@ CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
 允许串行控制台接口. 没有连接显示器键盘的树莓派推荐打开, 此时如果网络无法连接至树莓派, 可以使用串行控制台连至系统. 
 
 ##### `ENABLE_I2C`=false
-允许树莓派2/3的 I2C 接口. 请对照 [树莓派2/3 引脚示意图](http://elinux.org/RPi_Low-level_peripherals) 正确连接 GPIO 引脚.
+允许树莓派2/3的 I2C 接口. 请对照 [树莓派2/3 引脚示意图](https://elinux.org/RPi_Low-level_peripherals) 正确连接 GPIO 引脚.
 
 ##### `ENABLE_SPI`=false
-允许树莓派2/3的 SPI 接口. 请对照 [树莓派2/3 引脚示意图](http://elinux.org/RPi_Low-level_peripherals) 正确连接 GPIO 引脚.
+允许树莓派2/3的 SPI 接口. 请对照 [树莓派2/3 引脚示意图](https://elinux.org/RPi_Low-level_peripherals) 正确连接 GPIO 引脚.
 
 ##### `ENABLE_IPV6`=true
 允许 IPv6 . 通过 systemd-networkd 配置管理网络接口.
@@ -199,10 +199,10 @@ CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
 卸载包、删除文件以减小体积 详情查看 `REDUCE_*` 参数.
 
 ##### `ENABLE_UBOOT`=false
-使用 [U-Boot 引导器](http://git.denx.de/?p=u-boot.git;a=summary) 替代树莓派2/3 默认的第二阶段引导器(bootcode.bin).  U-Boot 可以通过网络使用 BOOTP/TFTP 协议引导镜像文件.
+使用 [U-Boot 引导器](https://git.denx.de/?p=u-boot.git;a=summary) 替代树莓派2/3 默认的第二阶段引导器(bootcode.bin).  U-Boot 可以通过网络使用 BOOTP/TFTP 协议引导镜像文件.
 
 ##### `UBOOTSRC_DIR`=""
-存放已下载 [U-Boot 引导器源文件](http://git.denx.de/?p=u-boot.git;a=summary) 的目录(`u-boot`).
+存放已下载 [U-Boot 引导器源文件](https://git.denx.de/?p=u-boot.git;a=summary) 的目录(`u-boot`).
 
 ##### `ENABLE_FBTURBO`=false
 安装并且允许 [硬件加速的 Xorg 显卡驱动](https://github.com/ssvb/xf86-video-fbturbo) `fbturbo`. 当前仅支持窗口的移动和滚动的硬件加速.
@@ -444,7 +444,7 @@ bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie-root.img /dev/sdc
 * [Debian 交叉工具链 Wiki](https://wiki.debian.org/CrossToolchains)
 * [Github上的树莓派官方固件](https://github.com/raspberrypi/firmware)
 * [Github上的树莓派官方内核](https://github.com/raspberrypi/linux)
-* [U-BOOT git 仓库](http://git.denx.de/?p=u-boot.git;a=summary)
+* [U-BOOT git 仓库](https://git.denx.de/?p=u-boot.git;a=summary)
 * [Xorg DDX fbturbo驱动](https://github.com/ssvb/xf86-video-fbturbo)
 * [树莓派3无线接口固件](https://github.com/RPi-Distro/firmware-nonfree/tree/master/brcm80211/brcm)
 * [Collabora 树莓派2预编译内核](https://repositories.collabora.co.uk/debian/)

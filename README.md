@@ -151,10 +151,10 @@ Set the IP address for the second NTP server.
 Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2/3. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
 
 ##### `ENABLE_I2C`=false
-Enable I2C interface on the RPi2/3. Please check the [RPi2/3 pinout diagrams](http://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
+Enable I2C interface on the RPi2/3. Please check the [RPi2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
 
 ##### `ENABLE_SPI`=false
-Enable SPI interface on the RPi2/3. Please check the [RPi2/3 pinout diagrams](http://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
+Enable SPI interface on the RPi2/3. Please check the [RPi2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
 
 ##### `ENABLE_IPV6`=true
 Enable IPv6 support. The network interface configuration is managed via systemd-networkd.
@@ -200,10 +200,10 @@ Use debootstrap script variant `minbase` which only includes essential packages 
 Reduce the disk space usage by deleting packages and files. See `REDUCE_*` parameters for detailed information.
 
 ##### `ENABLE_UBOOT`=false
-Replace the default RPi2/3 second stage bootloader (bootcode.bin) with [U-Boot bootloader](http://git.denx.de/?p=u-boot.git;a=summary). U-Boot can boot images via the network using the BOOTP/TFTP protocol.
+Replace the default RPi2/3 second stage bootloader (bootcode.bin) with [U-Boot bootloader](https://git.denx.de/?p=u-boot.git;a=summary). U-Boot can boot images via the network using the BOOTP/TFTP protocol.
 
 ##### `UBOOTSRC_DIR`=""
-Path to a directory (`u-boot`) of [U-Boot bootloader sources](http://git.denx.de/?p=u-boot.git;a=summary) that will be copied, configured, build and installed inside the chroot.
+Path to a directory (`u-boot`) of [U-Boot bootloader sources](https://git.denx.de/?p=u-boot.git;a=summary) that will be copied, configured, build and installed inside the chroot.
 
 ##### `ENABLE_FBTURBO`=false
 Install and enable the [hardware accelerated Xorg video driver](https://github.com/ssvb/xf86-video-fbturbo) `fbturbo`. Please note that this driver is currently limited to hardware accelerated window moving and scrolling.
@@ -452,7 +452,7 @@ The image files are provided by JRWR'S I/O PORT and are built once a Sunday at m
 * [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains)
 * [Official Raspberry Pi Firmware on github](https://github.com/raspberrypi/firmware)
 * [Official Raspberry Pi Kernel on github](https://github.com/raspberrypi/linux)
-* [U-BOOT git repository](http://git.denx.de/?p=u-boot.git;a=summary)
+* [U-BOOT git repository](https://git.denx.de/?p=u-boot.git;a=summary)
 * [Xorg DDX driver fbturbo](https://github.com/ssvb/xf86-video-fbturbo)
 * [RPi3 Wireless interface firmware](https://github.com/RPi-Distro/firmware-nonfree/tree/master/brcm80211/brcm)
 * [Collabora RPi2 Kernel precompiled](https://repositories.collabora.co.uk/debian/)
