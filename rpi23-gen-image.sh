@@ -46,6 +46,8 @@ RPI2_DTB_FILE=${RPI2_DTB_FILE:=bcm2709-rpi-2-b.dtb}
 RPI2_UBOOT_CONFIG=${RPI2_UBOOT_CONFIG:=rpi_2_defconfig}
 RPI3_DTB_FILE=${RPI3_DTB_FILE:=bcm2710-rpi-3-b.dtb}
 RPI3_UBOOT_CONFIG=${RPI3_UBOOT_CONFIG:=rpi_3_32b_defconfig}
+RPI3B_DTB_FILE=${RPI3B_DTB_FILE:=bcm2710-rpi-3-b-plus.dtb}
+RPI3B_UBOOT_CONFIG=${RPI3_UBOOT_CONFIG:=rpi_3_32b_defconfig}
 
 # Debian release
 RELEASE=${RELEASE:=jessie}
@@ -234,16 +236,20 @@ elif [ "$RPI_MODEL" = 3 ] ; then
   DTB_FILE=${RPI3_DTB_FILE}
   UBOOT_CONFIG=${RPI3_UBOOT_CONFIG}
   BUILD_KERNEL=true
+elif [ "$RPI_MODEL" = 3B ] ; then
+  DTB_FILE=${RPI3B_DTB_FILE}
+  UBOOT_CONFIG=${RPI3B_UBOOT_CONFIG}
+  BUILD_KERNEL=true
 else
   echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
   exit 1
 fi
 
 # Check if the internal wireless interface is supported by the RPi model
-if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" != 3 ] ; then
+if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" = 2 ]; then
   echo "error: The selected Raspberry Pi model has no internal wireless interface"
   exit 1
-fi
+fi  
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
 if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then

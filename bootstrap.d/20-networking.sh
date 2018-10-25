@@ -30,10 +30,16 @@ install_readonly files/network/interfaces "${ETC_DIR}/network/interfaces"
 # Install configuration for interface eth0
 install_readonly files/network/eth.network "${ETC_DIR}/systemd/network/eth.network"
 
+# Install configuration for interface wl*
+install_readonly files/network/wlan.network "${ETC_DIR}/systemd/network/wlan.network"
+
+#always with dhcp since wpa_supplicant integration is missing
+sed -i -e "s/DHCP=.*/DHCP=yes/" -e "/DHCP/q" "${ETC_DIR}/systemd/network/wlan.network"
+
 if [ "$ENABLE_DHCP" = true ] ; then
   # Enable DHCP configuration for interface eth0
   sed -i -e "s/DHCP=.*/DHCP=yes/" -e "/DHCP/q" "${ETC_DIR}/systemd/network/eth.network"
-
+  
   # Set DHCP configuration to IPv4 only
   if [ "$ENABLE_IPV6" = false ] ; then
     sed -i "s/DHCP=.*/DHCP=v4/" "${ETC_DIR}/systemd/network/eth.network"
@@ -55,10 +61,15 @@ fi
 
 # Remove empty settings from network configuration
 sed -i "/.*=\$/d" "${ETC_DIR}/systemd/network/eth.network"
+# Remove empty settings from wlan configuration
+sed -i "/.*=\$/d" "${ETC_DIR}/systemd/network/wlan.network"
 
 # Move systemd network configuration if required by Debian release
 if [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
   mv -v "${ETC_DIR}/systemd/network/eth.network" "${LIB_DIR}/systemd/network/10-eth.network"
+	if [ "$ENABLE_WIRELESS" = true ] ; then
+	mv -v "${ETC_DIR}/systemd/network/wlan.network" "${LIB_DIR}/systemd/network/11-wlan.network"
+	fi
   rm -fr "${ETC_DIR}/systemd/network"
 fi
 
@@ -85,23 +96,39 @@ fi
 # Download the firmware binary blob required to use the RPi3 wireless interface
 if [ "$ENABLE_WIRELESS" = true ] ; then
   if [ ! -d ${WLAN_FIRMWARE_DIR} ] ; then
-    mkdir -p ${WLAN_FIRMWARE_DIR}
+	mkdir -p ${WLAN_FIRMWARE_DIR}
   fi
 
   # Create temporary directory for firmware binary blob
   temp_dir=$(as_nobody mktemp -d)
 
-  # Fetch firmware binary blob
+  # Fetch firmware binary blob for RPI3B+
+  if [ "$RPI_MODEL" = 3B ] ; then
+  as_nobody wget -q -O "${temp_dir}/brcmfmac43455-sdio.bin" "${WLAN_FIRMWARE_URL}/brcmfmac43455-sdio.bin"
+  as_nobody wget -q -O "${temp_dir}/brcmfmac43455-sdio.txt" "${WLAN_FIRMWARE_URL}/brcmfmac43455-sdio.txt"
+  as_nobody wget -q -O "${temp_dir}/brcmfmac43455-sdio.clm_blob" "${WLAN_FIRMWARE_URL}/brcmfmac43455-sdio.clm_blob"
+  else
+  # Fetch firmware binary blob for RPI3
   as_nobody wget -q -O "${temp_dir}/brcmfmac43430-sdio.bin" "${WLAN_FIRMWARE_URL}/brcmfmac43430-sdio.bin"
   as_nobody wget -q -O "${temp_dir}/brcmfmac43430-sdio.txt" "${WLAN_FIRMWARE_URL}/brcmfmac43430-sdio.txt"
-
+  fi
+  
   # Move downloaded firmware binary blob
+  if [ "$RPI_MODEL" = 3B ] ; then
+  mv "${temp_dir}/brcmfmac43455-sdio."* "${WLAN_FIRMWARE_DIR}/"
+  else
   mv "${temp_dir}/brcmfmac43430-sdio."* "${WLAN_FIRMWARE_DIR}/"
-
+  fi
+  
   # Remove temporary directory for firmware binary blob
   rm -fr "${temp_dir}"
 
   # Set permissions of the firmware binary blob
+  if [ "$RPI_MODEL" = 3B ] ; then
+  chown root:root "${WLAN_FIRMWARE_DIR}/brcmfmac43455-sdio."*
+  chmod 600 "${WLAN_FIRMWARE_DIR}/brcmfmac43455-sdio."*  
+  else
   chown root:root "${WLAN_FIRMWARE_DIR}/brcmfmac43430-sdio."*
   chmod 600 "${WLAN_FIRMWARE_DIR}/brcmfmac43430-sdio."*
+  fi
 fi
