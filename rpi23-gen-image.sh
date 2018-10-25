@@ -209,9 +209,6 @@ CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
 CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
 
-# Stop the Crypto Wars
-DISABLE_FBI=${DISABLE_FBI:=false}
-
 # Chroot scripts directory
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
@@ -281,11 +278,6 @@ fi
 # Add ccache compiler cache for (faster) kernel cross (re)compilation
 if [ "$KERNEL_CCACHE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} ccache"
-fi
-
-# Stop the Crypto Wars
-if [ "$DISABLE_FBI" = true ] ; then
-  ENABLE_CRYPTFS=true
 fi
 
 # Add cryptsetup package to enable filesystem encryption
