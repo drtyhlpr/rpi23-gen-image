@@ -73,7 +73,7 @@ FIRMWARE_URL=${FIRMWARE_URL:=https://github.com/raspberrypi/firmware/raw/master/
 WLAN_FIRMWARE_URL=${WLAN_FIRMWARE_URL:=https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm}
 COLLABORA_URL=${COLLABORA_URL:=https://repositories.collabora.co.uk/debian}
 FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
-UBOOT_URL=${UBOOT_URL:=git://git.denx.de/u-boot.git}
+UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
 
 # Build directories
 BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
