@@ -42,10 +42,24 @@ set -x
 
 # Raspberry Pi model configuration
 RPI_MODEL=${RPI_MODEL:=2}
+#bcm2708-rpi-0-w.dtb (Used for Pi 0 and PI 0W)
+RPI0_DTB_FILE=${RPI0_DTB_FILE:=bcm2708-rpi-0-w.dtb}
+RPI0_UBOOT_CONFIG=${RPI0_UBOOT_CONFIG:=rpi_defconfig}
+#bcm2708-rpi-b.dtb (Used for Pi 1 model A and B)
+RPI1_DTB_FILE=${RPI1_DTB_FILE:=bcm2708-rpi-b.dtb}
+RPI1_UBOOT_CONFIG=${RPI1_UBOOT_CONFIG:=rpi_defconfig}
+#bcm2708-rpi-b-plus.dtb (Used for Pi 1 model B+ and A+)
+RPI1P_DTB_FILE=${RPI1P_DTB_FILE:=bcm2708-rpi-b-plus.dtb}
+RPI1P_UBOOT_CONFIG=${RPI1P_UBOOT_CONFIG:=rpi_defconfig}
+#bcm2709-rpi-2-b.dtb (Used for Pi 2 model B)
 RPI2_DTB_FILE=${RPI2_DTB_FILE:=bcm2709-rpi-2-b.dtb}
 RPI2_UBOOT_CONFIG=${RPI2_UBOOT_CONFIG:=rpi_2_defconfig}
+#bcm2710-rpi-3-b.dtb (Used for Pi 3 model B)
 RPI3_DTB_FILE=${RPI3_DTB_FILE:=bcm2710-rpi-3-b.dtb}
 RPI3_UBOOT_CONFIG=${RPI3_UBOOT_CONFIG:=rpi_3_32b_defconfig}
+#bcm2710-rpi-3-b-plus.dtb (Used for Pi 3 model B+)
+RPI3P_DTB_FILE=${RPI3P_DTB_FILE:=bcm2710-rpi-3-b-plus.dtb}
+RPI3P_UBOOT_CONFIG=${RPI3P_UBOOT_CONFIG:=rpi_3_32b_defconfig}
 
 # Debian release
 RELEASE=${RELEASE:=jessie}
@@ -56,10 +70,19 @@ COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
 if [ "$KERNEL_ARCH" = "arm64" ] ; then
   KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
   KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
+fi
+
+if [RPI_MODEL] = 0 || [RPI_MODEL = 1] || [RPI_MODEL = 1P]
+#RASPBERRY PI 1, PI ZERO, PI ZERO W, AND COMPUTE MODULE DEFAULT Kernel BUILD CONFIGURATION
+  KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
+  KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
 else
+#RASPBERRY PI 2, PI 3, PI 3+, AND COMPUTE MODULE 3 DEFAULT Kernel BUILD CONFIGURATION
+#https://www.raspberrypi.org/documentation/linux/kernel/building.md
   KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
   KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
 fi
+
 if [ "$RELEASE_ARCH" = "arm64" ] ; then
   QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
 else
@@ -207,9 +230,6 @@ CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
 CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
 
-# Stop the Crypto Wars
-DISABLE_FBI=${DISABLE_FBI:=false}
-
 # Chroot scripts directory
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
@@ -227,12 +247,25 @@ COMPILER_PACKAGES=""
 set +x
 
 # Set Raspberry Pi model specific configuration
-if [ "$RPI_MODEL" = 2 ] ; then
+elif [ "$RPI_MODEL" = 0 ] ; then
+  DTB_FILE=${RPI2_DTB_FILE}
+  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+elif [ "$RPI_MODEL" = 1 ] ; then
+  DTB_FILE=${RPI2_DTB_FILE}
+  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+elif [ "$RPI_MODEL" = 1P ] ; then
+  DTB_FILE=${RPI2_DTB_FILE}
+  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+elif [ "$RPI_MODEL" = 2 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
 elif [ "$RPI_MODEL" = 3 ] ; then
   DTB_FILE=${RPI3_DTB_FILE}
   UBOOT_CONFIG=${RPI3_UBOOT_CONFIG}
+  BUILD_KERNEL=true
+elif [ "$RPI_MODEL" = 3P ] ; then
+  DTB_FILE=${RPI3P_DTB_FILE}
+  UBOOT_CONFIG=${RPI3P_UBOOT_CONFIG}
   BUILD_KERNEL=true
 else
   echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
@@ -240,10 +273,10 @@ else
 fi
 
 # Check if the internal wireless interface is supported by the RPi model
-if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" != 3 ] ; then
+if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" = 2 ]; then
   echo "error: The selected Raspberry Pi model has no internal wireless interface"
   exit 1
-fi
+fi  
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
 if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
@@ -277,15 +310,10 @@ if [ "$KERNEL_CCACHE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} ccache"
 fi
 
-# Stop the Crypto Wars
-if [ "$DISABLE_FBI" = true ] ; then
-  ENABLE_CRYPTFS=true
-fi
-
 # Add cryptsetup package to enable filesystem encryption
 if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
-  APT_INCLUDES="${APT_INCLUDES},cryptsetup"
+  APT_INCLUDES="${APT_INCLUDES},cryptsetup,console-setup"
 
   if [ -z "$CRYPTFS_PASSWORD" ] ; then
     echo "error: no password defined (CRYPTFS_PASSWORD)!"
