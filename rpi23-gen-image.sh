@@ -169,6 +169,7 @@ ENABLE_RSYSLOG=${ENABLE_RSYSLOG:=true}
 ENABLE_USER=${ENABLE_USER:=true}
 USER_NAME=${USER_NAME:="pi"}
 ENABLE_ROOT=${ENABLE_ROOT:=false}
+ENABLE_QEMU=${ENABLE_QEMU:=false}
 
 # SSH settings
 SSH_ENABLE_ROOT=${SSH_ENABLE_ROOT:=false}
@@ -313,7 +314,7 @@ fi
 # Add cryptsetup package to enable filesystem encryption
 if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
-  APT_INCLUDES="${APT_INCLUDES},cryptsetup,console-setup"
+  APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup"
 
   if [ -z "$CRYPTFS_PASSWORD" ] ; then
     echo "error: no password defined (CRYPTFS_PASSWORD)!"
@@ -516,6 +517,12 @@ if [ "$KERNEL_REDUCE" = true ] ; then
   KERNELSRC_CONFIG=false
 fi
 
+# Configure qemu compatible kernel
+if [ "$ENABLE_QEMU" = true ] ; then
+  KERNEL_DEFCONFIG="vexpress_defconfig"
+  KERNEL_OLDDEFCONFIG=true
+fi
+
 # Execute bootstrap scripts
 for SCRIPT in bootstrap.d/*.sh; do
   head -n 3 "$SCRIPT"
@@ -581,6 +588,36 @@ rm -f "${R}/var/lib/urandom/random-seed"
 rm -f "${R}/initrd.img"
 rm -f "${R}/vmlinuz"
 rm -f "${R}${QEMU_BINARY}"
+
+if [ "$ENABLE_QEMU" = true ] ; then
+  # Setup QEMU directory
+  mkdir "${BASEDIR}/qemu"
+
+  # Copy kernel image to QEMU directory
+  install_readonly "${BOOT_DIR}/${KERNEL_IMAGE}" "${BASEDIR}/qemu/${KERNEL_IMAGE}"
+
+  # Copy kernel config to QEMU directory
+  install_readonly "${R}/boot/config-${KERNEL_VERSION}" "${BASEDIR}/qemu/config-${KERNEL_VERSION}"
+
+  # Copy kernel dtbs to QEMU directory
+  for dtb in "${BOOT_DIR}/"*.dtb ; do
+    if [ -f "${dtb}" ] ; then
+      install_readonly "${dtb}" "${BASEDIR}/qemu/"
+    fi
+  done
+
+  # Copy kernel overlays to QEMU directory
+  if [ -d "${BOOT_DIR}/overlays" ] ; then
+    # Setup overlays dtbs directory
+    mkdir "${BASEDIR}/qemu/overlays"
+
+    for dtb in "${BOOT_DIR}/overlays/"*.dtb ; do
+      if [ -f "${dtb}" ] ; then
+        install_readonly "${dtb}" "${BASEDIR}/qemu/overlays/"
+      fi
+    done
+  fi
+fi
 
 # Calculate size of the chroot directory in KB
 CHROOT_SIZE=$(expr `du -s "${R}" | awk '{ print $1 }'`)
@@ -690,4 +727,15 @@ else
 
   # Image was successfully created
   echo "$IMAGE_NAME.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+
+  # Create qemu qcow2 image
+  if [ "$ENABLE_QEMU" = true ] ; then
+    QEMU_IMAGE=${QEMU_IMAGE:=${BASEDIR}/qemu/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
+    QEMU_SIZE=16G
+
+    qemu-img convert -f raw -O qcow2 $IMAGE_NAME.img $QEMU_IMAGE.qcow2
+    qemu-img resize $QEMU_IMAGE.qcow2 $QEMU_SIZE
+
+    echo "$QEMU_IMAGE.qcow2 ($QEMU_SIZE)" ": successfully created"
+  fi
 fi

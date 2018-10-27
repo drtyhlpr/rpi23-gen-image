@@ -87,6 +87,12 @@ if [ "$BUILD_KERNEL" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
 
+      # Set kernel configuration parameters to enable qemu emulation
+      if [ "$ENABLE_QEMU" = true ] ; then
+        echo "CONFIG_FHANDLE=y" >> ${KERNEL_DIR}/.config
+        echo "CONFIG_LBDAF=y" >> ${KERNEL_DIR}/.config
+      fi
+
       # Copy custom kernel configuration file
       if [ ! -z "$KERNELSRC_USRCONFIG" ] ; then
         cp $KERNELSRC_USRCONFIG ${KERNEL_DIR}/.config
