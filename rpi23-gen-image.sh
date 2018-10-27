@@ -72,7 +72,7 @@ if [ "$KERNEL_ARCH" = "arm64" ] ; then
   KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
 fi
 
-if [RPI_MODEL] = 0 || [RPI_MODEL = 1] || [RPI_MODEL = 1P]
+if [ "$RPI_MODEL" = 0 || "$RPI_MODEL" = 1 || "$RPI_MODEL" = 1P ] ; then
 #RASPBERRY PI 1, PI ZERO, PI ZERO W, AND COMPUTE MODULE DEFAULT Kernel BUILD CONFIGURATION
   KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
   KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
@@ -247,7 +247,7 @@ COMPILER_PACKAGES=""
 set +x
 
 # Set Raspberry Pi model specific configuration
-elif [ "$RPI_MODEL" = 0 ] ; then
+if [ "$RPI_MODEL" = 0 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
 elif [ "$RPI_MODEL" = 1 ] ; then
