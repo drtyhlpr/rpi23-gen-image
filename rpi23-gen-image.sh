@@ -617,6 +617,11 @@ if [ "$ENABLE_QEMU" = true ] ; then
       fi
     done
   fi
+
+  # Copy initramfs to QEMU directory
+  if [ -f "${BOOT_DIR}/initramfs-${KERNEL_VERSION}" ] ; then
+    install_readonly "${BOOT_DIR}/initramfs-${KERNEL_VERSION}" "${BASEDIR}/qemu/initramfs-${KERNEL_VERSION}"
+  fi
 fi
 
 # Calculate size of the chroot directory in KB
