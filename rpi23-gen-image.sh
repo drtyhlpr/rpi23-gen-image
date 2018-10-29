@@ -42,21 +42,27 @@ set -x
 
 # Raspberry Pi model configuration
 RPI_MODEL=${RPI_MODEL:=2}
+
 #bcm2708-rpi-0-w.dtb (Used for Pi 0 and PI 0W)
 RPI0_DTB_FILE=${RPI0_DTB_FILE:=bcm2708-rpi-0-w.dtb}
 RPI0_UBOOT_CONFIG=${RPI0_UBOOT_CONFIG:=rpi_defconfig}
+
 #bcm2708-rpi-b.dtb (Used for Pi 1 model A and B)
 RPI1_DTB_FILE=${RPI1_DTB_FILE:=bcm2708-rpi-b.dtb}
 RPI1_UBOOT_CONFIG=${RPI1_UBOOT_CONFIG:=rpi_defconfig}
+
 #bcm2708-rpi-b-plus.dtb (Used for Pi 1 model B+ and A+)
 RPI1P_DTB_FILE=${RPI1P_DTB_FILE:=bcm2708-rpi-b-plus.dtb}
 RPI1P_UBOOT_CONFIG=${RPI1P_UBOOT_CONFIG:=rpi_defconfig}
+
 #bcm2709-rpi-2-b.dtb (Used for Pi 2 model B)
 RPI2_DTB_FILE=${RPI2_DTB_FILE:=bcm2709-rpi-2-b.dtb}
 RPI2_UBOOT_CONFIG=${RPI2_UBOOT_CONFIG:=rpi_2_defconfig}
+
 #bcm2710-rpi-3-b.dtb (Used for Pi 3 model B)
 RPI3_DTB_FILE=${RPI3_DTB_FILE:=bcm2710-rpi-3-b.dtb}
 RPI3_UBOOT_CONFIG=${RPI3_UBOOT_CONFIG:=rpi_3_32b_defconfig}
+
 #bcm2710-rpi-3-b-plus.dtb (Used for Pi 3 model B+)
 RPI3P_DTB_FILE=${RPI3P_DTB_FILE:=bcm2710-rpi-3-b-plus.dtb}
 RPI3P_UBOOT_CONFIG=${RPI3P_UBOOT_CONFIG:=rpi_3_32b_defconfig}
@@ -72,7 +78,7 @@ if [ "$KERNEL_ARCH" = "arm64" ] ; then
   KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
 fi
 
-if [ "$RPI_MODEL" = 0 || "$RPI_MODEL" = 1 || "$RPI_MODEL" = 1P ] ; then
+if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
 #RASPBERRY PI 1, PI ZERO, PI ZERO W, AND COMPUTE MODULE DEFAULT Kernel BUILD CONFIGURATION
   KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
   KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
