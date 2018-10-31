@@ -91,6 +91,23 @@ if [ "$BUILD_KERNEL" = true ] ; then
       if [ "$ENABLE_QEMU" = true ] ; then
         echo "CONFIG_FHANDLE=y" >> ${KERNEL_DIR}/.config
         echo "CONFIG_LBDAF=y" >> ${KERNEL_DIR}/.config
+
+        if [ "$ENABLE_CRYPTFS" = true ] ; then
+          echo "CONFIG_EMBEDDED=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_EXPERT=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_DAX=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_MD=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_BLK_DEV_MD=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_MD_AUTODETECT=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_BLK_DEV_DM=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_BLK_DEV_DM_BUILTIN=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_DM_CRYPT=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_CRYPTO_BLKCIPHER=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_CRYPTO_CBC=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_CRYPTO_XTS=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_CRYPTO_SHA512=y" >> ${KERNEL_DIR}/.config
+          echo "CONFIG_CRYPTO_MANAGER=y" >> ${KERNEL_DIR}/.config
+	fi
       fi
 
       # Copy custom kernel configuration file

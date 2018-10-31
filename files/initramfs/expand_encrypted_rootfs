@@ -60,15 +60,23 @@ if [ -z "$PART_START" ] ; then
   return 1
 fi
 
-# Get the possible last sector for the root partition
-PART_LAST=$(fdisk -l /dev/${ROOT_DEV} | grep '^Disk.*sectors' | awk '{ print $7 - 1 }')
-if [ -z "$PART_LAST" ] ; then
+# Get the current last sector of the root partition
+PART_END=$(parted /dev/${ROOT_DEV} -ms unit s p | grep "^${PART_NUM}" | cut -f 3 -d: | sed 's/[^0-9]//g')
+if [ -z "$PART_END" ] ; then
   log_warning_msg "${ROOT_DEV} unable to get last sector of the partition"
   return 1
 fi
 
+# Get the possible last sector for the root partition
+PART_LAST=$(fdisk -l /dev/${ROOT_DEV} | grep '^Disk.*sectors' | awk '{ print $7 - 1 }')
+if [ -z "$PART_LAST" ] ; then
+  log_warning_msg "${ROOT_DEV} unable to get last possible sector of the partition"
+  return 1
+fi
+
 ### Since rc.local is run with "sh -e", let's add "|| true" to prevent premature exit
-fdisk /dev/${ROOT_DEV} 2> /dev/null <<EOF2 || true
+if [ $PART_END != $PART_LAST ] ; then
+  fdisk /dev/${ROOT_DEV} 2> /dev/null <<EOF2 || true
 p
 d
 $PART_NUM
@@ -81,5 +89,8 @@ p
 w
 EOF2
 
-partprobe
-log_success_msg "Root partition successfully resized."
+  partprobe
+  log_success_msg "Root partition successfully resized."
+else
+  log_success_msg "Root partition already resized."
+fi

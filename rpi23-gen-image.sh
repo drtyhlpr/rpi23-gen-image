@@ -526,7 +526,9 @@ fi
 # Configure qemu compatible kernel
 if [ "$ENABLE_QEMU" = true ] ; then
   KERNEL_DEFCONFIG="vexpress_defconfig"
-  KERNEL_OLDDEFCONFIG=true
+  if [ "$KERNEL_MENUCONFIG" = false ] ; then
+    KERNEL_OLDDEFCONFIG=true
+  fi
 fi
 
 # Execute bootstrap scripts

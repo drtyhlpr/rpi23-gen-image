@@ -464,7 +464,7 @@ Start QEMU full system emulation and output to console:
 qemu-system-arm -m 2048M -M vexpress-a15 -cpu cortex-a15 -kernel kernel7.img -no-reboot -dtb vexpress-v2p-ca15_a7.dtb -sd ${IMAGE_NAME}.qcow2 -append "root=/dev/mmcblk0p2 rw rootfstype=ext4 console=ttyAMA0,115200 init=/bin/systemd" -serial stdio
 ```
 
-Start QEMU full system emulation with cryptfs, initramfs and output to console. (NOT WORKING yey!) :
+Start QEMU full system emulation with cryptfs, initramfs and output to console:
 ```shell
 qemu-system-arm -m 2048M -M vexpress-a15 -cpu cortex-a15 -kernel kernel7.img -no-reboot -dtb vexpress-v2p-ca15_a7.dtb -sd ${IMAGE_NAME}.qcow2 -initrd "initramfs-${KERNEL_VERSION}" -append "root=/dev/mapper/secure cryptdevice=/dev/mmcblk0p2:secure rw rootfstype=ext4 console=ttyAMA0,115200 init=/bin/systemd" -serial stdio
 ```
