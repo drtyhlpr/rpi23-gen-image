@@ -237,6 +237,12 @@ CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
 CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
 
+#Dropbear
+CRYPTFS_DROPBEAR=${ENABLE_DROPBEAR:=true}
+#Provide Dropbear Public RSA-OpenSSH Key
+CRYPTFS_DROPBEAR_PUBKEY=${CRYPTFS_DROPBEAR_PUBKEY:=""}
+
+
 # Chroot scripts directory
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
@@ -280,10 +286,10 @@ else
 fi
 
 # Check if the internal wireless interface is supported by the RPi model
-if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" = 2 ]; then
-  echo "error: The selected Raspberry Pi model has no internal wireless interface"
-  exit 1
-fi  
+ if [[ "$ENABLE_WIRELESS" = true && ! ("$RPI_MODEL" = 0 || "$RPI_MODEL" = 3 || "$RPI_MODEL" = 3P) ]] ; then
+ 	echo "error: The selected Raspberry Pi model has no internal wireless interface"
+ 	exit 1
+ fi
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
 if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
@@ -317,10 +323,14 @@ if [ "$KERNEL_CCACHE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} ccache"
 fi
 
+if [[ CRYPTFS_DROPBEAR = true && "$ENABLE_INITRAMFS" = true ]]; then
+  APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
+fi
+
 # Add cryptsetup package to enable filesystem encryption
 if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
-  APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup"
+  APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup,cryptsetup-initramfs"
 
   if [ -z "$CRYPTFS_PASSWORD" ] ; then
     echo "error: no password defined (CRYPTFS_PASSWORD)!"

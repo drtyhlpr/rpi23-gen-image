@@ -2,12 +2,31 @@
 ## Introduction
 `rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for Raspberry Pi 2 (RPi2) and Raspberry Pi 3 (RPi3) computers. The script at this time supports the bootstrapping of the Debian (armhf) releases `jessie`, `stretch` and `buster`. Raspberry Pi 3 images are generated for 32-bit mode only. Raspberry Pi 3 64-bit images can be generated using custom configuration parameters (```templates/rpi3-stretch-arm64-4.11.y```).
 
+ ## Build Box
+ - Get Debian Testing Image in Virtualbox
+ - Install `virtualbox-guest-utils virtualbox-guest-dkms virtualbox-guest-x11`
+ - Install `apt-cacher-ng`
+ - Include `apt-cacher-ng` in script call e.g. script -c `'APT_PROXY="http://127.0.0.1:3142/" CONFIG_TEMPLATE=helge ./rpi23-gen-image.sh' ./build.log`
+ - Install build dependencies  -> apt install debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo crossbuild-essential-arm64 cryptsetup crossbuild-essential-armhf
+ - clone this repo             -> git clone https://github.com/burnbabyburn/rpi23-gen-image.git
+ - clone uboot                 -> git clone http://git.denx.de/u-boot.git
+ - clone xf86-video-fbturbo    -> git clone https://github.com/ssvb/xf86-video-fbturbo.git
+ - clone raspberry-kernel      -> git clone --depth=1 https://github.com/raspberrypi/linux.git
+ - clone raspberry-firmware    -> git clone https://github.com/raspberrypi/firmware.git
+ - Optional 					  -> get precompiled kernel
+ 	- RPI 3 and 3+ Kernel -> wget https://github.com/sakaki-/bcmrpi3-kernel/releases/latest bcmrpi3-kernel-latest.tar.xz
+ 	- And extract    	  -> tar -xJf bcmrpi3-kernel-latest.tar.xz -C
+
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
 
   ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo```
+  Recommended Debian Packages: `device-tree-compiler python-dev gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf lib32z1 lib32ncurses6 gdb-multiarch build-essential gawk texinfo bison flex libssl-dev`
 
-It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandatory. Kernel compilation and linking will be performed on the build system using an ARM (armhf) cross-compiler toolchain.
+It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandatory. Kernel compilation and linking will be performed on the build system.
+If you compile Raspberry PI 0 or Raspberry Pi 1 Images, use an ARM (armel) cross-compiler toolchain. (crossbuild-essential-armel)
+If you compile Raspberry PI 1 or Raspberry Pi 2 Images, use an ARMv7 (armhf) cross-compiler toolchain. (crossbuild-essential-armhf)
+If you compile Raspberry PI 1 or Raspberry Pi 2 Images, use an ARMv8 (armhf) cross-compiler toolchain. (crossbuild-essential-arm64)
 
 The script has been tested using the default `crossbuild-essential-armhf` toolchain meta package on Debian Linux `jessie` and `stretch` build systems. Please check the [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains) for further information.
 
@@ -38,6 +57,7 @@ ENABLE_CRYPTFS=true CRYPTFS_PASSWORD=changeme EXPANDROOT=false ENABLE_MINBASE=tr
 RELEASE=stretch BUILD_KERNEL=true ./rpi23-gen-image.sh
 RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNEL=true ./rpi23-gen-image.sh
 RELEASE=stretch RPI_MODEL=3 ENABLE_WIRELESS=true ENABLE_MINBASE=true BUILD_KERNEL=true ./rpi23-gen-image.sh
+script -c 'APT_PROXY="http://127.0.0.1:3142/" CONFIG_TEMPLATE=rpi3stretch ./rpi23-gen-image.sh' ./build.log
 ```
 
 ## Configuration template files
@@ -68,13 +88,13 @@ A comma separated list of additional packages to be installed by apt after boots
 #### General system settings:
 ##### `RPI_MODEL`=2
 Specifiy the target Raspberry Pi hardware model. The script at this time supports the following Raspberry Pi models:
-`0`  = Used for Raspberry Pi 0 and Raspberry Pi 0 W
-`1`  = Used for Pi 1 model A and B
-`1P` = Used for Pi 1 model B+ and A+
-`2`  = Used for Pi 2 model B
-`3`  = Used for Pi 3 model B
-`3P` = Used for Pi 3 model B+
-`BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` or `3P` is used.
+- `0`  = Used for Raspberry Pi 0 and Raspberry Pi 0 W
+- `1`  = Used for Pi 1 model A and B
+- `1P` = Used for Pi 1 model B+ and A+
+- `2`  = Used for Pi 2 model B
+- `3`  = Used for Pi 3 model B
+- `3P` = Used for Pi 3 model B+
+- `BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` or `3P` is used.
 
 ##### `RELEASE`="jessie"
 Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases "jessie", "stretch" and "buster". `BUILD_KERNEL`=true will automatically be set if the Debian releases `stretch` or `buster` are used.
@@ -378,6 +398,13 @@ Set cipher specification string. `aes-xts*` ciphers are strongly recommended.
 
 ##### `CRYPTFS_XTSKEYSIZE`=512
 Sets key size in bits. The argument has to be a multiple of 8.
+
+##### `CRYPTFS_DROPBEAR=${ENABLE_DROPBEAR:=true}`
+Enable Dropbear Initramfs support
+
+##### `CRYPTFS_DROPBEAR_PUBKEY=""`
+Provide Dropbear Public RSA-OpenSSH Key
+
 
 ---
 
