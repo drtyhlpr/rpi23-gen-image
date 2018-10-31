@@ -286,7 +286,7 @@ else
 fi
 
 # Check if the internal wireless interface is supported by the RPi model
- if [[ "$ENABLE_WIRELESS" = true && ! ("$RPI_MODEL" = 0 || "$RPI_MODEL" = 3 || "$RPI_MODEL" = 3P) ]] ; then
+ if [ "$ENABLE_WIRELESS" = true ] && ! ([ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]); then
  	echo "error: The selected Raspberry Pi model has no internal wireless interface"
  	exit 1
  fi
@@ -323,7 +323,7 @@ if [ "$KERNEL_CCACHE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} ccache"
 fi
 
-if [[ CRYPTFS_DROPBEAR = true && "$ENABLE_INITRAMFS" = true ]]; then
+if [ "$CRYPTFS_DROPBEAR" = true ] && [ "$ENABLE_INITRAMFS" = true ]; then
   APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
 fi
 
