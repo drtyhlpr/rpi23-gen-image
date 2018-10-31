@@ -112,7 +112,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
       # Copy custom kernel configuration file
       if [ ! -z "$KERNELSRC_USRCONFIG" ] ; then
-        cp $KERNELSRC_USRCONFIG ${KERNEL_DIR}/.config
+        cp $"KERNELSRC_USRCONFIG" ${KERNEL_DIR}/.config
       fi
 
       # Set kernel configuration parameters to their default values

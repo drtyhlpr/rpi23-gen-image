@@ -40,7 +40,7 @@ if [ "$BUILD_KERNEL" = true ] && [ "$ENABLE_INITRAMFS" = true ] ; then
 	
 	if [ "$CRYPTFS_DROPBEAR" = true ]; then
 		if [ -n "$CRYPTFS_DROPBEAR_PUBKEY" = true ] && [ -f "$CRYPTFS_DROPBEAR_PUBKEY" = true ] ; then
- 			install_readonly $CRYPTFS_DROPBEAR_PUBKEY "${ETC_DIR}/dropbear-initramfs/id_rsa.pub"
+ 			install_readonly $"CRYPTFS_DROPBEAR_PUBKEY" "${ETC_DIR}/dropbear-initramfs/id_rsa.pub"
  			chroot_exec cat /etc/dropbear-initramfs/id_rsa.pub | chroot_exec tee -a /etc/dropbear-initramfs/authorized_keys
  		else
  			#SAVE THE GENERATED KEYS in mounted folder
