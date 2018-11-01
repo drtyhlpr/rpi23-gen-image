@@ -69,8 +69,8 @@ if [ "$BUILD_KERNEL" = true ] && [ "$ENABLE_INITRAMFS" = true ] ; then
 			
 			#Get unlock script
  			install_readonly files/initramfs/crypt_unlock.sh "${ETC_DIR}/initramfs-tools/hooks/crypt_unlock.sh"
- 			chroot_exec chmod +x /etc/initramfs-tools/hooks/crypt_unlock.sh
-
+ 			chmod +x "${ETC_DIR}/initramfs-tools/hooks/crypt_unlock.sh"
+		fi
 	else
 		# Disable SSHD inside initramfs
 		printf "#\n# DROPBEAR: [ y | n ]\n#\n\nDROPBEAR=n\n" >> "${ETC_DIR}/initramfs-tools/initramfs.conf"
