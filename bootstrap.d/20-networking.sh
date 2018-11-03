@@ -103,7 +103,7 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
   temp_dir=$(as_nobody mktemp -d)
 
   # Fetch firmware binary blob for RPI3B+
-  if [ "$RPI_MODEL" = 3B ] ; then
+  if [ "$RPI_MODEL" = 3P ] ; then
   as_nobody wget -q -O "${temp_dir}/brcmfmac43455-sdio.bin" "${WLAN_FIRMWARE_URL}/brcmfmac43455-sdio.bin"
   as_nobody wget -q -O "${temp_dir}/brcmfmac43455-sdio.txt" "${WLAN_FIRMWARE_URL}/brcmfmac43455-sdio.txt"
   as_nobody wget -q -O "${temp_dir}/brcmfmac43455-sdio.clm_blob" "${WLAN_FIRMWARE_URL}/brcmfmac43455-sdio.clm_blob"
@@ -114,7 +114,7 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
   fi
   
   # Move downloaded firmware binary blob
-  if [ "$RPI_MODEL" = 3B ] ; then
+  if [ "$RPI_MODEL" = 3P ] ; then
   mv "${temp_dir}/brcmfmac43455-sdio."* "${WLAN_FIRMWARE_DIR}/"
   else
   mv "${temp_dir}/brcmfmac43430-sdio."* "${WLAN_FIRMWARE_DIR}/"
@@ -124,7 +124,7 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
   rm -fr "${temp_dir}"
 
   # Set permissions of the firmware binary blob
-  if [ "$RPI_MODEL" = 3B ] ; then
+  if [ "$RPI_MODEL" = 3P ] ; then
   chown root:root "${WLAN_FIRMWARE_DIR}/brcmfmac43455-sdio."*
   chmod 600 "${WLAN_FIRMWARE_DIR}/brcmfmac43455-sdio."*  
   else
