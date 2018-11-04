@@ -263,27 +263,21 @@ set +x
 if [ "$RPI_MODEL" = 0 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
-  RELEASE_ARCH = "armel"
 elif [ "$RPI_MODEL" = 1 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
-  RELEASE_ARCH" = "armel
 elif [ "$RPI_MODEL" = 1P ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
-  RELEASE_ARCH" = "armel
 elif [ "$RPI_MODEL" = 2 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
-  RELEASE_ARCH" = "armhf
 elif [ "$RPI_MODEL" = 3 ] ; then
   DTB_FILE=${RPI3_DTB_FILE}
   UBOOT_CONFIG=${RPI3_UBOOT_CONFIG}
-  RELEASE_ARCH" = "armhf
 elif [ "$RPI_MODEL" = 3P ] ; then
   DTB_FILE=${RPI3P_DTB_FILE}
   UBOOT_CONFIG=${RPI3P_UBOOT_CONFIG}
-  RELEASE_ARCH" = "armhf
 else
   echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
   exit 1
