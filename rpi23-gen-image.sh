@@ -263,33 +263,26 @@ set +x
 if [ "$RPI_MODEL" = 0 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
-  KERNEL_ARCH = "arm"
   RELEASE_ARCH = "armel"
 elif [ "$RPI_MODEL" = 1 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
-  KERNEL_ARCH = "arm"
   RELEASE_ARCH" = "armel
 elif [ "$RPI_MODEL" = 1P ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
-  KERNEL_ARCH = "arm"
   RELEASE_ARCH" = "armel
 elif [ "$RPI_MODEL" = 2 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
-  KERNEL_ARCH = "arm"
-  KERNEL_ARCH = "armhf"
   RELEASE_ARCH" = "armhf
 elif [ "$RPI_MODEL" = 3 ] ; then
   DTB_FILE=${RPI3_DTB_FILE}
   UBOOT_CONFIG=${RPI3_UBOOT_CONFIG}
-  KERNEL_ARCH = "armhf"
   RELEASE_ARCH" = "armhf
 elif [ "$RPI_MODEL" = 3P ] ; then
   DTB_FILE=${RPI3P_DTB_FILE}
   UBOOT_CONFIG=${RPI3P_UBOOT_CONFIG}
-  KERNEL_ARCH = "armhf"
   RELEASE_ARCH" = "armhf
 else
   echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
@@ -342,10 +335,6 @@ fi
 if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
   APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup,cryptsetup-initramfs"
-  
-  if [ "$CRYPTFS_DROPBEAR" = true ] && [ "$ENABLE_INITRAMFS" = true ]; then
-  APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
-  fi
 
   if [ -z "$CRYPTFS_PASSWORD" ] ; then
     echo "error: no password defined (CRYPTFS_PASSWORD)!"
