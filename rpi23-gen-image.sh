@@ -199,7 +199,7 @@ ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
 DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS:=}
 
 # Kernel compilation settings
-BUILD_KERNEL=${BUILD_KERNEL:=false}
+BUILD_KERNEL=${BUILD_KERNEL:=true}
 KERNEL_REDUCE=${KERNEL_REDUCE:=false}
 KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
@@ -263,23 +263,34 @@ set +x
 if [ "$RPI_MODEL" = 0 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+  KERNEL_ARCH = "arm"
+  RELEASE_ARCH = "armel"
 elif [ "$RPI_MODEL" = 1 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+  KERNEL_ARCH = "arm"
+  RELEASE_ARCH" = "armel
 elif [ "$RPI_MODEL" = 1P ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+  KERNEL_ARCH = "arm"
+  RELEASE_ARCH" = "armel
 elif [ "$RPI_MODEL" = 2 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+  KERNEL_ARCH = "arm"
+  KERNEL_ARCH = "armhf"
+  RELEASE_ARCH" = "armhf
 elif [ "$RPI_MODEL" = 3 ] ; then
   DTB_FILE=${RPI3_DTB_FILE}
   UBOOT_CONFIG=${RPI3_UBOOT_CONFIG}
-  BUILD_KERNEL=true
+  KERNEL_ARCH = "armhf"
+  RELEASE_ARCH" = "armhf
 elif [ "$RPI_MODEL" = 3P ] ; then
   DTB_FILE=${RPI3P_DTB_FILE}
   UBOOT_CONFIG=${RPI3P_UBOOT_CONFIG}
-  BUILD_KERNEL=true
+  KERNEL_ARCH = "armhf"
+  RELEASE_ARCH" = "armhf
 else
   echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
   exit 1
@@ -306,9 +317,13 @@ fi
 
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
-  if [ "$KERNEL_ARCH" = "arm" ] ; then
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
-  else
+  if [ "$KERNEL_ARCH" = "arm" ] && [ "$RELEASE_ARCH" = "armel" ]; then
+    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
+  fi
+  if [ "$KERNEL_ARCH" = "arm" ] && [ "$RELEASE_ARCH" = "armhf" ]; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+  fi
+  if [ "$KERNEL_ARCH" = "arm64" ] && [ "$RELEASE_ARCH" = "arm64" ]; then
     REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
   fi
 fi
@@ -323,14 +338,14 @@ if [ "$KERNEL_CCACHE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} ccache"
 fi
 
-if [ "$CRYPTFS_DROPBEAR" = true ] && [ "$ENABLE_INITRAMFS" = true ]; then
-  APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
-fi
-
 # Add cryptsetup package to enable filesystem encryption
 if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
   APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup,cryptsetup-initramfs"
+  
+  if [ "$CRYPTFS_DROPBEAR" = true ] && [ "$ENABLE_INITRAMFS" = true ]; then
+  APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
+  fi
 
   if [ -z "$CRYPTFS_PASSWORD" ] ; then
     echo "error: no password defined (CRYPTFS_PASSWORD)!"
