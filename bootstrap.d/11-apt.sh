@@ -19,6 +19,9 @@ if [ "$BUILD_KERNEL" = false ] ; then
   install_readonly files/apt/sources.list "${ETC_DIR}/apt/sources.list"
   echo "deb ${COLLABORA_URL} ${RELEASE} rpi2" >> "${ETC_DIR}/apt/sources.list"
 
+  #add gpg missing key
+  chroot_exec apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8B48AD6246925553
+  
   # Upgrade collabora package index and install collabora keyring
   chroot_exec apt-get -qq -y --allow-unauthenticated update
   chroot_exec apt-get -qq -y --allow-unauthenticated install collabora-obs-archive-keyring
