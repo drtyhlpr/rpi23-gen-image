@@ -255,32 +255,31 @@ set +x
 
 # Set Raspberry Pi model specific configuration
 if [ "$RPI_MODEL" = 0 ] ; then
-  DTB_FILE=${RPI2_DTB_FILE}
-  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+  DTB_FILE=${RPI0_DTB_FILE}
+  UBOOT_CONFIG=${RPI0_UBOOT_CONFIG}
 elif [ "$RPI_MODEL" = 1 ] ; then
-  DTB_FILE=${RPI2_DTB_FILE}
-  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+  DTB_FILE=${RPI1_DTB_FILE}
+  UBOOT_CONFIG=${RPI1_UBOOT_CONFIG}
 elif [ "$RPI_MODEL" = 1P ] ; then
-  DTB_FILE=${RPI2_DTB_FILE}
-  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+  DTB_FILE=${RPI1P_DTB_FILE}
+  UBOOT_CONFIG=${RPI1P_UBOOT_CONFIG}
 elif [ "$RPI_MODEL" = 2 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
 elif [ "$RPI_MODEL" = 3 ] ; then
   DTB_FILE=${RPI3_DTB_FILE}
   UBOOT_CONFIG=${RPI3_UBOOT_CONFIG}
-  BUILD_KERNEL=true
 elif [ "$RPI_MODEL" = 3P ] ; then
   DTB_FILE=${RPI3P_DTB_FILE}
   UBOOT_CONFIG=${RPI3P_UBOOT_CONFIG}
-  BUILD_KERNEL=true
 else
   echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
   exit 1
 fi
 
 # Check if the internal wireless interface is supported by the RPi model
-if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" = 2 ]; then
+if [ "$ENABLE_WIRELESS" = true ] && ([ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ]); then
+
   echo "error: The selected Raspberry Pi model has no internal wireless interface"
   exit 1
 fi  
@@ -301,9 +300,15 @@ fi
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
   if [ "$KERNEL_ARCH" = "arm" ] ; then
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
-  else
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
+    if [ "$RELEASE_ARCH" = "armel" ]; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
+    fi
+    if [ "$RELEASE_ARCH" = "armhf" ]; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+    fi
+    if [ "$RELEASE_ARCH" = "arm64" ]; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
+    fi
   fi
 fi
 
