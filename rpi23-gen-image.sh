@@ -301,9 +301,15 @@ fi
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
   if [ "$KERNEL_ARCH" = "arm" ] ; then
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
-  else
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
+    if [ "$RELEASE_ARCH" = "armel" ]; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
+    fi
+    if [ "$RELEASE_ARCH" = "armhf" ]; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+    fi
+    if [ "$RELEASE_ARCH" = "arm64" ]; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
+    fi
   fi
 fi
 
