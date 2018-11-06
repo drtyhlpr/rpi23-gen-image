@@ -25,9 +25,9 @@ The following list of Debian packages must be installed on the build system beca
 
 It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandatory. Kernel compilation and linking will be performed on the build system.
 
-- If you compile Raspberry PI 0 or Raspberry Pi 1 Images, use an ARM (armel) cross-compiler toolchain. (crossbuild-essential-armel)
-- If you compile Raspberry PI 1 or Raspberry Pi 2 Images, use an ARMv7 (armhf) cross-compiler toolchain. (crossbuild-essential-armhf)
-- If you compile Raspberry PI 1 or Raspberry Pi 2 Images, use an ARMv8 (armhf) cross-compiler toolchain. (crossbuild-essential-arm64)
+- Raspberry PI 0 or Raspberry Pi 1 Images, use an ARM (armel) cross-compiler toolchain. (crossbuild-essential-armel)
+- Raspberry PI 1 or Raspberry Pi 2 Images, use an ARMv7 (armhf) cross-compiler toolchain. (crossbuild-essential-armhf)
+- Raspberry PI 1 or Raspberry Pi 2 Images, use armhf in 32bit mode and an ARMv8 (arm64) cross-compiler toolchain in 64-bit mode. (crossbuild-essential-arm64)
 
 The script has been tested using the default `crossbuild-essential-armhf` toolchain meta package on Debian Linux `jessie` and `stretch` build systems. Please check the [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains) for further information.
 
