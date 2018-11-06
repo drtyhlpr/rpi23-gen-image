@@ -237,6 +237,11 @@ CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
 CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
 
+#Dropbear
+CRYPTFS_DROPBEAR=${ENABLE_DROPBEAR:=true}
+#Provide Dropbear Public RSA-OpenSSH Key
+CRYPTFS_DROPBEAR_PUBKEY=${CRYPTFS_DROPBEAR_PUBKEY:=""}
+
 # Chroot scripts directory
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
@@ -327,6 +332,10 @@ if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
   APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup"
 
+  if [ CRYPTFS_DROPBEAR = true ] && ["$ENABLE_INITRAMFS" = true ]; then
+  APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
+  fi
+  
   if [ -z "$CRYPTFS_PASSWORD" ] ; then
     echo "error: no password defined (CRYPTFS_PASSWORD)!"
     exit 1
