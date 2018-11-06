@@ -69,6 +69,11 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   # Set mkfile to use the correct dtb file
   sed -i "s/^\(setenv dtbfile \).*/\1${DTB_FILE}/" "${BOOT_DIR}/uboot.mkimage"
 
+  # Set mkfile to use the correct mach id
+  if [ "$ENABLE_QEMU" = true ] ; then
+    sed -i "s/^\(setenv machid \).*/\10x000008e0/" "${BOOT_DIR}/uboot.mkimage"
+  fi
+
   # Set mkfile to use kernel image
   sed -i "s/^\(fatload mmc 0:1 \${kernel_addr_r} \).*/\1${KERNEL_IMAGE}/" "${BOOT_DIR}/uboot.mkimage"
 

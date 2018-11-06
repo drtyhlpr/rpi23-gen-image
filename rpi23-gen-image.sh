@@ -255,32 +255,31 @@ set +x
 
 # Set Raspberry Pi model specific configuration
 if [ "$RPI_MODEL" = 0 ] ; then
-  DTB_FILE=${RPI2_DTB_FILE}
-  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+  DTB_FILE=${RPI0_DTB_FILE}
+  UBOOT_CONFIG=${RPI0_UBOOT_CONFIG}
 elif [ "$RPI_MODEL" = 1 ] ; then
-  DTB_FILE=${RPI2_DTB_FILE}
-  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+  DTB_FILE=${RPI1_DTB_FILE}
+  UBOOT_CONFIG=${RPI1_UBOOT_CONFIG}
 elif [ "$RPI_MODEL" = 1P ] ; then
-  DTB_FILE=${RPI2_DTB_FILE}
-  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
+  DTB_FILE=${RPI1P_DTB_FILE}
+  UBOOT_CONFIG=${RPI1P_UBOOT_CONFIG}
 elif [ "$RPI_MODEL" = 2 ] ; then
   DTB_FILE=${RPI2_DTB_FILE}
   UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
 elif [ "$RPI_MODEL" = 3 ] ; then
   DTB_FILE=${RPI3_DTB_FILE}
   UBOOT_CONFIG=${RPI3_UBOOT_CONFIG}
-  BUILD_KERNEL=true
 elif [ "$RPI_MODEL" = 3P ] ; then
   DTB_FILE=${RPI3P_DTB_FILE}
   UBOOT_CONFIG=${RPI3P_UBOOT_CONFIG}
-  BUILD_KERNEL=true
 else
   echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
   exit 1
 fi
 
 # Check if the internal wireless interface is supported by the RPi model
-if [ "$ENABLE_WIRELESS" = true ] && [ "$RPI_MODEL" = 2 ]; then
+if [ "$ENABLE_WIRELESS" = true ] && ([ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ]); then
+
   echo "error: The selected Raspberry Pi model has no internal wireless interface"
   exit 1
 fi  
@@ -301,9 +300,15 @@ fi
 # Add packages required for kernel cross compilation
 if [ "$BUILD_KERNEL" = true ] ; then
   if [ "$KERNEL_ARCH" = "arm" ] ; then
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
-  else
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
+    if [ "$RELEASE_ARCH" = "armel" ]; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
+    fi
+    if [ "$RELEASE_ARCH" = "armhf" ]; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+    fi
+    if [ "$RELEASE_ARCH" = "arm64" ]; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
+    fi
   fi
 fi
 
@@ -336,7 +341,7 @@ fi
 
 # Add device-tree-compiler required for building the U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
-  APT_INCLUDES="${APT_INCLUDES},device-tree-compiler"
+  APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex"
 fi
 
 # Check if root SSH (v2) public key file exists
@@ -525,6 +530,8 @@ fi
 
 # Configure qemu compatible kernel
 if [ "$ENABLE_QEMU" = true ] ; then
+  DTB_FILE=vexpress-v2p-ca15_a7.dtb
+  UBOOT_CONFIG=vexpress_ca15_tc2_defconfig
   KERNEL_DEFCONFIG="vexpress_defconfig"
   if [ "$KERNEL_MENUCONFIG" = false ] ; then
     KERNEL_OLDDEFCONFIG=true
@@ -624,6 +631,19 @@ if [ "$ENABLE_QEMU" = true ] ; then
         install_readonly "${dtb}" "${BASEDIR}/qemu/overlays/"
       fi
     done
+  fi
+
+  # Copy u-boot files to QEMU directory
+  if [ "$ENABLE_UBOOT" = true ] ; then
+    if [ -f "${BOOT_DIR}/u-boot.bin" ] ; then
+      install_readonly "${BOOT_DIR}/u-boot.bin" "${BASEDIR}/qemu/u-boot.bin"
+    fi
+    if [ -f "${BOOT_DIR}/uboot.mkimage" ] ; then
+      install_readonly "${BOOT_DIR}/uboot.mkimage" "${BASEDIR}/qemu/uboot.mkimage"
+    fi
+    if [ -f "${BOOT_DIR}/boot.scr" ] ; then
+      install_readonly "${BOOT_DIR}/boot.scr" "${BASEDIR}/qemu/boot.scr"
+    fi
   fi
 
   # Copy initramfs to QEMU directory
