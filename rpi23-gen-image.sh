@@ -247,7 +247,10 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
-APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-keyring,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
+
+APT_EXCLUDES=${APT_EXCLUDES:=""}
+APT_EXCLUDES="${APT_EXCLUDES},init,systemd-sysv
 
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
