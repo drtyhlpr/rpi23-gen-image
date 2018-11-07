@@ -83,6 +83,9 @@ Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will sp
 ##### `APT_INCLUDES`=""
 A comma separated list of additional packages to be installed by debootstrap during bootstrapping.
 
+##### `APT_EXCLUDES`=""
+A comma separated list of additional packages to be excluded by debootstrap during bootstrapping.
+
 ##### `APT_INCLUDES_LATE`=""
 A comma separated list of additional packages to be installed by apt after bootstrapping and after APT sources are set up.  This is useful for packages with pre-depends, which debootstrap do not handle well.
 
@@ -222,6 +225,9 @@ Install Xorg open-source X Window System.
 
 ##### `ENABLE_WM`=""
 Install a user defined window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_WM` is used. The `rpi23-gen-image.sh` script has been tested with the following list of window managers: `blackbox`, `openbox`, `fluxbox`, `jwm`, `dwm`, `xfce4`, `awesome`.
+
+##### `ENABLE_SYSVINIT`=false
+Support for halt,init,poweroff,reboot,runlevel,shutdown,telinit commands
 
 ---
 
