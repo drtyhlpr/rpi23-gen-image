@@ -83,6 +83,9 @@ Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will sp
 ##### `APT_INCLUDES`=""
 A comma separated list of additional packages to be installed by debootstrap during bootstrapping.
 
+##### `APT_EXCLUDES`=""
+A comma separated list of additional packages to be excluded by debootstrap during bootstrapping.
+
 ##### `APT_INCLUDES_LATE`=""
 A comma separated list of additional packages to be installed by apt after bootstrapping and after APT sources are set up.  This is useful for packages with pre-depends, which debootstrap do not handle well.
 
