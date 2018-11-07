@@ -20,7 +20,7 @@
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
 
-  ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo```
+  ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo libssl-dev```
 
 Recommended Debian Packages:
 `device-tree-compiler python-dev gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf lib32z1 lib32ncurses6 gdb-multiarch build-essential gawk texinfo bison flex libssl-dev`
