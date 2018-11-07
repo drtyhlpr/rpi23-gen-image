@@ -25,6 +25,9 @@ The following list of Debian packages must be installed on the build system beca
 Recommended Debian Packages:
 `device-tree-compiler python-dev gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf lib32z1 lib32ncurses6 gdb-multiarch build-essential gawk texinfo bison flex libssl-dev`
 
+Ubuntu:
+- Replace lib32ncurses6 with lib32ncurses5
+
 It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandatory. Kernel compilation and linking will be performed on the build system.
 
 - Raspberry PI 0 or Raspberry Pi 1 Images, use an ARM (armel) cross-compiler toolchain. (crossbuild-essential-armel)
