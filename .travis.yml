@@ -3,7 +3,11 @@ language: bash
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get -y upgrade
+  #- sudo apt-get -y upgrade
+  - echo "deb-src http://01.archive.ubuntu.com/ubuntu/ trusty-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+  - echo "deb http://01.archive.ubuntu.com/ubuntu/ trusty-security main restricted universe multiverse " | sudo tee -a /etc/apt/sources.list
+  - echo "deb http://01.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse " | sudo tee -a /etc/apt/sources.list
+  - echo "deb-src http://01.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse " | sudo tee -a /etc/apt/sources.list
   - sudo apt-get install -y debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo device-tree-compiler python-dev crossbuild-essential-armhf lib32z1 lib32ncurses5 gdb-multiarch build-essential gawk texinfo bison flex libssl-dev
 
 script:
