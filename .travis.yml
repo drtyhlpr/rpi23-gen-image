@@ -2,8 +2,4 @@ sudo: required
 language: bash
 
 script:
-<<<<<<< Updated upstream
- - script -c 'CONFIG_TEMPLATE=rpi3stretch ./rpi23-gen-image.sh' ./build.log
-=======
  - sudo script -c 'CONFIG_TEMPLATE=rpi3stretch ./rpi23-gen-image.sh' ./build.log
->>>>>>> Stashed changes
