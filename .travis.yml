@@ -1,5 +1,8 @@
 sudo: required
 language: bash
 
+before_install:
+  - sudo apt-get install -y debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo device-tree-compiler python-dev crossbuild-essential-armhf lib32z1 lib32ncurses6 gdb-multiarch build-essential gawk texinfo bison flex libssl-dev
+
 script:
  - sudo script -c 'CONFIG_TEMPLATE=rpi3stretch ./rpi23-gen-image.sh' ./build.log
