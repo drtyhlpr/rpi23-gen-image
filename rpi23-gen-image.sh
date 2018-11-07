@@ -264,7 +264,7 @@ set +x
 
 #If init and systemd-sysv are wanted e.g. halt/reboot/shutdown scripts
 if [ "$ENABLE_SYSVINIT" = false ] ; then
-APT_EXCLUDES="${APT_EXCLUDES},init,systemd-sysv"
+APT_EXCLUDES="--exclude=${APT_EXCLUDES},init,systemd-sysv"
 fi
 
 # Set Raspberry Pi model specific configuration
