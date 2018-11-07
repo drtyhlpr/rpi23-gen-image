@@ -4,5 +4,5 @@ language: C
   #- sudo apt-get update
   #- sudo apt-get install -y debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo libssl-dev device-tree-compiler python-dev gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf lib32z1 lib32ncurses6 gdb-multiarch build-essential gawk texinfo bison flex libssl-dev
 env:
-  - BUILD= script -c 'APT_PROXY="http://127.0.0.1:3142/" CONFIG_TEMPLATE=rpi3stretch ./rpi23-gen-image.sh' ./build.log
+  - BUILD= CONFIG_TEMPLATE=rpi3stretch ./rpi23-gen-image.sh
 script: "./$BUILD"
