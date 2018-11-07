@@ -226,6 +226,9 @@ Install Xorg open-source X Window System.
 ##### `ENABLE_WM`=""
 Install a user defined window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_WM` is used. The `rpi23-gen-image.sh` script has been tested with the following list of window managers: `blackbox`, `openbox`, `fluxbox`, `jwm`, `dwm`, `xfce4`, `awesome`.
 
+##### `ENABLE_SYSVINIT`=false
+Support for halt,init,poweroff,reboot,runlevel,shutdown,telinit commands
+
 ---
 
 #### Advanced system features:
