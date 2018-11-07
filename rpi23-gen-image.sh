@@ -176,6 +176,7 @@ ENABLE_USER=${ENABLE_USER:=true}
 USER_NAME=${USER_NAME:="pi"}
 ENABLE_ROOT=${ENABLE_ROOT:=false}
 ENABLE_QEMU=${ENABLE_QEMU:=false}
+ENABLE_SYSVINIT=${ENABLE_SYSVINIT:=false}
 
 # SSH settings
 SSH_ENABLE_ROOT=${SSH_ENABLE_ROOT:=false}
@@ -244,6 +245,9 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
 
+#Packages to exclude from chroot build environment
+APT_EXCLUDES=${APT_EXCLUDES:=""}
+
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
 MISSING_PACKAGES=""
@@ -252,6 +256,11 @@ MISSING_PACKAGES=""
 COMPILER_PACKAGES=""
 
 set +x
+
+#If init and systemd-sysv are wanted e.g. halt/reboot/shutdown scripts
+if [ "$ENABLE_SYSVINIT" = false ] ; then
+APT_EXCLUDES="${APT_EXCLUDES},init,systemd-sysv"
+fi
 
 # Set Raspberry Pi model specific configuration
 if [ "$RPI_MODEL" = 0 ] ; then
