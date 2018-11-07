@@ -2,7 +2,7 @@ sudo: required
 language: bash
 
 before_install:
-  #- sudo dpkg --add-architecture armhf
+  - sudo dpkg --add-architecture armhf
   - sudo apt-get update
   #- sudo apt-get -y upgrade
   - echo "deb-src http://01.archive.ubuntu.com/ubuntu/ trusty-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
