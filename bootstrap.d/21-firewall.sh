@@ -8,7 +8,12 @@
 if [ "$ENABLE_IPTABLES" = true ] ; then
   # Create iptables configuration directory
   mkdir -p "${ETC_DIR}/iptables"
-
+  
+  # make sure iptables-legacy,iptables-legacy-restore and iptables-legacy-save are the used alternatives
+  chroot_exec update-alternatives --verbose --set iptables /usr/bin/iptables-legacy
+  chroot_exec update-alternatives --verbose --set iptables-save /usr/bin/iptables-legacy-save
+  chroot_exec update-alternatives --verbose --set iptables-restore /usr/bin/iptables-legacy-restore
+  
   # Install iptables systemd service
   install_readonly files/iptables/iptables.service "${ETC_DIR}/systemd/system/iptables.service"
 
