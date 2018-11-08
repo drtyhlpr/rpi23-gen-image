@@ -1,4 +1,4 @@
-RPI_MODEL=3P
+RPI_MODEL=3
 RELEASE=buster
 RELEASE_ARCH=arm64
 
@@ -53,6 +53,7 @@ REDUCE_LOCALE=false
 
 SSH_LIMIT_USERS=true
 
-APT_INCLUDES=busybox,kbd,net-tools,wireless-tools,git,crda,wireless-regdb,perl,python,libnet-ssleay-perl,openssl,libauthen-pam-perl,libpam-runtime,libio-pty-perl,apt-show-versions,make,build-essential,systemd-sysv
+APT_INCLUDES=busybox,kbd,net-tools,wireless-tools,git,crda,wireless-regdb,perl,python,libnet-ssleay-perl,openssl,libauthen-pam-perl,libpam-runtime,libio-pty-perl,apt-show-versions,build-essential,systemd-sysv
 
-IMAGE_NAME=RPI-3P-64bit
+IMAGE_NAME=RPI-3-64bit
+
