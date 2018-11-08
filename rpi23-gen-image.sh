@@ -253,9 +253,6 @@ APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debi
 #Packages to exclude from chroot build environment
 APT_EXCLUDES=${APT_EXCLUDES:=""}
 
-#Packages to exclude from chroot build environment
-APT_EXCLUDES=${APT_EXCLUDES:=""}
-
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
 MISSING_PACKAGES=""
