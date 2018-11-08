@@ -200,7 +200,7 @@ ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
 DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS:=}
 
 # Kernel compilation settings
-BUILD_KERNEL=${BUILD_KERNEL:=false}
+BUILD_KERNEL=${BUILD_KERNEL:=true}
 KERNEL_REDUCE=${KERNEL_REDUCE:=false}
 KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
@@ -293,10 +293,10 @@ fi
 
 # Check if the internal wireless interface is supported by the RPi model
 if [ "$ENABLE_WIRELESS" = true ] && ([ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ]); then
-
   echo "error: The selected Raspberry Pi model has no internal wireless interface"
   exit 1
 fi  
+
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
 if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
@@ -339,7 +339,7 @@ fi
 # Add cryptsetup package to enable filesystem encryption
 if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
-  APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup"
+  APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup,cryptsetup-initramfs"
 
   if [ CRYPTFS_DROPBEAR = true ] && ["$ENABLE_INITRAMFS" = true ]; then
   APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
