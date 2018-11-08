@@ -7,7 +7,6 @@
 
 VARIANT=""
 COMPONENTS="main"
-EXCLUDES=""
 
 # Use non-free Debian packages if needed
 if [ "$ENABLE_NONFREE" = true ] ; then
