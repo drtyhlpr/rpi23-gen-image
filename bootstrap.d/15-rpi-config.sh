@@ -95,7 +95,7 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
 fi
 
 # Disable RPi3 Bluetooth and restore ttyAMA0 serial device
-if [ "$RPI_MODEL" = 3 ] ; then
+if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]; then
   if [ "$ENABLE_CONSOLE" = true ] && [ "$ENABLE_UBOOT" = false ] ; then
     echo "dtoverlay=pi3-disable-bt" >> "${BOOT_DIR}/config.txt"
     echo "enable_uart=1" >> "${BOOT_DIR}/config.txt"
@@ -133,7 +133,7 @@ fi
 if [ "$ENABLE_SPI" = true ] ; then
   echo "dtparam=spi=on" >> "${BOOT_DIR}/config.txt"
   echo "spi-bcm2708" >> "${R}/lib/modules-load.d/rpi2.conf"
-  if [ "$RPI_MODEL" = 3 ] ; then
+  if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]; then
     sed -i "s/spi-bcm2708/spi-bcm2835/" "${R}/lib/modules-load.d/rpi2.conf"
   fi
 fi
