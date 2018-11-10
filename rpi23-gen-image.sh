@@ -519,16 +519,6 @@ if [ "$KERNEL_REDUCE" = true ] ; then
   KERNELSRC_CONFIG=false
 fi
 
-# Configure qemu compatible kernel
-if [ "$ENABLE_QEMU" = true ] ; then
-  DTB_FILE=vexpress-v2p-ca15_a7.dtb
-  UBOOT_CONFIG=vexpress_ca15_tc2_defconfig
-  KERNEL_DEFCONFIG="vexpress_defconfig"
-  if [ "$KERNEL_MENUCONFIG" = false ] ; then
-    KERNEL_OLDDEFCONFIG=true
-  fi
-fi
-
 # Execute bootstrap scripts
 for SCRIPT in bootstrap.d/*.sh; do
   head -n 3 "$SCRIPT"
@@ -596,6 +586,14 @@ rm -f "${R}/vmlinuz"
 rm -f "${R}${QEMU_BINARY}"
 
 if [ "$ENABLE_QEMU" = true ] ; then
+  # Configure qemu compatible kernel
+  DTB_FILE=vexpress-v2p-ca15_a7.dtb
+  UBOOT_CONFIG=vexpress_ca15_tc2_defconfig
+  KERNEL_DEFCONFIG="vexpress_defconfig"
+  if [ "$KERNEL_MENUCONFIG" = false ] ; then
+    KERNEL_OLDDEFCONFIG=true
+  fi
+  
   # Setup QEMU directory
   mkdir "${BASEDIR}/qemu"
 
