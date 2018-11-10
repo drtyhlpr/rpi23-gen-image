@@ -112,7 +112,7 @@ install_readonly files/modules/rpi2.conf "${R}/lib/modules-load.d/rpi2.conf"
 
 # Load hardware random module at boot
 if [ "$ENABLE_HWRANDOM" = true ] && [ "$BUILD_KERNEL" = false ] ; then
-  sed -i "s/^# bcm2708_rng/bcm2708_rng/" "${R}/lib/modules-load.d/rpi2.conf"
+   sed -i "s/^# bcm2708_rng/bcm2708_rng/" "${R}/lib/modules-load.d/rpi2.conf"
 fi
 
 # Load sound module at boot

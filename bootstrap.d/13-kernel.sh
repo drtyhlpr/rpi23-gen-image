@@ -233,21 +233,34 @@ if [ "$BUILD_KERNEL" = true ] ; then
       chroot_exec ln -sf /usr/src/linux "/lib/modules/${KERNEL_VERSION}/source"
     fi
   fi
+elif [ BUILD_KERNEL = false ]
+  # Collabora states this kernel is just for RPI 2 so better implement a check. 
+  #From https://repositories.collabora.co.uk/debian/dists/jessie/rpi2/binary-armhf/Packages 
+  #"The Linux kernel "${COLLABORA_KERNEL}" and modules for use on ARMv7 kernel for Raspberry pi 2 model B+"
+  # nested if to be easily extended for more precompiled kernels
+  if [ "$SET_ARCH" = 32 ] ; then
+    if [ RPI_MODEL = 2 ] ; then
+      # Kernel installation
+      chroot_exec apt-get -qq -y --no-install-recommends install linux-image-"${COLLABORA_KERNEL}" raspberrypi-bootloader-nokernel
 
-else # BUILD_KERNEL=false
-  # Kernel installation
-  chroot_exec apt-get -qq -y --no-install-recommends install linux-image-"${COLLABORA_KERNEL}" raspberrypi-bootloader-nokernel
+      # Install flash-kernel last so it doesn't try (and fail) to detect the platform in the chroot
+      chroot_exec apt-get -qq -y install flash-kernel
 
-  # Install flash-kernel last so it doesn't try (and fail) to detect the platform in the chroot
-  chroot_exec apt-get -qq -y install flash-kernel
-
-  # Check if kernel installation was successful
-  VMLINUZ="$(ls -1 ${R}/boot/vmlinuz-* | sort | tail -n 1)"
-  if [ -z "$VMLINUZ" ] ; then
-    echo "error: kernel installation failed! (/boot/vmlinuz-* not found)"
-    cleanup
-    exit 1
+      # Check if kernel installation was successful
+      VMLINUZ="$(ls -1 ${R}/boot/vmlinuz-* | sort | tail -n 1)"
+      if [ -z "$VMLINUZ" ] ; then
+        echo "error: kernel installation failed! (/boot/vmlinuz-* not found)"
+        cleanup
+        exit 1
+      fi
+      # Copy vmlinuz kernel to the boot directory
+      install_readonly "${VMLINUZ}" "${BOOT_DIR}/${KERNEL_IMAGE}"
+    fi
+	if [ RPI_MODEL = 0 ] || [ RPI_MODEL = 1 ] || [ RPI_MODEL = 1P ] ; then
+	# insert precompiled Kernel here
+	fi
+  #if [ "$SET_ARCH" = 64 ]
+  else
+  # inset precompiled 64 bit kernel here
   fi
-  # Copy vmlinuz kernel to the boot directory
-  install_readonly "${VMLINUZ}" "${BOOT_DIR}/${KERNEL_IMAGE}"
 fi

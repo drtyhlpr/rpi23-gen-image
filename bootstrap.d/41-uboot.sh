@@ -58,9 +58,9 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     sed -i '/.*initramfs.*/d' "${BOOT_DIR}/uboot.mkimage"
 
     if [ "$BUILD_KERNEL" = false ] ; then
-      # Remove dtbfile from U-Boot mkfile
-      sed -i '/.*dtbfile.*/d' "${BOOT_DIR}/uboot.mkimage"
-      printf "\nbootz \${kernel_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
+        # Remove dtbfile from U-Boot mkfile
+        sed -i '/.*dtbfile.*/d' "${BOOT_DIR}/uboot.mkimage"
+        printf "\nbootz \${kernel_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
     else
       printf "\nbootz \${kernel_addr_r} - \${fdt_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
     fi
