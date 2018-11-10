@@ -202,7 +202,7 @@ COMPILER_PACKAGES=""
 set +x
 
 #make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
-if [ -n "$SET_ARCH" ]
+if [ -n "$SET_ARCH" ] ; then
   echo "Setting Architecture specific settings"
   ##################################
   # 64 bit config
@@ -254,7 +254,6 @@ if [ -n "$SET_ARCH" ]
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
 	fi
-  fi
   
   #Device specific configuration
   case "$RPI_MODEL" in
@@ -283,6 +282,8 @@ if [ -n "$SET_ARCH" ]
 	  exit 1
 	  ;;
     esac
+  #end 32 bit
+  fi
 #SET_ARCH not set
 else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
