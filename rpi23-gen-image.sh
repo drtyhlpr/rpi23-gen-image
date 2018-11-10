@@ -439,7 +439,7 @@ if [ "$ENABLE_MINBASE" = true ] ; then
 fi
 
 # Add required locales packages
-if [ "$DEFLOCAL" != "en_US.UTF-8" ] ; then
+if [ "$DEFLOCAL" != "en_US.UTF-8" ] || ([ -n XKB_MODEL ] || [ -n XKB_LAYOUT ] ||  [ -n XKB_VARIANT ] ||  [ -n XKB_OPTIONS ]); then
   APT_INCLUDES="${APT_INCLUDES},locales,keyboard-configuration,console-setup"
 fi
 
