@@ -44,10 +44,10 @@ set -x
 RPI_MODEL=${RPI_MODEL:=2}
 
 # Debian release
-RELEASE=${RELEASE:=buster}
+RELEASE=${RELEASE:=jessie}
 
 #Kernel Branch
-KERNEL_BRANCH=${KERNEL_BRANCH:="rpi-4.14.y"}
+KERNEL_BRANCH=${KERNEL_BRANCH:=""}
 
 # URLs
 KERNEL_URL=${KERNEL_URL:=https://github.com/raspberrypi/linux}
