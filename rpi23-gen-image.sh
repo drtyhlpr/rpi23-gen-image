@@ -43,58 +43,11 @@ set -x
 # Raspberry Pi model configuration
 RPI_MODEL=${RPI_MODEL:=2}
 
-#bcm2708-rpi-0-w.dtb (Used for Pi 0 and PI 0W)
-RPI0_DTB_FILE=${RPI0_DTB_FILE:=bcm2708-rpi-0-w.dtb}
-RPI0_UBOOT_CONFIG=${RPI0_UBOOT_CONFIG:=rpi_defconfig}
-
-#bcm2708-rpi-b.dtb (Used for Pi 1 model A and B)
-RPI1_DTB_FILE=${RPI1_DTB_FILE:=bcm2708-rpi-b.dtb}
-RPI1_UBOOT_CONFIG=${RPI1_UBOOT_CONFIG:=rpi_defconfig}
-
-#bcm2708-rpi-b-plus.dtb (Used for Pi 1 model B+ and A+)
-RPI1P_DTB_FILE=${RPI1P_DTB_FILE:=bcm2708-rpi-b-plus.dtb}
-RPI1P_UBOOT_CONFIG=${RPI1P_UBOOT_CONFIG:=rpi_defconfig}
-
-#bcm2709-rpi-2-b.dtb (Used for Pi 2 model B)
-RPI2_DTB_FILE=${RPI2_DTB_FILE:=bcm2709-rpi-2-b.dtb}
-RPI2_UBOOT_CONFIG=${RPI2_UBOOT_CONFIG:=rpi_2_defconfig}
-
-#bcm2710-rpi-3-b.dtb (Used for Pi 3 model B)
-RPI3_DTB_FILE=${RPI3_DTB_FILE:=bcm2710-rpi-3-b.dtb}
-RPI3_UBOOT_CONFIG=${RPI3_UBOOT_CONFIG:=rpi_3_32b_defconfig}
-
-#bcm2710-rpi-3-b-plus.dtb (Used for Pi 3 model B+)
-RPI3P_DTB_FILE=${RPI3P_DTB_FILE:=bcm2710-rpi-3-b-plus.dtb}
-RPI3P_UBOOT_CONFIG=${RPI3P_UBOOT_CONFIG:=rpi_3_32b_defconfig}
-
 # Debian release
-RELEASE=${RELEASE:=jessie}
-KERNEL_ARCH=${KERNEL_ARCH:=arm}
-RELEASE_ARCH=${RELEASE_ARCH:=armhf}
-CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
-COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
-if [ "$KERNEL_ARCH" = "arm64" ] ; then
-  KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
-  KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
-fi
+RELEASE=${RELEASE:=buster}
 
-if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
-#RASPBERRY PI 1, PI ZERO, PI ZERO W, AND COMPUTE MODULE DEFAULT Kernel BUILD CONFIGURATION
-  KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
-  KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
-else
-#RASPBERRY PI 2, PI 3, PI 3+, AND COMPUTE MODULE 3 DEFAULT Kernel BUILD CONFIGURATION
-#https://www.raspberrypi.org/documentation/linux/kernel/building.md
-  KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
-  KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
-fi
-
-if [ "$RELEASE_ARCH" = "arm64" ] ; then
-  QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
-else
-  QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
-fi
-KERNEL_BRANCH=${KERNEL_BRANCH:=""}
+#Kernel Branch
+KERNEL_BRANCH=${KERNEL_BRANCH:="rpi-4.14.y"}
 
 # URLs
 KERNEL_URL=${KERNEL_URL:=https://github.com/raspberrypi/linux}
@@ -128,6 +81,7 @@ WLAN_FIRMWARE_DIR="${R}/lib/firmware/brcm"
 RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
 
 # General settings
+SET_ARCH=${SET_ARCH}
 HOSTNAME=${HOSTNAME:=rpi${RPI_MODEL}-${RELEASE}}
 PASSWORD=${PASSWORD:=raspberry}
 USER_PASSWORD=${USER_PASSWORD:=raspberry}
@@ -208,12 +162,6 @@ KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
 KERNEL_OLDDEFCONFIG=${KERNEL_OLDDEFCONFIG:=false}
 KERNEL_CCACHE=${KERNEL_CCACHE:=false}
 
-if [ "$KERNEL_ARCH" = "arm64" ] ; then
-  KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="Image"}
-else
-  KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="zImage"}
-fi
-
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}
 KERNELSRC_CLEAN=${KERNELSRC_CLEAN:=false}
@@ -253,35 +201,98 @@ COMPILER_PACKAGES=""
 
 set +x
 
-# Set Raspberry Pi model specific configuration
-if [ "$RPI_MODEL" = 0 ] ; then
-  DTB_FILE=${RPI0_DTB_FILE}
-  UBOOT_CONFIG=${RPI0_UBOOT_CONFIG}
-elif [ "$RPI_MODEL" = 1 ] ; then
-  DTB_FILE=${RPI1_DTB_FILE}
-  UBOOT_CONFIG=${RPI1_UBOOT_CONFIG}
-elif [ "$RPI_MODEL" = 1P ] ; then
-  DTB_FILE=${RPI1P_DTB_FILE}
-  UBOOT_CONFIG=${RPI1P_UBOOT_CONFIG}
-elif [ "$RPI_MODEL" = 2 ] ; then
-  DTB_FILE=${RPI2_DTB_FILE}
-  UBOOT_CONFIG=${RPI2_UBOOT_CONFIG}
-elif [ "$RPI_MODEL" = 3 ] ; then
-  DTB_FILE=${RPI3_DTB_FILE}
-  UBOOT_CONFIG=${RPI3_UBOOT_CONFIG}
-elif [ "$RPI_MODEL" = 3P ] ; then
-  DTB_FILE=${RPI3P_DTB_FILE}
-  UBOOT_CONFIG=${RPI3P_UBOOT_CONFIG}
+#make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
+if [ -n "$SET_ARCH" ]
+  echo "Setting Architecture specific settings"
+  ##################################
+  # 64 bit config
+  ##################################
+  if [ "$SET_ARCH" = 64 ] && ([ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]); then
+    echo "64 bit mode selected - Setting up enviroment"
+    # 64 bit depended settings
+    QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
+    KERNEL_ARCH=${KERNEL_ARCH:=arm64}
+    KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="Image"}
+    RELEASE_ARCH=${RELEASE_ARCH:=arm64}
+    CROSS_COMPILE=${CROSS_COMPILE:=aarch64-linux-gnu-}
+    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
+  
+    # RPI 3 serie specific settings
+    DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
+  
+    KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
+    KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
+  else
+    echo "error: Only Raspberry PI 3 and 3B+ support 64bit"
+    exit 1
+  fi
+  
+  ##################################
+  # 32 bit config
+  ##################################
+  if [ "$SET_ARCH" = 32 ] ; then
+    echo "32 bit mode selected - Setting up enviroment"
+    #General 32bit configuration
+    QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
+    KERNEL_ARCH=${KERNEL_ARCH:=arm}
+    KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="zImage"}
+
+    #Raspberry setting grouped by board compability
+    if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
+    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
+    KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+    RELEASE_ARCH=${RELEASE_ARCH:=armel}
+    KERNEL_IMAGE=${KERNEL_IMAGE:=kernel.img}
+    CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
+  elif [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+    KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
+    RELEASE_ARCH=${RELEASE_ARCH:=armhf}	
+    KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
+    CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
+  fi
+  
+  #Device specific configuration
+  case "$RPI_MODEL" in
+    0)
+      DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb} ;;
+    1)
+	  DTB_FILE=${DTB_FILE:=bcm2708-rpi-b.dtb} ;;
+    1P)
+	  DTB_FILE=${DTB_FILE:=bcm2708-rpi-b-plus.dtb} ;;
+    2)
+      DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
+      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
+	  #Precompiled Kernel rpi2
+      COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
+	  ;;
+	3)
+	  DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
+      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_32b_defconfig} 	
+	  ;;
+    3P
+	  DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
+      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_32b_defconfig}
+	  ;;
+    *) 
+      echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
+	  exit 1
+	  ;;
+    esac
+  fi
 else
-  echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
+  echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
 fi
 
 # Check if the internal wireless interface is supported by the RPi model
-if [ "$ENABLE_WIRELESS" = true ] && ([ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ]); then
-
+if [ "$ENABLE_WIRELESS" = true ] && ([ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ]) ; then
   echo "error: The selected Raspberry Pi model has no internal wireless interface"
   exit 1
+else
+  echo "Raspberry Pi model"
 fi  
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
@@ -289,26 +300,6 @@ if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
   if [ "$DISABLE_UNDERVOLT_WARNINGS" != 1 ] && [ "$DISABLE_UNDERVOLT_WARNINGS" != 2 ] ; then
     echo "error: DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS} is not supported"
     exit 1
-  fi
-fi
-
-# Build RPi2/3 Linux kernel if required by Debian release
-if [ "$RELEASE" = "stretch" ]  || [ "$RELEASE" = "buster" ] ; then
-  BUILD_KERNEL=true
-fi
-
-# Add packages required for kernel cross compilation
-if [ "$BUILD_KERNEL" = true ] ; then
-  if [ "$KERNEL_ARCH" = "arm" ] ; then
-    if [ "$RELEASE_ARCH" = "armel" ]; then
-      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
-    fi
-    if [ "$RELEASE_ARCH" = "armhf" ]; then
-      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
-    fi
-    if [ "$RELEASE_ARCH" = "arm64" ]; then
-      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
-    fi
   fi
 fi
 
