@@ -306,9 +306,9 @@ if [ "$BUILD_KERNEL" = true ] ; then
     if [ "$RELEASE_ARCH" = "armhf" ]; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
     fi
-    if [ "$RELEASE_ARCH" = "arm64" ]; then
-      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
-    fi
+  fi
+  if [ "$RELEASE_ARCH" = "arm64" ]; then
+    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
   fi
 fi
 
