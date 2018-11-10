@@ -207,7 +207,7 @@ if [ -n "$SET_ARCH" ] ; then
   ##################################
   # 64 bit config
   ##################################
-  if [ "$SET_ARCH" = 64 ] && ([ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]); then
+  if [ "$SET_ARCH" = 64 ] ; then
     echo "64 bit mode selected - Setting up enviroment"
     # 64 bit depended settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
@@ -217,15 +217,17 @@ if [ -n "$SET_ARCH" ] ; then
     CROSS_COMPILE=${CROSS_COMPILE:=aarch64-linux-gnu-}
     REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
   
-    # RPI 3 serie specific settings
-    DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
+    if ([ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]) ; then
+      # RPI 3 serie specific settings
+      DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
+      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
   
-    KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
-    KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
-  else
-    echo "error: Only Raspberry PI 3 and 3B+ support 64bit"
-    exit 1
+      KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
+      KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
+	else
+      echo "error: At the moment Raspberry PI 3 and 3B+ are the only Models which support 64bit"
+      exit 1
+	fi
   fi
   
   ##################################
