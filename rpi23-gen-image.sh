@@ -464,7 +464,7 @@ fi
 
 # Add iptables IPv4/IPv6 package
 if [ "$ENABLE_IPTABLES" = true ] ; then
-  APT_INCLUDES="${APT_INCLUDES},iptables"
+  APT_INCLUDES="${APT_INCLUDES},iptables,iptables-persistent"
 fi
 
 # Add openssh server package
