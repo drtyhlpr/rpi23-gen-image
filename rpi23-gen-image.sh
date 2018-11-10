@@ -240,18 +240,19 @@ if [ -n "$SET_ARCH" ]
 
     #Raspberry setting grouped by board compability
     if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
-    KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
-    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
-    RELEASE_ARCH=${RELEASE_ARCH:=armel}
-    KERNEL_IMAGE=${KERNEL_IMAGE:=kernel.img}
-    CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
-  elif [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
-    KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
-    RELEASE_ARCH=${RELEASE_ARCH:=armhf}	
-    KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
-    CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
+      KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
+      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+      RELEASE_ARCH=${RELEASE_ARCH:=armel}
+      KERNEL_IMAGE=${KERNEL_IMAGE:=kernel.img}
+      CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
+    elif [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
+      KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
+      RELEASE_ARCH=${RELEASE_ARCH:=armhf}	
+      KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
+      CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
+	fi
   fi
   
   #Device specific configuration
@@ -272,7 +273,7 @@ if [ -n "$SET_ARCH" ]
 	  DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
       UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_32b_defconfig} 	
 	  ;;
-    3P
+    3P)
 	  DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
       UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_32b_defconfig}
 	  ;;
@@ -281,7 +282,7 @@ if [ -n "$SET_ARCH" ]
 	  exit 1
 	  ;;
     esac
-  fi
+#SET_ARCH not set
 else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
