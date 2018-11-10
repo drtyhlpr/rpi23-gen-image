@@ -28,7 +28,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       as_nobody -H git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}" linux
     else
       as_nobody -H git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}" linux
-   fi
+    fi
     
     # Copy downloaded kernel sources
     cp -r "${temp_dir}/linux/"* "${R}/usr/src/linux/"
@@ -107,7 +107,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
           echo "CONFIG_CRYPTO_XTS=y" >> ${KERNEL_DIR}/.config
           echo "CONFIG_CRYPTO_SHA512=y" >> ${KERNEL_DIR}/.config
           echo "CONFIG_CRYPTO_MANAGER=y" >> ${KERNEL_DIR}/.config
-	fi
+	    fi
       fi
 
       # Copy custom kernel configuration file
@@ -233,7 +233,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       chroot_exec ln -sf /usr/src/linux "/lib/modules/${KERNEL_VERSION}/source"
     fi
   fi
-elif [ BUILD_KERNEL = false ]
+elif [ "$BUILD_KERNEL" = false ] ; then
   # Collabora states this kernel is just for RPI 2 so better implement a check. 
   #From https://repositories.collabora.co.uk/debian/dists/jessie/rpi2/binary-armhf/Packages 
   #"The Linux kernel "${COLLABORA_KERNEL}" and modules for use on ARMv7 kernel for Raspberry pi 2 model B+"
@@ -263,7 +263,7 @@ elif [ BUILD_KERNEL = false ]
 	fi
   #if [ "$SET_ARCH" = 64 ]
   else
-    echo " error: no precompiled 64bit kernel found"
+    echo "error: no precompiled 64bit kernel found"
     exit 1
     # inset precompiled 64 bit kernel code here
   fi
