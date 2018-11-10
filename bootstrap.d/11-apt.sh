@@ -12,7 +12,7 @@ if [ -z "$APT_PROXY" ] ; then
 fi
 
 if [ "$BUILD_KERNEL" = false ] ; then
-  if [ RPI_MODEL = 2 ] ; then
+  if [ "$RPI_MODEL" = 2 ] ; then
   # Install APT pinning configuration for flash-kernel package
   install_readonly files/apt/flash-kernel "${ETC_DIR}/apt/preferences.d/flash-kernel"
 
@@ -25,6 +25,7 @@ if [ "$BUILD_KERNEL" = false ] ; then
   chroot_exec apt-get -qq -y --allow-unauthenticated install collabora-obs-archive-keyring
   # if RPI_MODEL = [0] || [1] || [1P]
   else
+  echo "error: ATM there is just a precompiled kernel for model 2";
   # insert apt configuration for precompiled kernel repository for RPI 0,1,1P
   fi
   

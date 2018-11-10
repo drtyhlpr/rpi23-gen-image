@@ -153,7 +153,7 @@ ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
 DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS:=}
 
 # Kernel compilation settings
-BUILD_KERNEL=${BUILD_KERNEL:=false}
+BUILD_KERNEL=${BUILD_KERNEL:=true}
 KERNEL_REDUCE=${KERNEL_REDUCE:=false}
 KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
@@ -510,6 +510,7 @@ if [ "$ENABLE_REDUCE" = true ] ; then
   fi
 fi
 
+#backwards compability to jessie - untested
 if [ "$RELEASE" != "jessie" ] ; then
   APT_INCLUDES="${APT_INCLUDES},libnss-systemd"
 fi
