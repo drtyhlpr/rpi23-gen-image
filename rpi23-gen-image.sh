@@ -246,7 +246,8 @@ if [ -n "$SET_ARCH" ]
       RELEASE_ARCH=${RELEASE_ARCH:=armel}
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel.img}
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
-    elif [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+	fi
+    if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
       RELEASE_ARCH=${RELEASE_ARCH:=armhf}	
