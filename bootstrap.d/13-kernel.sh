@@ -239,7 +239,7 @@ elif [ BUILD_KERNEL = false ]
   #"The Linux kernel "${COLLABORA_KERNEL}" and modules for use on ARMv7 kernel for Raspberry pi 2 model B+"
   # nested if to be easily extended for more precompiled kernels
   if [ "$SET_ARCH" = 32 ] ; then
-    if [ RPI_MODEL = 2 ] ; then
+    if [ "$RPI_MODEL" = 2 ] ; then
       # Kernel installation
       chroot_exec apt-get -qq -y --no-install-recommends install linux-image-"${COLLABORA_KERNEL}" raspberrypi-bootloader-nokernel
 
@@ -256,11 +256,15 @@ elif [ BUILD_KERNEL = false ]
       # Copy vmlinuz kernel to the boot directory
       install_readonly "${VMLINUZ}" "${BOOT_DIR}/${KERNEL_IMAGE}"
     fi
-	if [ RPI_MODEL = 0 ] || [ RPI_MODEL = 1 ] || [ RPI_MODEL = 1P ] ; then
-	# insert precompiled Kernel here
+	if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
+	  echo "error: no precompiled kernel found"
+	  exit 1
+	  # insert precompiled Kernel code here
 	fi
   #if [ "$SET_ARCH" = 64 ]
   else
-  # inset precompiled 64 bit kernel here
+    echo " error: no precompiled 64bit kernel found"
+    exit 1
+    # inset precompiled 64 bit kernel code here
   fi
 fi
