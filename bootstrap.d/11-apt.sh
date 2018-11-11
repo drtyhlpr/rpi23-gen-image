@@ -32,6 +32,11 @@ if [ "$BUILD_KERNEL" = false ] ; then
 else # BUILD_KERNEL=true
   #autconfigure best apt server to not spam ftp.debian.org
   rm files/apt/sources.list
+  #netselect-apt does not know buster yet
+  if [ "$RELEASE" = "buster" ] ; then
+    RLS = "testing"
+  fi
+  
   if [ "$ENABLE_NONFREE" ] ; then
     netselect-apt --arch "$RELEASE_ARCH" --sources --nonfree --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
   else
