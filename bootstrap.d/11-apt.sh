@@ -30,12 +30,13 @@ if [ "$BUILD_KERNEL" = false ] ; then
   fi
   
 else # BUILD_KERNEL=true
-  # Install APT sources.list
-  install_readonly files/apt/sources.list "${ETC_DIR}/apt/sources.list"
-
-  # Use specified APT server and release
-  sed -i "s/\/ftp.debian.org\//\/${APT_SERVER}\//" "${ETC_DIR}/apt/sources.list"
-  sed -i "s/ jessie/ ${RELEASE}/" "${ETC_DIR}/apt/sources.list"
+  #autconfigure best apt server to not spam ftp.debian.org
+  rm files/apt/sources.list
+  if [ "$ENABLE_NONFREE" ] ; then
+    netselect-apt --arch "$RELEASE_ARCH" --sources --nonfree --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
+  else
+    netselect-apt --arch "$RELEASE_ARCH" --sources --nonfree --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
+  fi
 fi
 
 # Allow the installation of non-free Debian packages

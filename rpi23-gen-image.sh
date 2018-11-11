@@ -196,6 +196,9 @@ APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debi
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
 MISSING_PACKAGES=""
 
+#autoselect best apt mirror
+REQUIRED_PACKAGES="${REQUIRED_PACKAGES} netselect-apt"
+
 # Packages installed for c/c++ build environment in chroot (keep empty)
 COMPILER_PACKAGES=""
 
