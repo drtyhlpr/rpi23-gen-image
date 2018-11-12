@@ -459,7 +459,7 @@ fi
 mkdir -p "${R}"
 
 # Check if build directory has enough of free disk space >512MB
-if [ "$(df --output=avail ${BUILDDIR} | sed "1d")" -le "524288" ] ; then
+if [ "$(df --output=avail "${BUILDDIR}" | sed "1d")" -le "524288" ] ; then
   echo "error: ${BUILDDIR} not enough space left to generate the output image!"
   exit 1
 fi

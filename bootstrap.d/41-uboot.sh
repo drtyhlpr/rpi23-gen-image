@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Build and Setup U-Boot
 #
@@ -32,7 +33,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   fi
 
   # Build and install U-Boot inside chroot
-  chroot_exec make -j${KERNEL_THREADS} -C /tmp/u-boot/ ${UBOOT_CONFIG} all
+  chroot_exec make -j"${KERNEL_THREADS}" -C /tmp/u-boot/ "${UBOOT_CONFIG}" all
 
   # Copy compiled bootloader binary and set config.txt to load it
   install_exec "${R}/tmp/u-boot/tools/mkimage" "${R}/usr/sbin/mkimage"
@@ -41,7 +42,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
 
   # Install and setup U-Boot command file
   install_readonly files/boot/uboot.mkimage "${BOOT_DIR}/uboot.mkimage"
-  printf "# Set the kernel boot command line\nsetenv bootargs \"earlyprintk ${CMDLINE}\"\n\n$(cat ${BOOT_DIR}/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
+  printf "# Set the kernel boot command line\nsetenv bootargs \"earlyprintk ${CMDLINE}\"\n\n$(cat "${BOOT_DIR}"/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
 
   if [ "$ENABLE_INITRAMFS" = true ] ; then
     # Convert generated initramfs for U-Boot using mkimage
@@ -51,7 +52,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     rm -f "${BOOT_DIR}/initramfs-${KERNEL_VERSION}"
 
     # Configure U-Boot to load generated initramfs
-    printf "# Set initramfs file\nsetenv initramfs initramfs-${KERNEL_VERSION}.uboot\n\n$(cat ${BOOT_DIR}/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
+    printf "# Set initramfs file\nsetenv initramfs initramfs-${KERNEL_VERSION}.uboot\n\n$(cat "${BOOT_DIR}"/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
     printf "\nbootz \${kernel_addr_r} \${ramdisk_addr_r} \${fdt_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
   else # ENABLE_INITRAMFS=false
     # Remove initramfs from U-Boot mkfile
@@ -86,3 +87,4 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   # Remove U-Boot sources
   rm -fr "${R}/tmp/u-boot"
 fi
+

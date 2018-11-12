@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Reduce system disk usage
 #
@@ -25,8 +26,8 @@ if [ "$ENABLE_REDUCE" = true ] ; then
 
   # Remove all doc files
   if [ "$REDUCE_DOC" = true ] ; then
-    find "${R}/usr/share/doc" -depth -type f ! -name copyright | xargs rm || true
-    find "${R}/usr/share/doc" -empty | xargs rmdir || true
+    find "${R}/usr/share/doc" -depth -type f ! -name copyright -print0 | xargs -0 rm || true
+    find "${R}/usr/share/doc" -empty -print0 | xargs -0 rmdir || true
   fi
 
   # Remove all man pages and info files
@@ -36,7 +37,7 @@ if [ "$ENABLE_REDUCE" = true ] ; then
 
   # Remove all locale translation files
   if [ "$REDUCE_LOCALE" = true ] ; then
-    find "${R}/usr/share/locale" -mindepth 1 -maxdepth 1 ! -name 'en' | xargs rm -r
+    find "${R}/usr/share/locale" -mindepth 1 -maxdepth 1 ! -name 'en' -print0 | xargs -0 rm -r
   fi
 
   # Remove hwdb PCI device classes (experimental)

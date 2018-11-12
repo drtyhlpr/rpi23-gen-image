@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Build and Setup RPi2/3 Kernel
 #
@@ -93,20 +94,22 @@ if [ "$BUILD_KERNEL" = true ] ; then
         echo "CONFIG_LBDAF=y" >> "${KERNEL_DIR}"/.config
 
         if [ "$ENABLE_CRYPTFS" = true ] ; then
-          echo "CONFIG_EMBEDDED=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_EXPERT=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_DAX=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_MD=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_BLK_DEV_MD=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_MD_AUTODETECT=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_BLK_DEV_DM=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_BLK_DEV_DM_BUILTIN=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_DM_CRYPT=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_CRYPTO_BLKCIPHER=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_CRYPTO_CBC=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_CRYPTO_XTS=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_CRYPTO_SHA512=y" >> "${KERNEL_DIR}"/.config
-          echo "CONFIG_CRYPTO_MANAGER=y" >> "${KERNEL_DIR}"/.config
+          {
+            echo "CONFIG_EMBEDDED=y"
+            echo "CONFIG_EXPERT=y"
+            echo "CONFIG_DAX=y"
+            echo "CONFIG_MD=y"
+            echo "CONFIG_BLK_DEV_MD=y"
+            echo "CONFIG_MD_AUTODETECT=y"
+            echo "CONFIG_BLK_DEV_DM=y"
+            echo "CONFIG_BLK_DEV_DM_BUILTIN=y"
+            echo "CONFIG_DM_CRYPT=y"
+            echo "CONFIG_CRYPTO_BLKCIPHER=y"
+            echo "CONFIG_CRYPTO_CBC=y"
+            echo "CONFIG_CRYPTO_XTS=y"
+            echo "CONFIG_CRYPTO_SHA512=y"
+            echo "CONFIG_CRYPTO_MANAGER=y"       
+          } >> "${KERNEL_DIR}"/.config
         fi
       fi
 
