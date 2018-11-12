@@ -243,6 +243,7 @@ if [ -n "$SET_ARCH" ] ; then
 
     #Raspberry setting grouped by board compability
     if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
+      echo "Setting settings for bcm2835 Raspberry PI boards"
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
       UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
@@ -251,12 +252,16 @@ if [ -n "$SET_ARCH" ] ; then
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
     fi
     if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+      echo "Setting settings for bcm2837 Raspberry PI boards"
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
       RELEASE_ARCH=${RELEASE_ARCH:=armhf}
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
     fi
+
+    echo "Setting Raspberry PI $RPI_MODEL specific configuration"
+
     #Device specific configuration
     case "$RPI_MODEL" in
     0)
@@ -286,35 +291,6 @@ if [ -n "$SET_ARCH" ] ; then
       ;;
     esac
 
-    #Device specific configuration
-#    if [ "$RPI_MODEL" = 0 ] ; then
-#      DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
-#    fi
-#    if [ "$RPI_MODEL" = 1 ] ; then
-#      DTB_FILE=${DTB_FILE:=bcm2708-rpi-b.dtb}
-#    fi
-#    if [ "$RPI_MODEL" = 1P ] ; then
-#      DTB_FILE=${DTB_FILE:=bcm2708-rpi-b-plus.dtb}
-#    fi
-#    if [ "$RPI_MODEL" = 2 ] ; then
-#      DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
-#      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
-#      #Precompiled Kernel rpi2
-#      #COLLABORA_KERNEL=${COLLABORA_KERNEL:=3.18.0-trunk-rpi2}
-#    fi
-#    if [ "$RPI_MODEL" = 3 ] ; then
-#      DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-#      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_32b_defconfig}
-#    fi
-#    if [ "$RPI_MODEL" = 3P ] ; then
-#      DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-#      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_32b_defconfig}
-#    fi
-#    if [ -z "$RPI_MODEL" ] ; then
-#      echo "error: Raspberry Pi model $RPI_MODEL is not set!"
-#      exit 1
-#    fi
-
   #end 32 bit
   fi
 #SET_ARCH not set
@@ -324,12 +300,14 @@ else
 fi
 
 # Check if the internal wireless interface is supported by the RPi model
-if [ "$ENABLE_WIRELESS" = true ] && { [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ] ; } ; then
-  echo "error: The selected Raspberry Pi model has no internal wireless interface"
-  exit 1
-else
-  echo "Raspberry Pi model"
-fi  
+if [ "$ENABLE_WIRELESS" = true ] ; then
+  if [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ] ; then
+    echo "error: The selected Raspberry Pi model has no internal wireless interface"
+    exit 1
+  else
+    echo "Raspberry Pi model"
+  fi
+fi
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
 if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
