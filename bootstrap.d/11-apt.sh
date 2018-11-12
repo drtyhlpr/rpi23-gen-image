@@ -16,18 +16,22 @@ if [ "$BUILD_KERNEL" = false ] ; then
   echo "Downloading precompiled kernel"
   echo "error: not configured"
   exit 1;
-else # BUILD_KERNEL=true
-  #autconfigure best apt server to not spam ftp.debian.org
-  #rm files/apt/sources.list
-  #netselect-apt does not know buster yet
-  if  [ "$RELEASE" = "buster" ] ; then
-    RELEASE=${RELEASE:=testing}
-  fi
-  netselect_string=${netselect_string:=""}
-  if [ "$ENABLE_NONFREE" = true ] ; then
-  netselect-apt --arch "$RELEASE_ARCH" --sources "$netselect_string" --outfile "${ETC_DIR}/apt/sources.list" -d "$RLS"
-  fi
-  netselect-apt --arch "$RELEASE_ARCH" --sources "$netselect_string" --outfile "${ETC_DIR}/apt/sources.list" -d "$RLS"
+# BUILD_KERNEL=true
+else
+  echo "No precompiled kernel repositories were added"
+fi 
+
+#autconfigure best apt server to not spam ftp.debian.org
+#rm files/apt/sources.list
+#netselect-apt does not know buster yet
+if  [ "$RELEASE" = "buster" ] ; then
+  RELEASE=${RELEASE:=testing}
+fi
+
+if [ "$ENABLE_NONFREE" = true ] ; then
+  netselect-apt --arch "$RELEASE_ARCH" --sources --nonfree  --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
+else
+  netselect-apt --arch "$RELEASE_ARCH" --sources --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
 fi
 
 # Upgrade package index and update all installed packages and changed dependencies

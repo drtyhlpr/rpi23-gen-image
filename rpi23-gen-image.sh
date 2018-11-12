@@ -188,7 +188,7 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
-APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup"
 
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
@@ -472,11 +472,6 @@ trap cleanup 0 1 2 3 6
 # Add required packages for the minbase installation
 if [ "$ENABLE_MINBASE" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},vim-tiny,netbase,net-tools,ifupdown"
-fi
-
-# Add required locales packages
-if [ "$DEFLOCAL" != "en_US.UTF-8" ] || { [ -n "$XKB_MODEL" ] || [ -n "$XKB_LAYOUT" ] ||  [ -n "$XKB_VARIANT" ] ||  [ -n "$XKB_OPTIONS" ] ; } ; then
-  APT_INCLUDES="${APT_INCLUDES},locales,keyboard-configuration,console-setup"
 fi
 
 # Add parted package, required to get partprobe utility
