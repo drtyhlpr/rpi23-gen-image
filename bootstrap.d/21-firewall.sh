@@ -11,11 +11,6 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
   mkdir -p "${ETC_DIR}/iptables"
   
   if ! [ "$RELEASE" = jessie ] ; then
-  	#setting slaves
-	#chroot_exec update-alternatives --verbose --install /usr/sbin/iptables iptables /usr/sbin/iptables-legacy 1 \
-	--slave /usr/sbin/iptables-save iptables-save /usr/sbin/iptables-legacy-save \
-    --slave /usr/sbin/iptables-restore iptables-restore /usr/sbin/iptables-legacy-restore
-    # make sure iptables-legacy,iptables-legacy-restore and iptables-legacy-save are the used alternatives
 	chroot_exec update-alternatives --verbose --set iptables /usr/sbin/iptables-legacy
   fi
   
