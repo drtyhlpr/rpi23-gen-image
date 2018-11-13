@@ -29,10 +29,15 @@ if  [ "$RELEASE" = "buster" ] ; then
 fi
 
 if [ "$ENABLE_NONFREE" = true ] ; then
-  netselect-apt --arch "$RELEASE_ARCH" --sources --nonfree  --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
+  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --nonfree  --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
 else
-  netselect-apt --arch "$RELEASE_ARCH" --sources --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
+  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
 fi
+
+#ipinfo=$(curl ipinfo.io | grep country )
+#grep -o '\"[^"]*\"' $ipinfo | tr -d '"'
+#grep -Po '"country":.*?[^\\]",' $(curl ipinfo.io | grep country )
+#sed -i "s,http:,https:,g" "${ETC_DIR}/apt/sources.list"
 
 # Upgrade package index and update all installed packages and changed dependencies
 chroot_exec apt-get -qq -y update
