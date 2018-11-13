@@ -191,16 +191,11 @@ APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup"
 
 # Packages required for bootstrapping
-REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo netselect-apt"
 MISSING_PACKAGES=""
-
-#autoselect best apt mirror
-REQUIRED_PACKAGES="${REQUIRED_PACKAGES} netselect-apt"
 
 # Packages installed for c/c++ build environment in chroot (keep empty)
 COMPILER_PACKAGES=""
-
-set +x
 
 #make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
 if [ -n "$SET_ARCH" ] ; then
@@ -298,6 +293,9 @@ else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
 fi
+
+#DEBUG off
+set +x
 
 # Check if the internal wireless interface is supported by the RPi model
 if [ "$ENABLE_WIRELESS" = true ] ; then
@@ -442,8 +440,6 @@ if [ "$(df --output=avail "${BUILDDIR}" | sed "1d")" -le "524288" ] ; then
   exit 1
 fi
 
-set -x
-
 # Call "cleanup" function on various signals and errors
 trap cleanup 0 1 2 3 6
 
@@ -524,9 +520,11 @@ if [ "$KERNEL_REDUCE" = true ] ; then
   KERNELSRC_CONFIG=false
 fi
 
+set -x
+
 # Execute bootstrap scripts
 for SCRIPT in bootstrap.d/*.sh; do
-  head -n 3 "$SCRIPT"
+  head -n 4 "$SCRIPT"
   . "$SCRIPT"
 done
 
