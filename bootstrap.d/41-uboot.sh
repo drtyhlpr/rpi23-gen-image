@@ -41,12 +41,12 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   printf "\n# boot u-boot kernel\nkernel=u-boot.bin\n" >> "${BOOT_DIR}/config.txt"
 
   # Install and setup U-Boot command file
+  # Set correct KERNEL_IMAGE in mkfile
+  sed -i "s/kernel7.img/$KERNEL_BIN_IMAGE/g" files/boot/uboot.mkimage
+  # Set correct DTB_FILE
+  sed -i "s/bcm2709-rpi-2-b.dtb/$DTB_FILE/g" files/boot/uboot.mkimage
   install_readonly files/boot/uboot.mkimage "${BOOT_DIR}/uboot.mkimage"
   printf "# Set the kernel boot command line\nsetenv bootargs \"earlyprintk ${CMDLINE}\"\n\n$(cat "${BOOT_DIR}"/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
-  #Set correkt KERNEL_IMAGE
-  sed -i "s/kernel7.img/$KERNEL_BIN_IMAGE/g" files/boot/uboot.mkimage
-  #Set correct DTB_FILE
-  sed -i "s/bcm2709-rpi-2-b.dtb/$DTB_FILE/g" files/boot/uboot.mkimage
 
   if [ "$ENABLE_INITRAMFS" = true ] ; then
     # Convert generated initramfs for U-Boot using mkimage
@@ -70,22 +70,24 @@ if [ "$ENABLE_UBOOT" = true ] ; then
       printf "\nbootz \${kernel_addr_r} - \${fdt_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
     fi
   fi
-
+  
   if [ "$SET_ARCH" = 64 ] ; then
     echo "Setting up config.txt to boot 64bit uboot"
-	printf \n# Tell u-boot a 64bit kernel is used\narm_64bit=1\n" >> "${BOOT_DIR}/config.txt"
-	printf \n# Device tree start addr\ndevice_tree_address=0x100\n" >> "${BOOT_DIR}/config.txt"
-	printf \n# Device tree stop  adrr\ndevice_tree_end=0x8000\n" >> "${BOOT_DIR}/config.txt"
-    #to config.txt
+	printf "\n# Tell u-boot a 64bit kernel is used\narm_64bit=1\n" >> "${BOOT_DIR}/config.txt"
+	printf "\n# Device tree start addr\ndevice_tree_address=0x100\n" >> "${BOOT_DIR}/config.txt"
+	printf "\n# Device tree stop  adrr\ndevice_tree_end=0x8000\n" >> "${BOOT_DIR}/config.txt"
   fi
 
   # Set mkfile to use the correct mach id
   if [ "$ENABLE_QEMU" = true ] ; then
     sed -i "s/^\(setenv machid \).*/\10x000008e0/" "${BOOT_DIR}/uboot.mkimage"
   fi
+  
+    # Set mkfile to use the correct dtb file
+  sed -i "s/^\(setenv dtbfile \).*/\1${DTB_FILE}/" "${BOOT_DIR}/uboot.mkimage"
 
   # Set mkfile to use kernel image
-  sed -i "s/^\(fatload mmc 0:1 \${kernel_addr_r} \).*/\1${KERNEL_IMAGE}/" "${BOOT_DIR}/uboot.mkimage"
+  sed  "s/^\(fatload mmc 0:1 \${kernel_addr_r} \).*/\1${KERNEL_IMAGE}/" "${BOOT_DIR}/uboot.mkimage"
 
   # Remove all leading blank lines
   sed -i "/./,\$!d" "${BOOT_DIR}/uboot.mkimage"

@@ -340,7 +340,7 @@ fi
 
 # Add device-tree-compiler required for building the U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
-  APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex"
+  APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex,bc"
 fi
 
 # Check if root SSH (v2) public key file exists
