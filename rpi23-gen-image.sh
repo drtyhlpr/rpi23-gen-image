@@ -209,23 +209,19 @@ if [ -n "$SET_ARCH" ] ; then
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm64}
     KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="Image"}
-    RELEASE_ARCH=${RELEASE_ARCH:=arm64}
-    CROSS_COMPILE=${CROSS_COMPILE:=aarch64-linux-gnu-}
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
 
     if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-      # RPI 3 serie specific settings
-      DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
-
+      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
+      RELEASE_ARCH=${RELEASE_ARCH:=arm64}
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
+      CROSS_COMPILE=${CROSS_COMPILE:=aarch64-linux-gnu-}
     else
       echo "error: At the moment Raspberry PI 3 and 3B+ are the only Models which support 64bit"
       exit 1
     fi
   fi
-  
+
   ##################################
   # 32 bit config
   ##################################
@@ -241,7 +237,6 @@ if [ -n "$SET_ARCH" ] ; then
       echo "Setting settings for bcm2835 Raspberry PI boards"
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
       RELEASE_ARCH=${RELEASE_ARCH:=armel}
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel.img}
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
@@ -254,19 +249,27 @@ if [ -n "$SET_ARCH" ] ; then
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
     fi
-
-    echo "Setting Raspberry PI $RPI_MODEL specific configuration"
+  fi
+#SET_ARCH not set
+else
+  echo "error: Please set '32' or '64' as value for SET_ARCH"
+  exit 1
+fi
 
     #Device specific configuration
+    echo "Select DTB-File"
     case "$RPI_MODEL" in
     0)
       DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
+      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
       ;;
     1)
       DTB_FILE=${DTB_FILE:=bcm2708-rpi-b.dtb}
+      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
       ;;
     1P)
       DTB_FILE=${DTB_FILE:=bcm2708-rpi-b-plus.dtb}
+      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
       ;;
     2)
       DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
@@ -274,25 +277,18 @@ if [ -n "$SET_ARCH" ] ; then
       ;;
     3)
       DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_32b_defconfig}
+      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
       ;;
     3P)
       DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_32b_defconfig}
+      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
       ;;
     *)
-      echo "error: Raspberry Pi model ${RPI_MODEL} is not supported!"
+      echo "error: Raspberry Pi model $RPI_MODEL is not supported!"
       exit 1
       ;;
     esac
-
-  #end 32 bit
-  fi
-#SET_ARCH not set
-else
-  echo "error: Please set '32' or '64' as value for SET_ARCH"
-  exit 1
-fi
+    echo "$DTB_FILE selected"
 
 #DEBUG off
 set +x
@@ -303,7 +299,7 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
     echo "error: The selected Raspberry Pi model has no internal wireless interface"
     exit 1
   else
-    echo "Raspberry Pi model"
+    echo "Raspberry Pi $RPI_MODEL has WIFI support"
   fi
 fi
 

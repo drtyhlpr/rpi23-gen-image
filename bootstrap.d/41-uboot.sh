@@ -40,6 +40,14 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   install_readonly "${R}/tmp/u-boot/u-boot.bin" "${BOOT_DIR}/u-boot.bin"
   printf "\n# boot u-boot kernel\nkernel=u-boot.bin\n" >> "${BOOT_DIR}/config.txt"
 
+  if [ "$SET_ARCH" = 64 ] ; then
+    #add arm_64bit=1
+    #device_tree_address=0x100
+    #device_tree_end=0x8000
+    #to config.txt
+  echo "Setting up config.txt to boot 64bit uboot"
+  fi
+
   # Install and setup U-Boot command file
   install_readonly files/boot/uboot.mkimage "${BOOT_DIR}/uboot.mkimage"
   printf "# Set the kernel boot command line\nsetenv bootargs \"earlyprintk ${CMDLINE}\"\n\n$(cat "${BOOT_DIR}"/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"

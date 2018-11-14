@@ -25,7 +25,7 @@ fi
 #rm files/apt/sources.list
 #netselect-apt does not know buster yet
 if  [ "$RELEASE" = "buster" ] ; then
-  RELEASE=${RELEASE:=testing}
+  RELEASE=testing
 fi
 
 if [ "$ENABLE_NONFREE" = true ] ; then
