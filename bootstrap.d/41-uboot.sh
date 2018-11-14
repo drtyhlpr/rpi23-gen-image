@@ -40,17 +40,13 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   install_readonly "${R}/tmp/u-boot/u-boot.bin" "${BOOT_DIR}/u-boot.bin"
   printf "\n# boot u-boot kernel\nkernel=u-boot.bin\n" >> "${BOOT_DIR}/config.txt"
 
-  if [ "$SET_ARCH" = 64 ] ; then
-    #add arm_64bit=1
-    #device_tree_address=0x100
-    #device_tree_end=0x8000
-    #to config.txt
-  echo "Setting up config.txt to boot 64bit uboot"
-  fi
-
   # Install and setup U-Boot command file
   install_readonly files/boot/uboot.mkimage "${BOOT_DIR}/uboot.mkimage"
   printf "# Set the kernel boot command line\nsetenv bootargs \"earlyprintk ${CMDLINE}\"\n\n$(cat "${BOOT_DIR}"/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
+  #Set correkt KERNEL_IMAGE
+  sed -i "s/kernel7.img/$KERNEL_BIN_IMAGE/g" files/boot/uboot.mkimage
+  #Set correct DTB_FILE
+  sed -i "s/bcm2709-rpi-2-b.dtb/$DTB_FILE/g" files/boot/uboot.mkimage
 
   if [ "$ENABLE_INITRAMFS" = true ] ; then
     # Convert generated initramfs for U-Boot using mkimage
@@ -75,8 +71,13 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     fi
   fi
 
-  # Set mkfile to use the correct dtb file
-  sed -i "s/^\(setenv dtbfile \).*/\1${DTB_FILE}/" "${BOOT_DIR}/uboot.mkimage"
+  if [ "$SET_ARCH" = 64 ] ; then
+    echo "Setting up config.txt to boot 64bit uboot"
+	printf \n# Tell u-boot a 64bit kernel is used\narm_64bit=1\n" >> "${BOOT_DIR}/config.txt"
+	printf \n# Device tree start addr\ndevice_tree_address=0x100\n" >> "${BOOT_DIR}/config.txt"
+	printf \n# Device tree stop  adrr\ndevice_tree_end=0x8000\n" >> "${BOOT_DIR}/config.txt"
+    #to config.txt
+  fi
 
   # Set mkfile to use the correct mach id
   if [ "$ENABLE_QEMU" = true ] ; then

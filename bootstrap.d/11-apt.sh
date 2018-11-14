@@ -25,13 +25,15 @@ fi
 #rm files/apt/sources.list
 #netselect-apt does not know buster yet
 if  [ "$RELEASE" = "buster" ] ; then
-  RELEASE=testing
+  RLS=testing
+else
+  RLS="$RELEASE"
 fi
 
 if [ "$ENABLE_NONFREE" = true ] ; then
-  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --nonfree  --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
+  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --nonfree  --outfile "${ETC_DIR}/apt/sources.list" -d "$RLS"
 else
-  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --outfile "${ETC_DIR}/apt/sources.list" -d "$RELEASE"
+  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --outfile "${ETC_DIR}/apt/sources.list" -d "$RLS"
 fi
 
 #ipinfo=$(curl ipinfo.io | grep country )
