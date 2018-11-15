@@ -19,21 +19,6 @@ if [ "$BUILD_KERNEL" = false ] ; then
 # BUILD_KERNEL=true
 else
   echo "No precompiled kernel repositories were added"
-fi 
-
-#autconfigure best apt server to not spam ftp.debian.org
-#rm files/apt/sources.list
-#netselect-apt does not know buster yet
-if  [ "$RELEASE" = "buster" ] ; then
-  RLS=testing
-else
-  RLS="$RELEASE"
-fi
-
-if [ "$ENABLE_NONFREE" = true ] ; then
-  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --nonfree  --outfile "${ETC_DIR}/apt/sources.list" -d "$RLS"
-else
-  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --outfile "${ETC_DIR}/apt/sources.list" -d "$RLS"
 fi
 
 #ipinfo=$(curl ipinfo.io | grep country )

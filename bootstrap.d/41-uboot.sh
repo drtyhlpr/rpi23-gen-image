@@ -73,6 +73,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   
   if [ "$SET_ARCH" = 64 ] ; then
     echo "Setting up config.txt to boot 64bit uboot"
+	printf "\n# Enable CPU 64 bit mode\narm_control=0x200\n" >> "${BOOT_DIR}/config.txt"
 	printf "\n# Tell u-boot a 64bit kernel is used\narm_64bit=1\n" >> "${BOOT_DIR}/config.txt"
 	printf "\n# Device tree start addr\ndevice_tree_address=0x100\n" >> "${BOOT_DIR}/config.txt"
 	printf "\n# Device tree stop  adrr\ndevice_tree_end=0x8000\n" >> "${BOOT_DIR}/config.txt"
