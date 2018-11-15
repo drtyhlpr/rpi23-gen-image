@@ -95,7 +95,7 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
 fi
 
 # Disable RPi3 Bluetooth and restore ttyAMA0 serial device
-if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]; then
+if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
   if [ "$ENABLE_CONSOLE" = true ] && [ "$ENABLE_UBOOT" = false ] ; then
     echo "dtoverlay=pi3-disable-bt" >> "${BOOT_DIR}/config.txt"
     echo "enable_uart=1" >> "${BOOT_DIR}/config.txt"

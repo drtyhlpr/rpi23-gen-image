@@ -315,9 +315,9 @@ if [ "$BUILD_KERNEL" = true ] ; then
     if [ "$RELEASE_ARCH" = "armhf" ]; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
     fi
-    if [ "$RELEASE_ARCH" = "arm64" ]; then
-      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
-    fi
+  fi
+  if [ "$RELEASE_ARCH" = "arm64" ]; then
+    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
   fi
 fi
 
@@ -457,7 +457,7 @@ if [ "$ENABLE_MINBASE" = true ] ; then
 fi
 
 # Add required locales packages
-if [ "$DEFLOCAL" != "en_US.UTF-8" ] ; then
+if [ "$DEFLOCAL" != "en_US.UTF-8" ] || ([ -n XKB_MODEL ] || [ -n XKB_LAYOUT ] ||  [ -n XKB_VARIANT ] ||  [ -n XKB_OPTIONS ]); then
   APT_INCLUDES="${APT_INCLUDES},locales,keyboard-configuration,console-setup"
 fi
 
@@ -473,7 +473,7 @@ fi
 
 # Add iptables IPv4/IPv6 package
 if [ "$ENABLE_IPTABLES" = true ] ; then
-  APT_INCLUDES="${APT_INCLUDES},iptables"
+  APT_INCLUDES="${APT_INCLUDES},iptables,iptables-persistent"
 fi
 
 # Add openssh server package
