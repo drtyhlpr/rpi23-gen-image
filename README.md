@@ -176,7 +176,7 @@ Install and enable OpenSSH service. The default configuration of the service doe
 Allow the installation of non-free Debian packages that do not comply with the DFSG. This is required to install closed-source firmware binary blobs.
 
 ##### `ENABLE_WIRELESS`=false
-Download and install the [closed-source firmware binary blob](https://github.com/RPi-Distro/firmware-nonfree/tree/master/brcm80211/brcm) that is required to run the internal wireless interface of the Raspberry Pi model `3`. This parameter is ignored if the specified `RPI_MODEL` is not `3`.
+Download and install the [closed-source firmware binary blob](https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm) that is required to run the internal wireless interface of the Raspberry Pi model `3`. This parameter is ignored if the specified `RPI_MODEL` is not `3`.
 
 ##### `ENABLE_RSYSLOG`=true
 If set to false, disable and uninstall rsyslog (so logs will be available only
@@ -199,6 +199,9 @@ Install Xorg open-source X Window System.
 
 ##### `ENABLE_WM`=""
 Install a user defined window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_WM` is used. The `rpi23-gen-image.sh` script has been tested with the following list of window managers: `blackbox`, `openbox`, `fluxbox`, `jwm`, `dwm`, `xfce4`, `awesome`.
+
+##### `ENABLE_SYSVINIT`=false
+Support for halt,init,poweroff,reboot,runlevel,shutdown,telinit commands
 
 ---
 

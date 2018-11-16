@@ -107,7 +107,7 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
   as_nobody wget -q -O "${temp_dir}/brcmfmac43455-sdio.bin" "${WLAN_FIRMWARE_URL}/brcmfmac43455-sdio.bin"
   as_nobody wget -q -O "${temp_dir}/brcmfmac43455-sdio.txt" "${WLAN_FIRMWARE_URL}/brcmfmac43455-sdio.txt"
   as_nobody wget -q -O "${temp_dir}/brcmfmac43455-sdio.clm_blob" "${WLAN_FIRMWARE_URL}/brcmfmac43455-sdio.clm_blob"
-  else
+  elif [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 0 ] ; then
   # Fetch firmware binary blob for RPI3
   as_nobody wget -q -O "${temp_dir}/brcmfmac43430-sdio.bin" "${WLAN_FIRMWARE_URL}/brcmfmac43430-sdio.bin"
   as_nobody wget -q -O "${temp_dir}/brcmfmac43430-sdio.txt" "${WLAN_FIRMWARE_URL}/brcmfmac43430-sdio.txt"
@@ -116,7 +116,7 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
   # Move downloaded firmware binary blob
   if [ "$RPI_MODEL" = 3P ] ; then
   mv "${temp_dir}/brcmfmac43455-sdio."* "${WLAN_FIRMWARE_DIR}/"
-  else
+  elif [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 0 ] ; then
   mv "${temp_dir}/brcmfmac43430-sdio."* "${WLAN_FIRMWARE_DIR}/"
   fi
   
@@ -127,7 +127,7 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
   if [ "$RPI_MODEL" = 3P ] ; then
   chown root:root "${WLAN_FIRMWARE_DIR}/brcmfmac43455-sdio."*
   chmod 600 "${WLAN_FIRMWARE_DIR}/brcmfmac43455-sdio."*  
-  else
+  elif [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 0 ] ; then
   chown root:root "${WLAN_FIRMWARE_DIR}/brcmfmac43430-sdio."*
   chmod 600 "${WLAN_FIRMWARE_DIR}/brcmfmac43430-sdio."*
   fi
