@@ -30,7 +30,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     else
       as_nobody -H git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}" linux
     fi
-    
+
     # Copy downloaded kernel sources
     cp -r "${temp_dir}/linux/"* "${R}/usr/src/linux/"
 
@@ -108,7 +108,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
             echo "CONFIG_CRYPTO_CBC=y"
             echo "CONFIG_CRYPTO_XTS=y"
             echo "CONFIG_CRYPTO_SHA512=y"
-            echo "CONFIG_CRYPTO_MANAGER=y"       
+            echo "CONFIG_CRYPTO_MANAGER=y"
           } >> "${KERNEL_DIR}"/.config
         fi
       fi
@@ -172,6 +172,11 @@ if [ "$BUILD_KERNEL" = true ] ; then
   if [ "$KERNEL_HEADERS" = true ] && [ "$KERNEL_REDUCE" = false ] ; then
     make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_HDR_PATH=../.. headers_install
   fi
+# make tar.gz kernel package - missing os bzw. modules
+#** ** **  WARNING  ** ** **
+#Your architecture did not define any architecture-dependent files
+#to be placed into the tarball. Please add those to ./scripts/package/buildtar .
+#  make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" targz-pkg
 
   # Prepare boot (firmware) directory
   mkdir "${BOOT_DIR}"
@@ -184,7 +189,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Prepare device tree directory
   mkdir "${BOOT_DIR}/overlays"
-  
+
   # Ensure the proper .dtb is located
   if [ "$KERNEL_ARCH" = "arm" ] ; then
     for dtb in "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/"*.dtb ; do

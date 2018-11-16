@@ -42,7 +42,7 @@ CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
 
 ## Supported parameters and settings
 #### APT settings:
-##### `APT_SERVER`="ftp.debian.org"
+##### `APT_SERVER`="ftp.debian.org/debian"
 Set Debian packages server address. Choose a server from the list of Debian worldwide [mirror sites](https://www.debian.org/mirror/list). Using a nearby server will probably speed-up all required downloads within the bootstrapping process.
 
 ##### `APT_PROXY`=""

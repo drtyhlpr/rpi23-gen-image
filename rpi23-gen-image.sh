@@ -206,14 +206,17 @@ else
   RLS="$RELEASE"
 fi
 
-rm "${ETC_DIR}/apt/sources.list"
+if [ -f "$(pwd)/files/apt/sources.list" ] ; then
+rm "$(pwd)/files/apt/sources.list"
+fi
 
 if [ "$ENABLE_NONFREE" = true ] ; then
-  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --nonfree  --outfile "${ETC_DIR}/apt/sources.list" -d "$RLS"
+  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --nonfree  --outfile "$(pwd)/files/apt/sources.list"  -d "$RLS"
 else
-  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --outfile "${ETC_DIR}/apt/sources.list" -d "$RLS"
+  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --outfile "$(pwd)/files/apt/sources.list" -d "$RLS"
 fi
-APT_SERVER=$(grep -m 1 http /etc/apt/sources.list | cut -d ' ' -f 2)
+APT_SERVER=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3)
+APT_SERVER=${APT_SERVER::-1}
 
 #make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
 if [ -n "$SET_ARCH" ] ; then

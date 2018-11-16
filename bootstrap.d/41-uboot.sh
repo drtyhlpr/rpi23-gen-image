@@ -40,13 +40,8 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   install_readonly "${R}/tmp/u-boot/u-boot.bin" "${BOOT_DIR}/u-boot.bin"
   printf "\n# boot u-boot kernel\nkernel=u-boot.bin\n" >> "${BOOT_DIR}/config.txt"
 
-  # Install and setup U-Boot command file
-  # Set correct KERNEL_IMAGE in mkfile
-  sed -i "s/kernel7.img/$KERNEL_BIN_IMAGE/g" files/boot/uboot.mkimage
-  # Set correct DTB_FILE
-  sed -i "s/bcm2709-rpi-2-b.dtb/$DTB_FILE/g" files/boot/uboot.mkimage
   install_readonly files/boot/uboot.mkimage "${BOOT_DIR}/uboot.mkimage"
-  printf "# Set the kernel boot command line\nsetenv bootargs \"earlyprintk ${CMDLINE}\"\n\n$(cat "${BOOT_DIR}"/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
+  printf "# Set the kernel boot command line\nsetenv bootargs \"earlyprintk ${CMDLINE}\"\n\n$(cat ${BOOT_DIR}/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
 
   if [ "$ENABLE_INITRAMFS" = true ] ; then
     # Convert generated initramfs for U-Boot using mkimage
@@ -56,8 +51,9 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     rm -f "${BOOT_DIR}/initramfs-${KERNEL_VERSION}"
 
     # Configure U-Boot to load generated initramfs
-    printf "# Set initramfs file\nsetenv initramfs initramfs-${KERNEL_VERSION}.uboot\n\n$(cat "${BOOT_DIR}"/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
-    printf "\nbootz \${kernel_addr_r} \${ramdisk_addr_r} \${fdt_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
+    printf "# Set initramfs file\nsetenv initramfs initramfs-${KERNEL_VERSION}.uboot\n\n$(cat ${BOOT_DIR}/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
+
+  fi
   else # ENABLE_INITRAMFS=false
     # Remove initramfs from U-Boot mkfile
     sed -i '/.*initramfs.*/d' "${BOOT_DIR}/uboot.mkimage"
@@ -70,25 +66,31 @@ if [ "$ENABLE_UBOOT" = true ] ; then
       printf "\nbootz \${kernel_addr_r} - \${fdt_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
     fi
   fi
-  
+
   if [ "$SET_ARCH" = 64 ] ; then
     echo "Setting up config.txt to boot 64bit uboot"
-	printf "\n# Enable CPU 64 bit mode\narm_control=0x200\n" >> "${BOOT_DIR}/config.txt"
-	printf "\n# Tell u-boot a 64bit kernel is used\narm_64bit=1\n" >> "${BOOT_DIR}/config.txt"
-	printf "\n# Device tree start addr\ndevice_tree_address=0x100\n" >> "${BOOT_DIR}/config.txt"
-	printf "\n# Device tree stop  adrr\ndevice_tree_end=0x8000\n" >> "${BOOT_DIR}/config.txt"
+
+    printf "\n# 64bit-mode" >> "${BOOT_DIR}/config.txt"
+    printf "\n# arm_control=0x200 is deprecated https://www.raspberrypi.org/documentation/configuration/config-txt/misc.md" >> "${BOOT_DIR}/config.txt"
+    printf "\narm_64bit=1" >> "${BOOT_DIR}/config.txt"
+    sed -i "s|bootz|booti|g" "${BOOT_DIR}/uboot.mkimage"
   fi
+
+  if [ "$ENABLE_UBOOTUSB" = true ] ; then
+    sed -i "s|mmc|usb|g" "${BOOT_DIR}/uboot.mkimage"
+  fi
+
 
   # Set mkfile to use the correct mach id
   if [ "$ENABLE_QEMU" = true ] ; then
     sed -i "s/^\(setenv machid \).*/\10x000008e0/" "${BOOT_DIR}/uboot.mkimage"
   fi
-  
+
     # Set mkfile to use the correct dtb file
   sed -i "s/^\(setenv dtbfile \).*/\1${DTB_FILE}/" "${BOOT_DIR}/uboot.mkimage"
 
   # Set mkfile to use kernel image
-  sed  "s/^\(fatload mmc 0:1 \${kernel_addr_r} \).*/\1${KERNEL_IMAGE}/" "${BOOT_DIR}/uboot.mkimage"
+  sed -i "s/^\(fatload mmc 0:1 \${kernel_addr_r} \).*/\1${KERNEL_IMAGE}/" "${BOOT_DIR}/uboot.mkimage"
 
   # Remove all leading blank lines
   sed -i "/./,\$!d" "${BOOT_DIR}/uboot.mkimage"
