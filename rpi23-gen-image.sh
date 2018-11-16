@@ -141,9 +141,10 @@ export ENABLE_MINBASE=${ENABLE_MINBASE:=false}
 export ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 export ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 export UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
+export ENABLE_UBOOTUSB=${ENABLE_UBOOTUSB=false}
 export ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 export FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
-export export ENABLE_HARDNET=${ENABLE_HARDNET:=false}
+export ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 export ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 export ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 export ENABLE_INITRAMFS=${ENABLE_INITRAMFS:=false}
@@ -362,6 +363,11 @@ fi
 # Add device-tree-compiler required for building the U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex,bc"
+else
+  if [ "$ENABLE_UBOOTUSB" = true ] ; then  
+    echo "error: Enabling UBOOTUSB requires u-boot to be enabled"
+	exit 1
+  fi
 fi
 
 # Check if root SSH (v2) public key file exists
