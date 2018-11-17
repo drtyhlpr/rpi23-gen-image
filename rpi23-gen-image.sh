@@ -330,7 +330,7 @@ fi
 
 # Add libncurses5 to enable kernel menuconfig
 if [ "$KERNEL_MENUCONFIG" = true ] ; then
-  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses5-dev"
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses-dev"
 fi
 
 # Add ccache compiler cache for (faster) kernel cross (re)compilation
@@ -388,7 +388,7 @@ if [ -n "$MISSING_PACKAGES" ] ; then
   echo "the following packages needed by this script are not installed:"
   echo "$MISSING_PACKAGES"
 
-  printf "\n\ndo you want to install the missing packages right now? [y/n] "
+  printf "\ndo you want to install the missing packages right now? [y/n] "
   read -r confirm
   [ "$confirm" != "y" ] && exit 1
 
@@ -708,8 +708,8 @@ ${TABLE_SECTORS},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show "$IMAGE_NAME-frmw.img")"
-  ROOT_LOOP="$(losetup -o 1M -f --show "$IMAGE_NAME-root.img")"
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show "$IMAGE_NAME"-frmw.img)"
+  ROOT_LOOP="$(losetup -o 1M -f --show "$IMAGE_NAME"-root.img)"
 else # ENABLE_SPLITFS=false
   dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count="${TABLE_SECTORS}"
   dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count=0 seek="${IMAGE_SECTORS}"
@@ -721,8 +721,8 @@ ${ROOT_OFFSET},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show "$IMAGE_NAME.img")"
-  ROOT_LOOP="$(losetup -o 65M -f --show "$IMAGE_NAME.img")"
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show "$IMAGE_NAME".img)"
+  ROOT_LOOP="$(losetup -o 65M -f --show "$IMAGE_NAME".img)"
 fi
 
 if [ "$ENABLE_CRYPTFS" = true ] ; then
