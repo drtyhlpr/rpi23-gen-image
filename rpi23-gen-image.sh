@@ -103,6 +103,7 @@ WLAN_FIRMWARE_URL=${WLAN_FIRMWARE_URL:=https://github.com/RPi-Distro/firmware-no
 COLLABORA_URL=${COLLABORA_URL:=https://repositories.collabora.co.uk/debian}
 FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
+VIDEOCORE_URL=${VIDEOCORE_URL=https://github.com/raspberrypi/userland}
 
 # Build directories
 BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
@@ -191,6 +192,8 @@ ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
 ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
+ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=true}
+VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
 FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
@@ -321,6 +324,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
   fi
 fi
 
+if [ "$ENABLE_VIDEOCORE" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cmake"
+fi
+
 # Add libncurses5 to enable kernel menuconfig
 if [ "$KERNEL_MENUCONFIG" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses5-dev"
@@ -410,6 +417,12 @@ fi
 # Check if specified UBOOTSRC_DIR directory exists
 if [ -n "$UBOOTSRC_DIR" ] && [ ! -d "$UBOOTSRC_DIR" ] ; then
   echo "error: '${UBOOTSRC_DIR}' specified directory not found (UBOOTSRC_DIR)!"
+  exit 1
+fi
+
+# Check if specified VIDEOCORESRC_DIR directory exists
+if [ -n "$VIDEOCORESRC_DIR" ] && [ ! -d "$VIDEOCORESRC_DIR" ] ; then
+  echo "error: '${VIDEOCORESRC_DIR}' specified directory not found (VIDEOCORESRC_DIR)!"
   exit 1
 fi
 
