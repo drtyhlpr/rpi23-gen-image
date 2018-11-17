@@ -73,11 +73,11 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     printf "\narm_64bit=1" >> "${BOOT_DIR}/config.txt"
     sed -i "s|bootz|booti|g" "${BOOT_DIR}/uboot.mkimage"
   fi
-
+  
+  # instead of sd, boot from usb device
   if [ "$ENABLE_UBOOTUSB" = true ] ; then
     sed -i "s|mmc|usb|g" "${BOOT_DIR}/uboot.mkimage"
   fi
-
 
   # Set mkfile to use the correct mach id
   if [ "$ENABLE_QEMU" = true ] ; then
