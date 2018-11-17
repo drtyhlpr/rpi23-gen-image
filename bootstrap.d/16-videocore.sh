@@ -28,6 +28,6 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   fi
 
   cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DARM64=ON -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_ASM_COMPILER=aarch64-linux-gnu-gcc -DVIDEOCORE_BUILD_DIR="${R}"/opt/vc
-  make -j $(nproc)
-  chroot_exec PATH=${PATH}:/opt/vc/bin
+  make -j "$(nproc)"
+  chroot_exec PATH="${PATH}":/opt/vc/bin
 fi

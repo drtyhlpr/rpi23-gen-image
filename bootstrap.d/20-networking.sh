@@ -89,14 +89,14 @@ if [ "$ENABLE_HARDNET" = true ] ; then
 fi
 
 # Enable time sync
-if [ "NET_NTP_1" != "" ] ; then
+if [ "$NET_NTP_1" != "" ] ; then
   chroot_exec systemctl enable systemd-timesyncd.service
 fi
 
 # Download the firmware binary blob required to use the RPi3 wireless interface
 if [ "$ENABLE_WIRELESS" = true ] ; then
-  if [ ! -d ${WLAN_FIRMWARE_DIR} ] ; then
-	mkdir -p ${WLAN_FIRMWARE_DIR}
+  if [ ! -d "${WLAN_FIRMWARE_DIR}" ] ; then
+	mkdir -p "${WLAN_FIRMWARE_DIR}"
   fi
 
   # Create temporary directory for firmware binary blob

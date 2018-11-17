@@ -89,30 +89,32 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
       # Set kernel configuration parameters to enable qemu emulation
       if [ "$ENABLE_QEMU" = true ] ; then
-        echo "CONFIG_FHANDLE=y" >> ${KERNEL_DIR}/.config
-        echo "CONFIG_LBDAF=y" >> ${KERNEL_DIR}/.config
+        echo "CONFIG_FHANDLE=y" >> "${KERNEL_DIR}"/.config
+        echo "CONFIG_LBDAF=y" >> "${KERNEL_DIR}"/.config
 
         if [ "$ENABLE_CRYPTFS" = true ] ; then
-          echo "CONFIG_EMBEDDED=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_EXPERT=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_DAX=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_MD=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_BLK_DEV_MD=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_MD_AUTODETECT=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_BLK_DEV_DM=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_BLK_DEV_DM_BUILTIN=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_DM_CRYPT=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_CRYPTO_BLKCIPHER=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_CRYPTO_CBC=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_CRYPTO_XTS=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_CRYPTO_SHA512=y" >> ${KERNEL_DIR}/.config
-          echo "CONFIG_CRYPTO_MANAGER=y" >> ${KERNEL_DIR}/.config
+          {
+            echo "CONFIG_EMBEDDED=y"
+            echo "CONFIG_EXPERT=y"
+            echo "CONFIG_DAX=y"
+            echo "CONFIG_MD=y"
+            echo "CONFIG_BLK_DEV_MD=y"
+            echo "CONFIG_MD_AUTODETECT=y"
+            echo "CONFIG_BLK_DEV_DM=y"
+            echo "CONFIG_BLK_DEV_DM_BUILTIN=y"
+            echo "CONFIG_DM_CRYPT=y"
+            echo "CONFIG_CRYPTO_BLKCIPHER=y"
+            echo "CONFIG_CRYPTO_CBC=y"
+            echo "CONFIG_CRYPTO_XTS=y"
+            echo "CONFIG_CRYPTO_SHA512=y"
+            echo "CONFIG_CRYPTO_MANAGER=y" 
+          } >> ${KERNEL_DIR}/.config
 	fi
       fi
 
       # Copy custom kernel configuration file
-      if [ ! -z "$KERNELSRC_USRCONFIG" ] ; then
-        cp $KERNELSRC_USRCONFIG ${KERNEL_DIR}/.config
+      if [ -n "$KERNELSRC_USRCONFIG" ] ; then
+        cp "$KERNELSRC_USRCONFIG" "${KERNEL_DIR}"/.config
       fi
 
       # Set kernel configuration parameters to their default values
@@ -134,11 +136,11 @@ if [ "$BUILD_KERNEL" = true ] ; then
     fi
 
     # Cross compile kernel and dtbs
-    make -C "${KERNEL_DIR}" -j${KERNEL_THREADS} ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" "${KERNEL_BIN_IMAGE}" dtbs
+    make -C "${KERNEL_DIR}" -j"${KERNEL_THREADS}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" "${KERNEL_BIN_IMAGE}" dtbs
 
     # Cross compile kernel modules
-    if [ $(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config") ] ; then
-      make -C "${KERNEL_DIR}" -j${KERNEL_THREADS} ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" modules
+    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
+      make -C "${KERNEL_DIR}" -j"${KERNEL_THREADS}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" modules
     fi
   fi
 
@@ -151,16 +153,16 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Install kernel modules
   if [ "$ENABLE_REDUCE" = true ] ; then
-    if [ $(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config") ] ; then
+    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=../../.. modules_install
     fi
   else
-    if [ $(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config") ] ; then
+    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH=../../.. modules_install
     fi
 
     # Install kernel firmware
-    if [ $(grep "^firmware_install:" "${KERNEL_DIR}/Makefile") ] ; then
+    if [ "$(grep "^firmware_install:" "${KERNEL_DIR}/Makefile")" ] ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_FW_PATH=../../../lib firmware_install
     fi
   fi
@@ -223,8 +225,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
     rm -fr "${KERNEL_DIR}"
   else
     # Prepare compiled kernel modules
-    if [ $(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config") ] ; then
-      if [ $(grep "^modules_prepare:" "${KERNEL_DIR}/Makefile") ] ; then
+    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
+      if [ "$(grep "^modules_prepare:" "${KERNEL_DIR}/Makefile")" ] ; then
         make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" modules_prepare
       fi
 
@@ -242,7 +244,7 @@ else # BUILD_KERNEL=false
   chroot_exec apt-get -qq -y install flash-kernel
 
   # Check if kernel installation was successful
-  VMLINUZ="$(ls -1 ${R}/boot/vmlinuz-* | sort | tail -n 1)"
+  VMLINUZ="$(ls -1 "${R}"/boot/vmlinuz-* | sort | tail -n 1)"
   if [ -z "$VMLINUZ" ] ; then
     echo "error: kernel installation failed! (/boot/vmlinuz-* not found)"
     cleanup
