@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Setup SSH settings and public keys
 #

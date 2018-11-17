@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Reduce system disk usage
 #

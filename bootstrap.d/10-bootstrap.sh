@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Debootstrap basic system
 #
@@ -8,7 +7,6 @@
 
 VARIANT=""
 COMPONENTS="main"
-EXCLUDES=""
 
 # Use non-free Debian packages if needed
 if [ "$ENABLE_NONFREE" = true ] ; then
@@ -20,13 +18,8 @@ if [ "$ENABLE_MINBASE" = true ] ; then
   VARIANT="--variant=minbase"
 fi
 
-# Exclude packages if required by Debian release
-if [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
-  EXCLUDES="--exclude=init,systemd-sysv"
-fi
-
 # Base debootstrap (unpack only)
-http_proxy=${APT_PROXY} debootstrap ${EXCLUDES} --arch="${RELEASE_ARCH}" --foreign ${VARIANT} --components="${COMPONENTS}" --include="${APT_INCLUDES}" "${RELEASE}" "${R}" "http://${APT_SERVER}"
+http_proxy=${APT_PROXY} debootstrap "${APT_EXCLUDES}" --arch="${RELEASE_ARCH}" --foreign ${VARIANT} --components="${COMPONENTS}" --include="${APT_INCLUDES}" "${RELEASE}" "${R}" "http://${APT_SERVER}"
 
 # Copy qemu emulator binary to chroot
 install -m 755 -o root -g root "${QEMU_BINARY}" "${R}${QEMU_BINARY}"

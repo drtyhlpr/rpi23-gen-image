@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Setup APT repositories
 #
@@ -20,11 +19,6 @@ if [ "$BUILD_KERNEL" = false ] ; then
 else
   echo "No precompiled kernel repositories were added"
 fi
-
-#ipinfo=$(curl ipinfo.io | grep country )
-#grep -o '\"[^"]*\"' $ipinfo | tr -d '"'
-#grep -Po '"country":.*?[^\\]",' $(curl ipinfo.io | grep country )
-#sed -i "s,http:,https:,g" "${ETC_DIR}/apt/sources.list"
 
 # Upgrade package index and update all installed packages and changed dependencies
 chroot_exec apt-get -qq -y update

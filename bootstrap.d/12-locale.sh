@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Setup Locales and keyboard settings
 #
@@ -11,7 +10,6 @@ echo "${TIMEZONE}" > "${ETC_DIR}/timezone"
 chroot_exec dpkg-reconfigure -f noninteractive tzdata
 
 # Install and setup default locale and keyboard configuration
-
 if [ "$(echo "$APT_INCLUDES" | grep ",locales")" ] ; then
   # Set locale choice in debconf db, even though dpkg-reconfigure ignores and overwrites them due to some bug
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=684134 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=685957

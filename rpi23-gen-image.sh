@@ -49,136 +49,137 @@ export RELEASE=${RELEASE:=buster}
 export KERNEL_BRANCH=${KERNEL_BRANCH:=""}
 
 # URLs
-export KERNEL_URL=${KERNEL_URL:=https://github.com/raspberrypi/linux}
-export FIRMWARE_URL=${FIRMWARE_URL:=https://github.com/raspberrypi/firmware/raw/master/boot}
-export WLAN_FIRMWARE_URL=${WLAN_FIRMWARE_URL:=https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm}
-export FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
-export UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
-export VIDEOCORE_URL=${VIDEOCORE_URL=https://github.com/raspberrypi/userland}
-
-# Firmware directory: Blank if download from github
-export RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
+KERNEL_URL=${KERNEL_URL:=https://github.com/raspberrypi/linux}
+FIRMWARE_URL=${FIRMWARE_URL:=https://github.com/raspberrypi/firmware/raw/master/boot}
+WLAN_FIRMWARE_URL=${WLAN_FIRMWARE_URL:=https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm}
+COLLABORA_URL=${COLLABORA_URL:=https://repositories.collabora.co.uk/debian}
+FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
+UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
+VIDEOCORE_URL=${VIDEOCORE_URL=https://github.com/raspberrypi/userland}
 
 # Build directories
-export BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
-export BUILDDIR="${BASEDIR}/build"
+BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
+BUILDDIR="${BASEDIR}/build"
 
 # Prepare date string for default image file name
 DATE="$(date +%Y-%m-%d)"
 if [ -z "$KERNEL_BRANCH" ] ; then
-  export IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
+  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
 else
-  export IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
+  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
 fi
 
 # Chroot directories
-export R="${BUILDDIR}/chroot"
-export ETC_DIR="${R}/etc"
-export LIB_DIR="${R}/lib"
-export BOOT_DIR="${R}/boot/firmware"
-export KERNEL_DIR="${R}/usr/src/linux"
-export WLAN_FIRMWARE_DIR="${R}/lib/firmware/brcm"
+R="${BUILDDIR}/chroot"
+ETC_DIR="${R}/etc"
+LIB_DIR="${R}/lib"
+BOOT_DIR="${R}/boot/firmware"
+KERNEL_DIR="${R}/usr/src/linux"
+WLAN_FIRMWARE_DIR="${R}/lib/firmware/brcm"
 
+# Firmware directory: Blank if download from github
+RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
 # General settings
-export SET_ARCH=${SET_ARCH:=32}
-export HOSTNAME=${HOSTNAME:=rpi${RPI_MODEL}-${RELEASE}}
-export PASSWORD=${PASSWORD:=raspberry}
-export USER_PASSWORD=${USER_PASSWORD:=raspberry}
-export DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
-export TIMEZONE=${TIMEZONE:="Europe/Berlin"}
-export EXPANDROOT=${EXPANDROOT:=true}
+SET_ARCH=${SET_ARCH:=32}
+HOSTNAME=${HOSTNAME:=rpi${RPI_MODEL}-${RELEASE}}
+PASSWORD=${PASSWORD:=raspberry}
+USER_PASSWORD=${USER_PASSWORD:=raspberry}
+DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
+TIMEZONE=${TIMEZONE:="Europe/Berlin"}
+EXPANDROOT=${EXPANDROOT:=true}
 
 # Keyboard settings
-export XKB_MODEL=${XKB_MODEL:=""}
-export XKB_LAYOUT=${XKB_LAYOUT:=""}
-export XKB_VARIANT=${XKB_VARIANT:=""}
-export XKB_OPTIONS=${XKB_OPTIONS:=""}
+XKB_MODEL=${XKB_MODEL:=""}
+XKB_LAYOUT=${XKB_LAYOUT:=""}
+XKB_VARIANT=${XKB_VARIANT:=""}
+XKB_OPTIONS=${XKB_OPTIONS:=""}
 
 # Network settings (DHCP)
-export ENABLE_DHCP=${ENABLE_DHCP:=true}
+ENABLE_DHCP=${ENABLE_DHCP:=true}
 
 # Network settings (static)
-export NET_ADDRESS=${NET_ADDRESS:=""}
-export NET_GATEWAY=${NET_GATEWAY:=""}
-export NET_DNS_1=${NET_DNS_1:=""}
-export NET_DNS_2=${NET_DNS_2:=""}
-export NET_DNS_DOMAINS=${NET_DNS_DOMAINS:=""}
-export NET_NTP_1=${NET_NTP_1:=""}
-export NET_NTP_2=${NET_NTP_2:=""}
+NET_ADDRESS=${NET_ADDRESS:=""}
+NET_GATEWAY=${NET_GATEWAY:=""}
+NET_DNS_1=${NET_DNS_1:=""}
+NET_DNS_2=${NET_DNS_2:=""}
+NET_DNS_DOMAINS=${NET_DNS_DOMAINS:=""}
+NET_NTP_1=${NET_NTP_1:=""}
+NET_NTP_2=${NET_NTP_2:=""}
 
 # APT settings
-export APT_PROXY=${APT_PROXY:=""}
-export APT_SERVER=${APT_SERVER:="ftp.debian.org"}
+APT_PROXY=${APT_PROXY:=""}
+APT_SERVER=${APT_SERVER:="ftp.debian.org"}
 
 # Feature settings
-export ENABLE_CONSOLE=${ENABLE_CONSOLE:=true}
-export ENABLE_I2C=${ENABLE_I2C:=false}
-export ENABLE_SPI=${ENABLE_SPI:=false}
-export ENABLE_IPV6=${ENABLE_IPV6:=true}
-export ENABLE_SSHD=${ENABLE_SSHD:=true}
-export ENABLE_NONFREE=${ENABLE_NONFREE:=false}
-export ENABLE_WIRELESS=${ENABLE_WIRELESS:=false}
-export ENABLE_SOUND=${ENABLE_SOUND:=true}
-export ENABLE_DBUS=${ENABLE_DBUS:=true}
-export ENABLE_HWRANDOM=${ENABLE_HWRANDOM:=true}
-export ENABLE_MINGPU=${ENABLE_MINGPU:=false}
-export ENABLE_XORG=${ENABLE_XORG:=false}
-export ENABLE_WM=${ENABLE_WM:=""}
-export ENABLE_RSYSLOG=${ENABLE_RSYSLOG:=true}
-export ENABLE_USER=${ENABLE_USER:=true}
-export USER_NAME=${USER_NAME:="pi"}
-export ENABLE_ROOT=${ENABLE_ROOT:=false}
-export ENABLE_QEMU=${ENABLE_QEMU:=false}
+ENABLE_CONSOLE=${ENABLE_CONSOLE:=true}
+ENABLE_I2C=${ENABLE_I2C:=false}
+ENABLE_SPI=${ENABLE_SPI:=false}
+ENABLE_IPV6=${ENABLE_IPV6:=true}
+ENABLE_SSHD=${ENABLE_SSHD:=true}
+ENABLE_NONFREE=${ENABLE_NONFREE:=false}
+ENABLE_WIRELESS=${ENABLE_WIRELESS:=false}
+ENABLE_SOUND=${ENABLE_SOUND:=true}
+ENABLE_DBUS=${ENABLE_DBUS:=true}
+ENABLE_HWRANDOM=${ENABLE_HWRANDOM:=true}
+ENABLE_MINGPU=${ENABLE_MINGPU:=false}
+ENABLE_XORG=${ENABLE_XORG:=false}
+ENABLE_WM=${ENABLE_WM:=""}
+ENABLE_RSYSLOG=${ENABLE_RSYSLOG:=true}
+ENABLE_USER=${ENABLE_USER:=true}
+USER_NAME=${USER_NAME:="pi"}
+ENABLE_ROOT=${ENABLE_ROOT:=false}
+ENABLE_QEMU=${ENABLE_QEMU:=false}
+ENABLE_SYSVINIT=${ENABLE_SYSVINIT:=false}
 
 # SSH settings
-export SSH_ENABLE_ROOT=${SSH_ENABLE_ROOT:=false}
-export SSH_DISABLE_PASSWORD_AUTH=${SSH_DISABLE_PASSWORD_AUTH:=false}
-export SSH_LIMIT_USERS=${SSH_LIMIT_USERS:=false}
-export SSH_ROOT_PUB_KEY=${SSH_ROOT_PUB_KEY:=""}
-export SSH_USER_PUB_KEY=${SSH_USER_PUB_KEY:=""}
+SSH_ENABLE_ROOT=${SSH_ENABLE_ROOT:=false}
+SSH_DISABLE_PASSWORD_AUTH=${SSH_DISABLE_PASSWORD_AUTH:=false}
+SSH_LIMIT_USERS=${SSH_LIMIT_USERS:=false}
+SSH_ROOT_PUB_KEY=${SSH_ROOT_PUB_KEY:=""}
+SSH_USER_PUB_KEY=${SSH_USER_PUB_KEY:=""}
 
 # Advanced settings
-export ENABLE_MINBASE=${ENABLE_MINBASE:=false}
-export ENABLE_REDUCE=${ENABLE_REDUCE:=false}
-export ENABLE_UBOOT=${ENABLE_UBOOT:=false}
-export UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
-export ENABLE_UBOOTUSB=${ENABLE_UBOOTUSB=false}
-export ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
-export ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=true}
-export VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
-export FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
-export ENABLE_HARDNET=${ENABLE_HARDNET:=false}
-export ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
-export ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
-export ENABLE_INITRAMFS=${ENABLE_INITRAMFS:=false}
-export ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
-export DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS:=}
+ENABLE_MINBASE=${ENABLE_MINBASE:=false}
+ENABLE_REDUCE=${ENABLE_REDUCE:=false}
+ENABLE_UBOOT=${ENABLE_UBOOT:=false}
+UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
+ENABLE_UBOOTUSB=${ENABLE_UBOOTUSB=false}
+ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
+ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=true}
+VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
+FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
+ENABLE_HARDNET=${ENABLE_HARDNET:=false}
+ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
+ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
+ENABLE_INITRAMFS=${ENABLE_INITRAMFS:=false}
+ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
+DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS:=}
 
 # Kernel compilation settings
-export BUILD_KERNEL=${BUILD_KERNEL:=true}
-export KERNEL_REDUCE=${KERNEL_REDUCE:=false}
-export KERNEL_THREADS=${KERNEL_THREADS:=1}
-export KERNEL_HEADERS=${KERNEL_HEADERS:=true}
-export KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
-export KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
-export KERNEL_OLDDEFCONFIG=${KERNEL_OLDDEFCONFIG:=false}
-export KERNEL_CCACHE=${KERNEL_CCACHE:=false}
+BUILD_KERNEL=${BUILD_KERNEL:=true}
+KERNEL_REDUCE=${KERNEL_REDUCE:=false}
+KERNEL_THREADS=${KERNEL_THREADS:=1}
+KERNEL_HEADERS=${KERNEL_HEADERS:=true}
+KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
+KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
+KERNEL_OLDDEFCONFIG=${KERNEL_OLDDEFCONFIG:=false}
+KERNEL_CCACHE=${KERNEL_CCACHE:=false}
 
 # Kernel compilation from source directory settings
-export KERNELSRC_DIR=${KERNELSRC_DIR:=""}
-export KERNELSRC_CLEAN=${KERNELSRC_CLEAN:=false}
-export KERNELSRC_CONFIG=${KERNELSRC_CONFIG:=true}
-export KERNELSRC_PREBUILT=${KERNELSRC_PREBUILT:=false}
+KERNELSRC_DIR=${KERNELSRC_DIR:=""}
+KERNELSRC_CLEAN=${KERNELSRC_CLEAN:=false}
+KERNELSRC_CONFIG=${KERNELSRC_CONFIG:=true}
+KERNELSRC_PREBUILT=${KERNELSRC_PREBUILT:=false}
 
 # Reduce disk usage settings
-export REDUCE_APT=${REDUCE_APT:=true}
-export REDUCE_DOC=${REDUCE_DOC:=true}
-export REDUCE_MAN=${REDUCE_MAN:=true}
-export REDUCE_VIM=${REDUCE_VIM:=false}
-export REDUCE_BASH=${REDUCE_BASH:=false}
-export REDUCE_HWDB=${REDUCE_HWDB:=true}
-export REDUCE_SSHD=${REDUCE_SSHD:=true}
-export REDUCE_LOCALE=${REDUCE_LOCALE:=true}
+REDUCE_APT=${REDUCE_APT:=true}
+REDUCE_DOC=${REDUCE_DOC:=true}
+REDUCE_MAN=${REDUCE_MAN:=true}
+REDUCE_VIM=${REDUCE_VIM:=false}
+REDUCE_BASH=${REDUCE_BASH:=false}
+REDUCE_HWDB=${REDUCE_HWDB:=true}
+REDUCE_SSHD=${REDUCE_SSHD:=true}
+REDUCE_LOCALE=${REDUCE_LOCALE:=true}
 
 # Encrypted filesystem settings
 ENABLE_CRYPTFS=${ENABLE_CRYPTFS:=false}
@@ -191,16 +192,20 @@ CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required in the chroot build environment
-export APT_INCLUDES=${APT_INCLUDES:=""}
+APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup"
 
 # Packages required for bootstrapping
-export REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo netselect-apt"
-export MISSING_PACKAGES=""
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo netselect-apt"
+MISSING_PACKAGES=""
 
 # Packages installed for c/c++ build environment in chroot (keep empty)
-export COMPILER_PACKAGES=""
+COMPILER_PACKAGES=""
 
+#ipinfo=$(curl ipinfo.io | grep country )
+#grep -o '\"[^"]*\"' $ipinfo | tr -d '"'
+#grep -Po '"country":.*?[^\\]",' $(curl ipinfo.io | grep country )
+#sed -i "s,http:,https:,g" "${ETC_DIR}/apt/sources.list"
 #autconfigure best apt server to not spam ftp.debian.org
 #rm files/apt/sources.list
 #netselect-apt does not know buster yet
@@ -219,6 +224,8 @@ if [ "$ENABLE_NONFREE" = true ] ; then
 else
   netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --outfile "$(pwd)/files/apt/sources.list" -d "$RLS"
 fi
+
+#sed and cut the result string so we can use it as APT_SERVER
 APT_SERVER=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3)
 APT_SERVER=${APT_SERVER::-1}
 
@@ -395,7 +402,7 @@ fi
 
 # Check if all required packages are installed on the build system
 for package in $REQUIRED_PACKAGES ; do
-  if [ "$(dpkg-query -W -f='${Status}' "$package")" != "install ok installed" ] ; then
+  if [ "$(dpkg-query -W -f='${Status}' $package)" != "install ok installed" ] ; then
     MISSING_PACKAGES="${MISSING_PACKAGES} $package"
   fi
 done
@@ -475,6 +482,8 @@ if [ "$(df --output=avail "${BUILDDIR}" | sed "1d")" -le "524288" ] ; then
   echo "error: ${BUILDDIR} not enough space left to generate the output image!"
   exit 1
 fi
+
+set -x
 
 # Call "cleanup" function on various signals and errors
 trap cleanup 0 1 2 3 6
@@ -556,11 +565,19 @@ if [ "$KERNEL_REDUCE" = true ] ; then
   KERNELSRC_CONFIG=false
 fi
 
-set -x
+# Configure qemu compatible kernel
+if [ "$ENABLE_QEMU" = true ] ; then
+  DTB_FILE=vexpress-v2p-ca15_a7.dtb
+  UBOOT_CONFIG=vexpress_ca15_tc2_defconfig
+  KERNEL_DEFCONFIG="vexpress_defconfig"
+  if [ "$KERNEL_MENUCONFIG" = false ] ; then
+    KERNEL_OLDDEFCONFIG=true
+  fi
+fi
 
 # Execute bootstrap scripts
 for SCRIPT in bootstrap.d/*.sh; do
-  head -n 4 "$SCRIPT"
+  head -n 3 "$SCRIPT"
   . "$SCRIPT"
 done
 
@@ -620,14 +637,6 @@ rm -f "${R}/vmlinuz"
 rm -f "${R}${QEMU_BINARY}"
 
 if [ "$ENABLE_QEMU" = true ] ; then
-  # Configure qemu compatible kernel
-  DTB_FILE=vexpress-v2p-ca15_a7.dtb
-  UBOOT_CONFIG=vexpress_ca15_tc2_defconfig
-  KERNEL_DEFCONFIG="vexpress_defconfig"
-  if [ "$KERNEL_MENUCONFIG" = false ] ; then
-    KERNEL_OLDDEFCONFIG=true
-  fi
-  
   # Setup QEMU directory
   mkdir "${BASEDIR}/qemu"
 
@@ -700,12 +709,12 @@ if [ "$ENABLE_SPLITFS" = true ] ; then
 
   # Write firmware/boot partition tables
   sfdisk -q -L -uS -f "$IMAGE_NAME-frmw.img" 2> /dev/null <<EOM
-"${TABLE_SECTORS}","${FRMW_SECTORS}",c,*
+${TABLE_SECTORS},${FRMW_SECTORS},c,*
 EOM
 
   # Write root partition table
   sfdisk -q -L -uS -f "$IMAGE_NAME-root.img" 2> /dev/null <<EOM
-"${TABLE_SECTORS}","${ROOT_SECTORS}",83
+${TABLE_SECTORS},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
@@ -717,8 +726,8 @@ else # ENABLE_SPLITFS=false
 
   # Write partition table
   sfdisk -q -L -uS -f "$IMAGE_NAME.img" 2> /dev/null <<EOM
-"${TABLE_SECTORS}","${FRMW_SECTORS}",c,*
-"${ROOT_OFFSET}","${ROOT_SECTORS}",83
+${TABLE_SECTORS},${FRMW_SECTORS},c,*
+${ROOT_OFFSET},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
@@ -733,7 +742,7 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   # Setup password keyfile
   touch .password
   chmod 600 .password
-  echo -n "${CRYPTFS_PASSWORD}" > .password
+  echo -n ${CRYPTFS_PASSWORD} > .password
 
   # Initialize encrypted partition
   echo "YES" | cryptsetup luksFormat "${ROOT_LOOP}" -c "${CRYPTFS_CIPHER}" -s "${CRYPTFS_XTSKEYSIZE}" .password

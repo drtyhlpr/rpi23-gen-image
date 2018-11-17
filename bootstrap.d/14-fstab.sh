@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Setup fstab and initramfs
 #
@@ -63,4 +62,3 @@ if [ "$BUILD_KERNEL" = true ] && [ "$ENABLE_INITRAMFS" = true ] ; then
     chroot_exec mkinitramfs -o "/boot/firmware/initramfs-${KERNEL_VERSION}" "${KERNEL_VERSION}"
   fi
 fi
-

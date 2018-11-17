@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Build and Setup fbturbo Xorg driver
 #

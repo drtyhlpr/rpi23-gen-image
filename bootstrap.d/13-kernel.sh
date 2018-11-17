@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Build and Setup RPi2/3 Kernel
 #
@@ -109,7 +108,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
             echo "CONFIG_CRYPTO_XTS=y"
             echo "CONFIG_CRYPTO_SHA512=y"
             echo "CONFIG_CRYPTO_MANAGER=y"
-          } >> "${KERNEL_DIR}"/.config
+          } >> ${KERNEL_DIR}/.config
         fi
       fi
 
@@ -241,7 +240,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
       chroot_exec ln -sf /usr/src/linux "/lib/modules/${KERNEL_VERSION}/source"
     fi
   fi
-elif [ "$BUILD_KERNEL" = false ] ; then
+
+else # BUILD_KERNEL=false
   echo " Install precompiled kernel..."
   echo "error: not implemented"
   # Check if kernel installation was successful

@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Setup RPi2/3 config and cmdline
 #
@@ -122,7 +121,7 @@ install_readonly files/modules/rpi2.conf "${R}/lib/modules-load.d/rpi2.conf"
 
 # Load hardware random module at boot
 if [ "$ENABLE_HWRANDOM" = true ] && [ "$BUILD_KERNEL" = false ] ; then
-   sed -i "s/^# bcm2708_rng/bcm2708_rng/" "${R}/lib/modules-load.d/rpi2.conf"
+  sed -i "s/^# bcm2708_rng/bcm2708_rng/" "${R}/lib/modules-load.d/rpi2.conf"
 fi
 
 # Load sound module at boot
@@ -159,4 +158,3 @@ install_readonly files/modules/raspi-blacklist.conf "${ETC_DIR}/modprobe.d/raspi
 
 # Install sysctl.d configuration files
 install_readonly files/sysctl.d/81-rpi-vm.conf "${ETC_DIR}/sysctl.d/81-rpi-vm.conf"
-

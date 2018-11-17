@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Build and Setup U-Boot
 #
@@ -40,6 +39,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   install_readonly "${R}/tmp/u-boot/u-boot.bin" "${BOOT_DIR}/u-boot.bin"
   printf "\n# boot u-boot kernel\nkernel=u-boot.bin\n" >> "${BOOT_DIR}/config.txt"
 
+  # Install and setup U-Boot command file
   install_readonly files/boot/uboot.mkimage "${BOOT_DIR}/uboot.mkimage"
   printf "# Set the kernel boot command line\nsetenv bootargs \"earlyprintk ${CMDLINE}\"\n\n$(cat ${BOOT_DIR}/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
 
@@ -58,9 +58,9 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     sed -i '/.*initramfs.*/d' "${BOOT_DIR}/uboot.mkimage"
 
     if [ "$BUILD_KERNEL" = false ] ; then
-        # Remove dtbfile from U-Boot mkfile
-        sed -i '/.*dtbfile.*/d' "${BOOT_DIR}/uboot.mkimage"
-        printf "\nbootz \${kernel_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
+      # Remove dtbfile from U-Boot mkfile
+      sed -i '/.*dtbfile.*/d' "${BOOT_DIR}/uboot.mkimage"
+      printf "\nbootz \${kernel_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
     else
       printf "\nbootz \${kernel_addr_r} - \${fdt_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
     fi
@@ -80,13 +80,13 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     sed -i "s|mmc|usb|g" "${BOOT_DIR}/uboot.mkimage"
   fi
 
+  # Set mkfile to use the correct dtb file
+  sed -i "s/^\(setenv dtbfile \).*/\1${DTB_FILE}/" "${BOOT_DIR}/uboot.mkimage"
+
   # Set mkfile to use the correct mach id
   if [ "$ENABLE_QEMU" = true ] ; then
     sed -i "s/^\(setenv machid \).*/\10x000008e0/" "${BOOT_DIR}/uboot.mkimage"
   fi
-
-    # Set mkfile to use the correct dtb file
-  sed -i "s/^\(setenv dtbfile \).*/\1${DTB_FILE}/" "${BOOT_DIR}/uboot.mkimage"
 
   # Set mkfile to use kernel image
   sed -i "s/^\(fatload mmc 0:1 \${kernel_addr_r} \).*/\1${KERNEL_IMAGE}/" "${BOOT_DIR}/uboot.mkimage"
