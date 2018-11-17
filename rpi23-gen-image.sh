@@ -54,6 +54,7 @@ export FIRMWARE_URL=${FIRMWARE_URL:=https://github.com/raspberrypi/firmware/raw/
 export WLAN_FIRMWARE_URL=${WLAN_FIRMWARE_URL:=https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm}
 export FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 export UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
+export VIDEOCORE_URL=${VIDEOCORE_URL=https://github.com/raspberrypi/userland}
 
 # Firmware directory: Blank if download from github
 export RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
@@ -143,6 +144,8 @@ export ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 export UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
 export ENABLE_UBOOTUSB=${ENABLE_UBOOTUSB=false}
 export ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
+export ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=true}
+export VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
 export FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
 export ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 export ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
@@ -333,6 +336,10 @@ if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
   fi
 fi
 
+if [ "$ENABLE_VIDEOCORE" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cmake"
+fi
+
 # Add libncurses5 to enable kernel menuconfig
 if [ "$KERNEL_MENUCONFIG" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses-dev"
@@ -427,6 +434,12 @@ fi
 # Check if specified UBOOTSRC_DIR directory exists
 if [ -n "$UBOOTSRC_DIR" ] && [ ! -d "$UBOOTSRC_DIR" ] ; then
   echo "error: '${UBOOTSRC_DIR}' specified directory not found (UBOOTSRC_DIR)!"
+  exit 1
+fi
+
+# Check if specified VIDEOCORESRC_DIR directory exists
+if [ -n "$VIDEOCORESRC_DIR" ] && [ ! -d "$VIDEOCORESRC_DIR" ] ; then
+  echo "error: '${VIDEOCORESRC_DIR}' specified directory not found (VIDEOCORESRC_DIR)!"
   exit 1
 fi
 
