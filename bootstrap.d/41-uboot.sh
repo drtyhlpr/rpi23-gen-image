@@ -52,8 +52,6 @@ if [ "$ENABLE_UBOOT" = true ] ; then
 
     # Configure U-Boot to load generated initramfs
     printf "# Set initramfs file\nsetenv initramfs initramfs-${KERNEL_VERSION}.uboot\n\n$(cat ${BOOT_DIR}/uboot.mkimage)" > "${BOOT_DIR}/uboot.mkimage"
-
-  fi
   else # ENABLE_INITRAMFS=false
     # Remove initramfs from U-Boot mkfile
     sed -i '/.*initramfs.*/d' "${BOOT_DIR}/uboot.mkimage"
@@ -101,4 +99,3 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   # Remove U-Boot sources
   rm -fr "${R}/tmp/u-boot"
 fi
-

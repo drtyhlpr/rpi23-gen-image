@@ -62,6 +62,7 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
       CMDLINE=$(echo "${CMDLINE}" | sed "s/sda2/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/sda2:${CRYPTFS_MAPPING}/")
     else
       CMDLINE=$(echo "${CMDLINE}" | sed "s/mmcblk0p2/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/mmcblk0p2:${CRYPTFS_MAPPING}/")
+    fi
   fi
 fi
 
