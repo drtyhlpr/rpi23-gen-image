@@ -335,7 +335,7 @@ fi
 
 # Add libncurses5 to enable kernel menuconfig
 if [ "$KERNEL_MENUCONFIG" = true ] ; then
-  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses5-dev"
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses-dev"
 fi
 
 # Add ccache compiler cache for (faster) kernel cross (re)compilation
