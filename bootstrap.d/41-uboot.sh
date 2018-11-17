@@ -32,7 +32,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   fi
 
   # Build and install U-Boot inside chroot
-  chroot_exec make -j${KERNEL_THREADS} -C /tmp/u-boot/ ${UBOOT_CONFIG} all
+  chroot_exec make -j"${KERNEL_THREADS}" -C /tmp/u-boot/ "${UBOOT_CONFIG}" all
 
   # Copy compiled bootloader binary and set config.txt to load it
   install_exec "${R}/tmp/u-boot/tools/mkimage" "${R}/usr/sbin/mkimage"
