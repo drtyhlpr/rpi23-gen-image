@@ -66,6 +66,20 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     fi
   fi
 
+  if [ "$SET_ARCH" = 64 ] ; then
+    echo "Setting up config.txt to boot 64bit uboot"
+
+    printf "\n# 64bit-mode" >> "${BOOT_DIR}/config.txt"
+    printf "\n# arm_control=0x200 is deprecated https://www.raspberrypi.org/documentation/configuration/config-txt/misc.md" >> "${BOOT_DIR}/config.txt"
+    printf "\narm_64bit=1" >> "${BOOT_DIR}/config.txt"
+    sed -i "s|bootz|booti|g" "${BOOT_DIR}/uboot.mkimage"
+  fi
+  
+  # instead of sd, boot from usb device
+  if [ "$ENABLE_UBOOTUSB" = true ] ; then
+    sed -i "s|mmc|usb|g" "${BOOT_DIR}/uboot.mkimage"
+  fi
+
   # Set mkfile to use the correct dtb file
   sed -i "s/^\(setenv dtbfile \).*/\1${DTB_FILE}/" "${BOOT_DIR}/uboot.mkimage"
 
