@@ -13,7 +13,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
   # Copy existing kernel sources into chroot directory
   if [ -n "$KERNELSRC_DIR" ] && [ -d "$KERNELSRC_DIR" ] ; then
     # Copy kernel sources and include hidden files
-    cp -r "${KERNELSRC_DIR}/". "${R}/usr/src/linux"
+    cp -r "${KERNELSRC_DIR}/". "${KERNEL_DIR}"
 
     # Clean the kernel sources
     if [ "$KERNELSRC_CLEAN" = true ] && [ "$KERNELSRC_PREBUILT" = false ] ; then
@@ -31,7 +31,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     fi
 
     # Copy downloaded kernel sources
-    cp -r "${temp_dir}/linux/"* "${R}/usr/src/linux/"
+    cp -r "${temp_dir}/linux/"* "${KERNEL_DIR}"
 
     # Remove temporary directory for kernel sources
     rm -fr "${temp_dir}"
@@ -84,7 +84,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     fi
 	
 	#Switch to KERNELSRC_DIR
-	pushd "${KERNELSRC_DIR}"
+	pushd "${KERNEL_DIR}"
 	
 	# GPL v2.0
 	#https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
