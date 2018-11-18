@@ -396,7 +396,7 @@ if [ "$KERNEL_ARCH" = arm64 ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]
     rm -fr "${temp_dir}"
 
     # Set permissions of the kernel sources
-    chown -R root:root "${R}/boot"
+    chown -R root:root "${R}/boot/firmware"
 	chown -R root:root "${R}/lib"
 fi
 
