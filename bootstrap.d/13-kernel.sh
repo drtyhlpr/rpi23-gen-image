@@ -91,12 +91,12 @@ if [ "$BUILD_KERNEL" = true ] ; then
       # see e.g. https://askubuntu.com/a/472227 for a summary of ZSWAP (vs ZRAM etc.)
       # and e.g. https://wiki.archlinux.org/index.php/zswap for parameters etc.
 
-      set_kernel_config ZPOOL y "${KERNEL_DIR}/.config"
-      set_kernel_config ZSWAP y "${KERNEL_DIR}/.config"
-      set_kernel_config ZBUD y "${KERNEL_DIR}/.config"
-      set_kernel_config Z3FOLD y "${KERNEL_DIR}/.config"
-      set_kernel_config ZSMALLOC y "${KERNEL_DIR}/.config"
-      set_kernel_config PGTABLE_MAPPING y "${KERNEL_DIR}/.config"
+      set_kernel_config ZPOOL y "${KERNEL_DIR}"/.config
+      set_kernel_config ZSWAP y "${KERNEL_DIR}"/.config
+      set_kernel_config ZBUD y "${KERNEL_DIR}"/.config
+      set_kernel_config Z3FOLD y "${KERNEL_DIR}"/.config
+      set_kernel_config ZSMALLOC y "${KERNEL_DIR}"/.config
+      set_kernel_config PGTABLE_MAPPING y "${KERNEL_DIR}"/.config
 	fi
 	
 	if [ "$KERNEL_VIRT" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
@@ -107,12 +107,41 @@ if [ "$BUILD_KERNEL" = true ] ; then
       # enable basic KVM support; see e.g.
       # https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
 
-      set_kernel_config VIRTUALIZATION y "${KERNEL_DIR}/.config"
-      set_kernel_config KVM y "${KERNEL_DIR}/.config"
-      set_kernel_config VHOST_NET m "${KERNEL_DIR}/.config"
-      set_kernel_config VHOST_CROSS_ENDIAN_LEGACY y "${KERNEL_DIR}/.config"
+      set_kernel_config VIRTUALIZATION y "${KERNEL_DIR}"/.config
+      set_kernel_config KVM y "${KERNEL_DIR}"/.config
+      set_kernel_config VHOST_NET m "${KERNEL_DIR}"/.config
+      set_kernel_config VHOST_CROSS_ENDIAN_LEGACY y "${KERNEL_DIR}"/.config
 	fi
-
+	
+	if [ "$KERNEL_NF" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
+      # Netfilter Xtables support (required for ip_tables - should be enabled already)
+      set_kernel_config NETFILTER_XTABLES m "${KERNEL_DIR}"/.config"
+      # Netfilter nf_tables support
+      set_kernel_config NF_TABLES m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_PAYLOAD m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_EXTHDR m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_META m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_CT m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_RBTREE m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_HASH m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_COUNTER m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_LOG m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_LIMIT m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_NAT m "${KERNEL_DIR}"/.config"
+      set_kernel_config NFT_COMPAT m "${KERNEL_DIR}"/.config"
+      # IPv4 nf_tables support
+      set_kernel_config NF_TABLES_IPV4 m
+      set_kernel_config NFT_REJECT_IPV4 m
+      set_kernel_config NFT_CHAIN_ROUTE_IPV4 m
+      set_kernel_config NFT_CHAIN_NAT_IPV4 m
+      # IPv6 nf_tables support
+      set_kernel_config NF_TABLES_IPV6 m
+      set_kernel_config NFT_CHAIN_ROUTE_IPV6 m
+      set_kernel_config NFT_CHAIN_NAT_IPV6 m
+      # Ethernet Bridge nf_tables support
+      set_kernel_config NF_TABLES_BRIDGE m
+    fi
+	
     if [ "$KERNELSRC_CONFIG" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
