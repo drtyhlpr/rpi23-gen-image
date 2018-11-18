@@ -56,6 +56,8 @@ COLLABORA_URL=${COLLABORA_URL:=https://repositories.collabora.co.uk/debian}
 FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
 VIDEOCORE_URL=${VIDEOCORE_URL=https://github.com/raspberrypi/userland}
+#https://aur.archlinux.org/packages/pi-bluetooth/
+BLUETOOTH_URL=${BLUETOOTH_URL:=https://aur.archlinux.org/pi-bluetooth.git}
 
 # Build directories
 BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}

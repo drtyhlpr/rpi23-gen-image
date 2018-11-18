@@ -42,5 +42,5 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   #build userland
   make -j "$(nproc)"
   #include default_installdir in path
-  chroot_exec PATH="${PATH}":/opt/vc/bin
+#  chroot_exec export PATH="${PATH}":/opt/vc/bin
 fi

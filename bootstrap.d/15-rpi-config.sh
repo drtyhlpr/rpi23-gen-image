@@ -52,6 +52,7 @@ else
 fi
 
 
+
 # Add encrypted root partition to cmdline.txt
 if [ "$ENABLE_CRYPTFS" = true ] ; then
   if [ "$ENABLE_SPLITFS" = true ] ; then
@@ -104,10 +105,28 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
 fi
 
 # Disable RPi3 Bluetooth and restore ttyAMA0 serial device
-if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 3P ]; then
   if [ "$ENABLE_CONSOLE" = true ] && [ "$ENABLE_UBOOT" = false ] ; then
     echo "dtoverlay=pi3-disable-bt" >> "${BOOT_DIR}/config.txt"
     echo "enable_uart=1" >> "${BOOT_DIR}/config.txt"
+  #else
+        # Create temporary directory for U-Boot sources
+    #temp_dir=$(as_nobody mktemp -d)
+
+    # Fetch U-Boot sources
+    #as_nobody git -C "${temp_dir}" clone "${BLUETOOTH_URL}"
+
+    # Copy downloaded U-Boot sources
+    #mv "${temp_dir}/pi-bluetooth" "${R}/tmp/"
+
+    # Set permissions of the U-Boot sources
+    #chown -R root:root "${R}/tmp/pi-bluetooth"
+
+    # Remove temporary directory for U-Boot sources
+    #rm -fr "${temp_dir}"
+
+
+    #"${R}/tmp/userland"
   fi
 fi
 
