@@ -87,17 +87,17 @@ set_kernel_config() {
     # flag as $1, value to set as $2, config must exist at "./.config"
     local TGT="CONFIG_${1}"
     local REP="${2//\//\\/}"
-    if grep -q "^${TGT}[^_]" "${3}"; then
-        sed -i "s/^\(${TGT}=.*\|# ${TGT} is not set\)/${TGT}=${REP}/" "${3}"
+    if grep -q "^${TGT}[^_]" .config; then
+        sed -i "s/^\(${TGT}=.*\|# ${TGT} is not set\)/${TGT}=${REP}/" .config
     else
-        echo "${TGT}=${2}" >> "${3}"
+        echo "${TGT}=${2}" >> .config
     fi
 }
 
 unset_kernel_config() {
     # unsets flag with the value of $1, config must exist at "./.config"
     local TGT="CONFIG_${1}"
-    sed -i "s/^${TGT}=.*/# ${TGT} is not set/" "${2}"
+    sed -i "s/^${TGT}=.*/# ${TGT} is not set/" .config
 }
 #
 #end
