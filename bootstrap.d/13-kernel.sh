@@ -8,7 +8,7 @@
 # Fetch and build latest raspberry kernel
 if [ "$BUILD_KERNEL" = true ] ; then
   # Setup source directory
-  mkdir -p "${R}/usr/src/linux"
+  mkdir -p "${KERNEL_DIR}"
 
   # Copy existing kernel sources into chroot directory
   if [ -n "$KERNELSRC_DIR" ] && [ -d "$KERNELSRC_DIR" ] ; then
