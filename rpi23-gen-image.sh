@@ -83,7 +83,7 @@ ETC_DIR="${R}/etc"
 LIB_DIR="${R}/lib"
 BOOT_DIR="${R}/boot/firmware"
 KERNEL_DIR="${R}/usr/src/linux"
-WLAN_FIRMWARE_DIR="${R}/lib/firmware/brcm"
+WLAN_FIRMWARE_DIR="${LIB_DIR}/firmware/brcm"
 
 # Firmware directory: Blank if download from github
 RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
