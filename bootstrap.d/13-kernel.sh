@@ -103,10 +103,6 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	fi
 	
 	if [ "$KERNEL_VIRT" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
-      # Submit PRs with edits targeting the _bottom_ of this file
-      # Please set modules where possible, rather than building in, and
-      # provide a short rationale comment for the changes made
-
       # enable basic KVM support; see e.g.
       # https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
 
