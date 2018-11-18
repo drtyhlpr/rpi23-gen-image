@@ -82,6 +82,36 @@ if [ "$BUILD_KERNEL" = true ] ; then
       -e "s/\(^CONFIG_DRM.*\=\).*/\1n/"\
       "${KERNEL_DIR}/.config"
     fi
+	
+	# GPL v2.0
+	#https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
+	if [ "$KERNEL_ZSWAP" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
+      # enable ZSWAP support for better performance during large builds etc.
+      # requires activation via kernel parameter or sysfs
+      # see e.g. https://askubuntu.com/a/472227 for a summary of ZSWAP (vs ZRAM etc.)
+      # and e.g. https://wiki.archlinux.org/index.php/zswap for parameters etc.
+
+      set_kernel_config ZPOOL y "${KERNEL_DIR}/.config"
+      set_kernel_config ZSWAP y "${KERNEL_DIR}/.config"
+      set_kernel_config ZBUD y "${KERNEL_DIR}/.config"
+      set_kernel_config Z3FOLD y "${KERNEL_DIR}/.config"
+      set_kernel_config ZSMALLOC y "${KERNEL_DIR}/.config"
+      set_kernel_config PGTABLE_MAPPING y "${KERNEL_DIR}/.config"
+	fi
+	
+	if [ "$KERNEL_VIRT" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
+      # Submit PRs with edits targeting the _bottom_ of this file
+      # Please set modules where possible, rather than building in, and
+      # provide a short rationale comment for the changes made
+
+      # enable basic KVM support; see e.g.
+      # https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
+
+      set_kernel_config VIRTUALIZATION y "${KERNEL_DIR}/.config"
+      set_kernel_config KVM y "${KERNEL_DIR}/.config"
+      set_kernel_config VHOST_NET m "${KERNEL_DIR}/.config"
+      set_kernel_config VHOST_CROSS_ENDIAN_LEGACY y "${KERNEL_DIR}/.config"
+	fi
 
     if [ "$KERNELSRC_CONFIG" = true ] ; then
       # Load default raspberry kernel configuration
@@ -242,17 +272,32 @@ if [ "$BUILD_KERNEL" = true ] ; then
   fi
 
 else # BUILD_KERNEL=false
-  echo " Install precompiled kernel..."
-  echo "error: not implemented"
+#  echo " Install precompiled kernel..."
+#  echo "error: not implemented"
+if [ "$KERNEL_ARCH" = arm64 ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
+    # Create temporary directory for dl
+    temp_dir=$(as_nobody mktemp -d)
+	
+	# Fetch kernel dl
+	as_nobody wget -c "$RPI3_64_KERNEL_URL" "${temp_dir}"/kernel.tar.xz
+	#extract download
+    tar -xJf kernel.tar.xz -C "${R}"
+
+    # Remove temporary directory for kernel sources
+    rm -fr "${temp_dir}"
+
+    # Set permissions of the kernel sources
+    chown -R root:root "${R}/boot"
+	chown -R root:root "${R}/lib"
+fi
+
   # Check if kernel installation was successful
-  VMLINUZ="$(ls -1 "${R}"/boot/vmlinuz-* | sort | tail -n 1)"
-  if [ -z "$VMLINUZ" ] ; then
-    echo "error: kernel installation failed! (/boot/vmlinuz-* not found)"
+  KERNEL="$(ls -1 "${R}"/boot/kernel* | sort | tail -n 1)"
+  if [ -z "$KERNEL" ] ; then
+    echo "error: kernel installation failed! (/boot/kernel* not found)"
     cleanup
     exit 1
   fi
-  # Copy vmlinuz kernel to the boot directory
-  install_readonly "${VMLINUZ}" "${BOOT_DIR}/${KERNEL_IMAGE}"
 
   if [ "$SET_ARCH" = 64 ] ; then
   echo "Using precompiled arm64 kernel"

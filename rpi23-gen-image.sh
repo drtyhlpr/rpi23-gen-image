@@ -55,7 +55,12 @@ WLAN_FIRMWARE_URL=${WLAN_FIRMWARE_URL:=https://github.com/RPi-Distro/firmware-no
 COLLABORA_URL=${COLLABORA_URL:=https://repositories.collabora.co.uk/debian}
 FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
-VIDEOCORE_URL=${VIDEOCORE_URL=https://github.com/raspberrypi/userland}
+VIDEOCORE_URL=${VIDEOCORE_URL:=https://github.com/raspberrypi/userland}
+#BIS= Kernel has KVM and zswap enabled
+RPI3_64_BIS_KERNEL_URL=${RPI3_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel-bis/releases/download/4.14.80.20181113/bcmrpi3-kernel-bis-4.14.80.20181113.tar.xz}
+#default bcmrpi3_defconfig target kernel
+RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel/releases/download/4.14.80.20181113/bcmrpi3-kernel-4.14.80.20181113.tar.xz}
+RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_BIS_KERNEL_URL}
 #https://aur.archlinux.org/packages/pi-bluetooth/
 BLUETOOTH_URL=${BLUETOOTH_URL:=https://aur.archlinux.org/pi-bluetooth.git}
 
@@ -166,6 +171,8 @@ KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
 KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
 KERNEL_OLDDEFCONFIG=${KERNEL_OLDDEFCONFIG:=false}
 KERNEL_CCACHE=${KERNEL_CCACHE:=false}
+KERNEL_ZSWAP=${KERNEL_ZSWAP:=true}
+KERNEL_VIRT=${KERNEL_VIRT:=true}
 
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}
