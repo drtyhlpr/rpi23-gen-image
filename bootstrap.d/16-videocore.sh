@@ -27,7 +27,20 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
     rm -fr "${temp_dir}"
   fi
 
-  cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DARM64=ON -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_ASM_COMPILER=aarch64-linux-gnu-gcc -DVIDEOCORE_BUILD_DIR="${R}"/opt/vc
-  make -j $(nproc)
-  chroot_exec PATH=${PATH}:/opt/vc/bin
+  if [ "$RELEASE_ARCH" = "arm64" ] ; then
+  cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DARM64=ON -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_ASM_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -U_FORTIFY_SOURCE" -DCMAKE_ASM_FLAGS="${CMAKE_ASM_FLAGS} -c" -DVIDEOCORE_BUILD_DIR="${R}"/opt/vc "${R}/tmp/userland"
+  fi
+
+  if [ "$RELEASE_ARCH" = "armel" ] ; then
+  cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DCMAKE_C_COMPILER=arm-linux-gnueabi-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabi-g++ -DCMAKE_ASM_COMPILER=arm-linux-gnueabi-gcc -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -U_FORTIFY_SOURCE" -DCMAKE_ASM_FLAGS="${CMAKE_ASM_FLAGS} -c" -DCMAKE_SYSTEM_PROCESSOR="arm" -DVIDEOCORE_BUILD_DIR="${R}"/opt/vc "${R}/tmp/userland"
+  fi
+
+  if [ "$RELEASE_ARCH" = "armhf" ] ; then
+  cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DCMAKE_TOOLCHAIN_FILE="${R}"/tmp/userland/makefiles/cmake/toolchains/arm-linux-gnueabihf.cmake -DVIDEOCORE_BUILD_DIR="${R}"/opt/vc "${R}/tmp/userland"
+  fi
+
+  #build userland
+  make -j "$(nproc)"
+  #include default_installdir in path
+  chroot_exec PATH="${PATH}":/opt/vc/bin
 fi

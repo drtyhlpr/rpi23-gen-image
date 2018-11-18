@@ -46,7 +46,7 @@ CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
 Set Debian packages server address. Choose a server from the list of Debian worldwide [mirror sites](https://www.debian.org/mirror/list). Using a nearby server will probably speed-up all required downloads within the bootstrapping process.
 
 ##### `APT_PROXY`=""
-Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once.
+Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once. If `apt-cacher-ng` is running on default `http://127.0.0.1:3142` it is autodetected and you don't need to set this.
 
 ##### `APT_INCLUDES`=""
 A comma separated list of additional packages to be installed by debootstrap during bootstrapping.

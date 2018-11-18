@@ -19,7 +19,7 @@ if [ "$ENABLE_MINBASE" = true ] ; then
 fi
 
 # Base debootstrap (unpack only)
-http_proxy=${APT_PROXY} debootstrap "${APT_EXCLUDES}" --arch="${RELEASE_ARCH}" --foreign ${VARIANT} --components="${COMPONENTS}" --include="${APT_INCLUDES}" "${RELEASE}" "${R}" "http://${APT_SERVER}"
+http_proxy=${APT_PROXY} debootstrap ${APT_EXCLUDES} --arch="${RELEASE_ARCH}" --foreign ${VARIANT} --components="${COMPONENTS}" --include="${APT_INCLUDES}" "${RELEASE}" "${R}" "http://${APT_SERVER}"
 
 # Copy qemu emulator binary to chroot
 install -m 755 -o root -g root "${QEMU_BINARY}" "${R}${QEMU_BINARY}"

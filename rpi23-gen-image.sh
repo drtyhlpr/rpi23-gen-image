@@ -195,12 +195,25 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup"
 
+#Packages to exclude from chroot build environment
+APT_EXCLUDES=${APT_EXCLUDES:=""}
+
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo netselect-apt"
 MISSING_PACKAGES=""
 
 # Packages installed for c/c++ build environment in chroot (keep empty)
 COMPILER_PACKAGES=""
+
+#If init and systemd-sysv are wanted e.g. halt/reboot/shutdown scripts
+if [ "$ENABLE_SYSVINIT" = false ] ; then
+APT_EXCLUDES="--exclude=${APT_EXCLUDES},init,systemd-sysv"
+fi
+
+#Check if apt-cacher-ng has its default port open on and set APT_PROXY
+if [ -n "$(lsof -i :3142)" ] ; then
+HTTP_PROXY=http://127.0.0.1:3142/
+fi
 
 #ipinfo=$(curl ipinfo.io | grep country )
 #grep -o '\"[^"]*\"' $ipinfo | tr -d '"'
@@ -249,7 +262,7 @@ if [ -n "$SET_ARCH" ] ; then
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
       CROSS_COMPILE=${CROSS_COMPILE:=aarch64-linux-gnu-}
     else
-      echo "error: At the moment Raspberry PI 3 and 3B+ are the only Models which support 64bit"
+      echo "error: Only Raspberry PI 3 and 3B+ support 64bit"
       exit 1
     fi
   fi
