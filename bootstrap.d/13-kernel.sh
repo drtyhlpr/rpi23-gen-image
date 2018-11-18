@@ -8,12 +8,12 @@
 # Fetch and build latest raspberry kernel
 if [ "$BUILD_KERNEL" = true ] ; then
   # Setup source directory
-  mkdir -p "${R}/usr/src/linux"
+  mkdir -p "${KERNEL_DIR}"
 
   # Copy existing kernel sources into chroot directory
   if [ -n "$KERNELSRC_DIR" ] && [ -d "$KERNELSRC_DIR" ] ; then
     # Copy kernel sources and include hidden files
-    cp -r "${KERNELSRC_DIR}/". "${R}/usr/src/linux"
+    cp -r "${KERNELSRC_DIR}/". "${KERNEL_DIR}"
 
     # Clean the kernel sources
     if [ "$KERNELSRC_CLEAN" = true ] && [ "$KERNELSRC_PREBUILT" = false ] ; then
@@ -31,7 +31,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     fi
 
     # Copy downloaded kernel sources
-    cp -r "${temp_dir}/linux/"* "${R}/usr/src/linux/"
+    cp -r "${temp_dir}/linux/"* "${KERNEL_DIR}"
 
     # Remove temporary directory for kernel sources
     rm -fr "${temp_dir}"
