@@ -111,10 +111,9 @@ if [ "$BUILD_KERNEL" = true ] ; then
       set_kernel_config VHOST_NET m 
       set_kernel_config VHOST_CROSS_ENDIAN_LEGACY y 
 	fi
-	
+	#See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
+    # Netfilter kernel support
 	if [ "$KERNEL_NF" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
-	  #See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
-      # Netfilter kernel support
 	  # xtables
       set_kernel_config NETFILTER_XTABLES m
 	  # Netfilter nf_tables support
@@ -212,6 +211,14 @@ if [ "$BUILD_KERNEL" = true ] ; then
       set_kernel_config CONFIG_BRIDGE_EBT_BROUTE m
       set_kernel_config CONFIG_BRIDGE_EBT_T_FILTER m 
     fi
+	
+	#https://groups.google.com/forum/#!topic/linux.gentoo.user/_2aSc_ztGpA
+	#https://github.com/torvalds/linux/blob/master/init/Kconfig#L848
+	# Enables BPF syscall for systemd-journald
+	if [ "$KERNEL_BPF" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
+	  set_kernel_config CONFIG_BPF_SYSCALL y
+	  set_kernel_config CONFIG_CGROUP_BPF y
+	fi
 	
 	popd 
 	

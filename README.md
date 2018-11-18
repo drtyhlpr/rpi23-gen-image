@@ -330,7 +330,7 @@ With this parameter set to true the script expects the existing kernel sources d
 The directory (`firmware`) containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.
 
 ##### `KERNEL_NF`=false
-Enable Netfilter modules as kernel modules (systemd compilations about it (File /lib/systemd/system/systemd-journald.server:36 configures an IP firewall (IPAddressDeny=all), but the local system does not support BPF/cgroup based firewalls)
+Enable Netfilter modules as kernel modules
 
 ##### `KERNEL_VIRT`=false
 Enable Kernel KVM support (/dev/kvm)
@@ -338,8 +338,8 @@ Enable Kernel KVM support (/dev/kvm)
 ##### `KERNEL_ZSWAP`=false
 Enable Kernel Zswap support. Best use on high RAM load and mediocre CPU load usecases
 
-
-
+##### `KERNEL_BPF`=true
+Allow attaching eBPF programs to a cgroup using the bpf syscall (CONFIG_BPF_SYSCALL CONFIG_CGROUP_BPF) [systemd compilations about it - File /lib/systemd/system/systemd-journald.server:36 configures an IP firewall (IPAddressDeny=all), but the local system does not support BPF/cgroup based firewalls]
 
 ---
 
