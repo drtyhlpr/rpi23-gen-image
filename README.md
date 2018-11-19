@@ -57,6 +57,10 @@ A comma separated list of additional packages to be installed by apt after boots
 ---
 
 #### General system settings:
+##### `SET_ARCH`=32
+Set Architecture to default 32bit. If you want to to compile 64bit (RPI3 or RPI3+) set it to `64`. This Option will set every needed crosscompiler or boeard specific option for a successful build.
+If you want to change e.g. cross-compiler -> Templates alwys override defaults
+
 ##### `RPI_MODEL`=2
 Specifiy the target Raspberry Pi hardware model. The script at this time supports the following Raspberry Pi models:
 `0`  = Used for Raspberry Pi 0 and Raspberry Pi 0 W
