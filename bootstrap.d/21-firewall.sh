@@ -9,10 +9,11 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
   # Create iptables configuration directory
   mkdir -p "${ETC_DIR}/iptables"
   
-  # make sure iptables-legacy,iptables-legacy-restore and iptables-legacy-save are the used alternatives
-  chroot_exec update-alternatives --verbose --set iptables /usr/sbin/iptables-legacy
-  chroot_exec update-alternatives --verbose --set iptables-save /usr/sbin/iptables-legacy-save
-  chroot_exec update-alternatives --verbose --set iptables-restore /usr/sbin/iptables-legacy-restore
+  # make sure iptables-legacy is the used alternatives 
+  #iptables-save and -restore are slaves of iptables and thus are set accordingly
+  if ! [ "$RELEASE" = jessie ] ; then
+	chroot_exec update-alternatives --verbose --set iptables /usr/sbin/iptables-legacy
+  fi
   
   # Install iptables systemd service
   install_readonly files/iptables/iptables.service "${ETC_DIR}/systemd/system/iptables.service"

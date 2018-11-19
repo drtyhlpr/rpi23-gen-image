@@ -28,7 +28,7 @@ if [ "$ENABLE_SSHD" = true ] ; then
     fi
 
     # Add SSH (v2) public key for user root
-    if [ ! -z "$SSH_ROOT_PUB_KEY" ] ; then
+    if [ -n "$SSH_ROOT_PUB_KEY" ] ; then
       # Create root SSH config directory
       mkdir -p "${R}/root/.ssh"
 
@@ -52,20 +52,20 @@ if [ "$ENABLE_SSHD" = true ] ; then
 
   if [ "$ENABLE_USER" = true ] ; then
     # Add SSH (v2) public key for user $USER_NAME
-    if [ ! -z "$SSH_USER_PUB_KEY" ] ; then
+    if [ -n "$SSH_USER_PUB_KEY" ] ; then
       # Create $USER_NAME SSH config directory
       mkdir -p "${R}/home/${USER_NAME}/.ssh"
 
       # Set permissions of $USER_NAME SSH config directory
       chroot_exec chmod 700 "/home/${USER_NAME}/.ssh"
-      chroot_exec chown ${USER_NAME}:${USER_NAME} "/home/${USER_NAME}/.ssh"
+      chroot_exec chown "${USER_NAME}":"${USER_NAME}" "/home/${USER_NAME}/.ssh"
 
       # Add SSH (v2) public key(s) to authorized_keys file
       cat "$SSH_USER_PUB_KEY" >> "${R}/home/${USER_NAME}/.ssh/authorized_keys"
 
       # Set permissions of $USER_NAME SSH config directory
       chroot_exec chmod 600 "/home/${USER_NAME}/.ssh/authorized_keys"
-      chroot_exec chown ${USER_NAME}:${USER_NAME} "/home/${USER_NAME}/.ssh/authorized_keys"
+      chroot_exec chown "${USER_NAME}":"${USER_NAME}" "/home/${USER_NAME}/.ssh/authorized_keys"
 
       if [ "$ENABLE_REDUCE" = false ] || [ "$REDUCE_SSHD" = false ] ; then
         # Allow SSH public key authentication
@@ -85,7 +85,7 @@ if [ "$ENABLE_SSHD" = true ] ; then
       allowed_users="${allowed_users} ${USER_NAME}"
     fi
 
-    if [ ! -z "$allowed_users" ] ; then
+    if [ -n "$allowed_users" ] ; then
       echo "AllowUsers ${allowed_users}" >> "${ETC_DIR}/ssh/sshd_config"
     fi
   fi
