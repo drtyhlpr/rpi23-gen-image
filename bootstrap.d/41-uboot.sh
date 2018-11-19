@@ -32,7 +32,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   fi
 
   # Build and install U-Boot inside chroot
-  chroot_exec make -j${KERNEL_THREADS} -C /tmp/u-boot/ ${UBOOT_CONFIG} all
+  chroot_exec make -j"${KERNEL_THREADS}" -C /tmp/u-boot/ "${UBOOT_CONFIG}" all
 
   # Copy compiled bootloader binary and set config.txt to load it
   install_exec "${R}/tmp/u-boot/tools/mkimage" "${R}/usr/sbin/mkimage"
@@ -64,6 +64,16 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     else
       printf "\nbootz \${kernel_addr_r} - \${fdt_addr_r}" >> "${BOOT_DIR}/uboot.mkimage"
     fi
+  fi
+  
+  if [ "$KERNEL_ARCH" = "arm64" ] ; then
+    echo "Setting up config.txt to boot 64bit uboot"
+
+    printf "\n# 64bit-mode" >> "${BOOT_DIR}/config.txt"
+    printf "\n# arm_control=0x200 is deprecated https://www.raspberrypi.org/documentation/configuration/config-txt/misc.md" >> "${BOOT_DIR}/config.txt"
+    printf "\narm_64bit=1" >> "${BOOT_DIR}/config.txt"
+	#in 64bit uboot booti is used instead of bootz [like in KERNEL_BIN_IMAGE=zImage (armv7)|| Image(armv8)]
+    sed -i "s|bootz|booti|g" "${BOOT_DIR}/uboot.mkimage"
   fi
 
   # Set mkfile to use the correct dtb file

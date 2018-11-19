@@ -6,8 +6,8 @@
 . ./functions.sh
 
 # Generate crypt(3) password string
-ENCRYPTED_PASSWORD=`mkpasswd -m sha-512 "${PASSWORD}"`
-ENCRYPTED_USER_PASSWORD=`mkpasswd -m sha-512 "${USER_PASSWORD}"`
+ENCRYPTED_PASSWORD=$(mkpasswd -m sha-512 "${PASSWORD}")
+ENCRYPTED_USER_PASSWORD=$(mkpasswd -m sha-512 "${USER_PASSWORD}")
 
 # Setup default user
 if [ "$ENABLE_USER" = true ] ; then

@@ -31,7 +31,7 @@ fi
 . ./functions.sh
 
 # Load parameters from configuration template file
-if [ ! -z "$CONFIG_TEMPLATE" ] ; then
+if [ -n "$CONFIG_TEMPLATE" ] ; then
   use_template
 fi
 
@@ -103,6 +103,7 @@ WLAN_FIRMWARE_URL=${WLAN_FIRMWARE_URL:=https://github.com/RPi-Distro/firmware-no
 COLLABORA_URL=${COLLABORA_URL:=https://repositories.collabora.co.uk/debian}
 FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
+VIDEOCORE_URL=${VIDEOCORE_URL=https://github.com/raspberrypi/userland}
 
 # Build directories
 BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
@@ -122,7 +123,7 @@ ETC_DIR="${R}/etc"
 LIB_DIR="${R}/lib"
 BOOT_DIR="${R}/boot/firmware"
 KERNEL_DIR="${R}/usr/src/linux"
-WLAN_FIRMWARE_DIR="${R}/lib/firmware/brcm"
+WLAN_FIRMWARE_DIR="${LIB_DIR}/firmware/brcm"
 
 # Firmware directory: Blank if download from github
 RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
@@ -191,6 +192,8 @@ ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
 ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
+ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=true}
+VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
 FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
@@ -294,7 +297,7 @@ if [ "$ENABLE_WIRELESS" = true ] && ([ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P
 fi  
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
-if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
+if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
   if [ "$DISABLE_UNDERVOLT_WARNINGS" != 1 ] && [ "$DISABLE_UNDERVOLT_WARNINGS" != 2 ] ; then
     echo "error: DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS} is not supported"
     exit 1
@@ -321,9 +324,13 @@ if [ "$BUILD_KERNEL" = true ] ; then
   fi
 fi
 
+if [ "$ENABLE_VIDEOCORE" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cmake"
+fi
+
 # Add libncurses5 to enable kernel menuconfig
 if [ "$KERNEL_MENUCONFIG" = true ] ; then
-  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses5-dev"
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses-dev"
 fi
 
 # Add ccache compiler cache for (faster) kernel cross (re)compilation
@@ -354,7 +361,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
 fi
 
 # Check if root SSH (v2) public key file exists
-if [ ! -z "$SSH_ROOT_PUB_KEY" ] ; then
+if [ -n "$SSH_ROOT_PUB_KEY" ] ; then
   if [ ! -f "$SSH_ROOT_PUB_KEY" ] ; then
     echo "error: '$SSH_ROOT_PUB_KEY' specified SSH public key file not found (SSH_ROOT_PUB_KEY)!"
     exit 1
@@ -362,7 +369,7 @@ if [ ! -z "$SSH_ROOT_PUB_KEY" ] ; then
 fi
 
 # Check if $USER_NAME SSH (v2) public key file exists
-if [ ! -z "$SSH_USER_PUB_KEY" ] ; then
+if [ -n "$SSH_USER_PUB_KEY" ] ; then
   if [ ! -f "$SSH_USER_PUB_KEY" ] ; then
     echo "error: '$SSH_USER_PUB_KEY' specified SSH public key file not found (SSH_USER_PUB_KEY)!"
     exit 1
@@ -371,7 +378,7 @@ fi
 
 # Check if all required packages are installed on the build system
 for package in $REQUIRED_PACKAGES ; do
-  if [ "`dpkg-query -W -f='${Status}' $package`" != "install ok installed" ] ; then
+  if [ "$(dpkg-query -W -f='${Status}' $package)" != "install ok installed" ] ; then
     MISSING_PACKAGES="${MISSING_PACKAGES} $package"
   fi
 done
@@ -381,12 +388,12 @@ if [ -n "$MISSING_PACKAGES" ] ; then
   echo "the following packages needed by this script are not installed:"
   echo "$MISSING_PACKAGES"
 
-  echo -n "\ndo you want to install the missing packages right now? [y/n] "
-  read confirm
+  printf "\ndo you want to install the missing packages right now? [y/n] "
+  read -r confirm
   [ "$confirm" != "y" ] && exit 1
 
   # Make sure all missing required packages are installed
-  apt-get -qq -y install ${MISSING_PACKAGES}
+  apt-get -qq -y install "${MISSING_PACKAGES}"
 fi
 
 # Check if ./bootstrap.d directory exists
@@ -410,6 +417,12 @@ fi
 # Check if specified UBOOTSRC_DIR directory exists
 if [ -n "$UBOOTSRC_DIR" ] && [ ! -d "$UBOOTSRC_DIR" ] ; then
   echo "error: '${UBOOTSRC_DIR}' specified directory not found (UBOOTSRC_DIR)!"
+  exit 1
+fi
+
+# Check if specified VIDEOCORESRC_DIR directory exists
+if [ -n "$VIDEOCORESRC_DIR" ] && [ ! -d "$VIDEOCORESRC_DIR" ] ; then
+  echo "error: '${VIDEOCORESRC_DIR}' specified directory not found (VIDEOCORESRC_DIR)!"
   exit 1
 fi
 
@@ -441,7 +454,7 @@ fi
 mkdir -p "${R}"
 
 # Check if build directory has enough of free disk space >512MB
-if [ "$(df --output=avail ${BUILDDIR} | sed "1d")" -le "524288" ] ; then
+if [ "$(df --output=avail "${BUILDDIR}" | sed "1d")" -le "524288" ] ; then
   echo "error: ${BUILDDIR} not enough space left to generate the output image!"
   exit 1
 fi
@@ -519,7 +532,7 @@ if [ "$ENABLE_REDUCE" = true ] ; then
 
   # Add dropbear package instead of openssh-server
   if [ "$REDUCE_SSHD" = true ] ; then
-    APT_INCLUDES="$(echo ${APT_INCLUDES} | sed "s/openssh-server/dropbear/")"
+    APT_INCLUDES="$(echo "${APT_INCLUDES}" | sed "s/openssh-server/dropbear/")"
   fi
 fi
 
@@ -662,27 +675,27 @@ if [ "$ENABLE_QEMU" = true ] ; then
 fi
 
 # Calculate size of the chroot directory in KB
-CHROOT_SIZE=$(expr `du -s "${R}" | awk '{ print $1 }'`)
+CHROOT_SIZE=$(expr "$(du -s "${R}" | awk '{ print $1 }')")
 
 # Calculate the amount of needed 512 Byte sectors
 TABLE_SECTORS=$(expr 1 \* 1024 \* 1024 \/ 512)
 FRMW_SECTORS=$(expr 64 \* 1024 \* 1024 \/ 512)
-ROOT_OFFSET=$(expr ${TABLE_SECTORS} + ${FRMW_SECTORS})
+ROOT_OFFSET=$(expr "${TABLE_SECTORS}" + "${FRMW_SECTORS}")
 
 # The root partition is EXT4
 # This means more space than the actual used space of the chroot is used.
 # As overhead for journaling and reserved blocks 35% are added.
-ROOT_SECTORS=$(expr $(expr ${CHROOT_SIZE} + ${CHROOT_SIZE} \/ 100 \* 35) \* 1024 \/ 512)
+ROOT_SECTORS=$(expr "$(expr "${CHROOT_SIZE}" + "${CHROOT_SIZE}" \/ 100 \* 35)" \* 1024 \/ 512)
 
 # Calculate required image size in 512 Byte sectors
-IMAGE_SECTORS=$(expr ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS})
+IMAGE_SECTORS=$(expr "${TABLE_SECTORS}" + "${FRMW_SECTORS}" + "${ROOT_SECTORS}")
 
 # Prepare image file
 if [ "$ENABLE_SPLITFS" = true ] ; then
-  dd if=/dev/zero of="$IMAGE_NAME-frmw.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$IMAGE_NAME-frmw.img" bs=512 count=0 seek=${FRMW_SECTORS}
-  dd if=/dev/zero of="$IMAGE_NAME-root.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$IMAGE_NAME-root.img" bs=512 count=0 seek=${ROOT_SECTORS}
+  dd if=/dev/zero of="$IMAGE_NAME-frmw.img" bs=512 count="${TABLE_SECTORS}"
+  dd if=/dev/zero of="$IMAGE_NAME-frmw.img" bs=512 count=0 seek="${FRMW_SECTORS}"
+  dd if=/dev/zero of="$IMAGE_NAME-root.img" bs=512 count="${TABLE_SECTORS}"
+  dd if=/dev/zero of="$IMAGE_NAME-root.img" bs=512 count=0 seek="${ROOT_SECTORS}"
 
   # Write firmware/boot partition tables
   sfdisk -q -L -uS -f "$IMAGE_NAME-frmw.img" 2> /dev/null <<EOM
@@ -695,11 +708,11 @@ ${TABLE_SECTORS},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $IMAGE_NAME-frmw.img)"
-  ROOT_LOOP="$(losetup -o 1M -f --show $IMAGE_NAME-root.img)"
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show "$IMAGE_NAME"-frmw.img)"
+  ROOT_LOOP="$(losetup -o 1M -f --show "$IMAGE_NAME"-root.img)"
 else # ENABLE_SPLITFS=false
-  dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count=${TABLE_SECTORS}
-  dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count=0 seek=${IMAGE_SECTORS}
+  dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count="${TABLE_SECTORS}"
+  dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count=0 seek="${IMAGE_SECTORS}"
 
   # Write partition table
   sfdisk -q -L -uS -f "$IMAGE_NAME.img" 2> /dev/null <<EOM
@@ -708,8 +721,8 @@ ${ROOT_OFFSET},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show $IMAGE_NAME.img)"
-  ROOT_LOOP="$(losetup -o 65M -f --show $IMAGE_NAME.img)"
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show "$IMAGE_NAME".img)"
+  ROOT_LOOP="$(losetup -o 65M -f --show "$IMAGE_NAME".img)"
 fi
 
 if [ "$ENABLE_CRYPTFS" = true ] ; then
@@ -734,7 +747,7 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   ROOT_LOOP="/dev/mapper/${CRYPTFS_MAPPING}"
 
   # Wipe encrypted partition (encryption cipher is used for randomness)
-  dd if=/dev/zero of="${ROOT_LOOP}" bs=512 count=$(blockdev --getsz "${ROOT_LOOP}")
+  dd if=/dev/zero of="${ROOT_LOOP}" bs=512 count="$(blockdev --getsz "${ROOT_LOOP}")"
 fi
 
 # Build filesystems
@@ -761,22 +774,22 @@ if [ "$ENABLE_SPLITFS" = true ] ; then
   bmaptool create -o "$IMAGE_NAME-root.bmap" "$IMAGE_NAME-root.img"
 
   # Image was successfully created
-  echo "$IMAGE_NAME-frmw.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
-  echo "$IMAGE_NAME-root.img ($(expr \( ${TABLE_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$IMAGE_NAME-frmw.img ($(expr \( "${TABLE_SECTORS}" + "${FRMW_SECTORS}" \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$IMAGE_NAME-root.img ($(expr \( "${TABLE_SECTORS}" + "${ROOT_SECTORS}" \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
 else
   # Create block map file for "bmaptool"
   bmaptool create -o "$IMAGE_NAME.bmap" "$IMAGE_NAME.img"
 
   # Image was successfully created
-  echo "$IMAGE_NAME.img ($(expr \( ${TABLE_SECTORS} + ${FRMW_SECTORS} + ${ROOT_SECTORS} \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
+  echo "$IMAGE_NAME.img ($(expr \( "${TABLE_SECTORS}" + "${FRMW_SECTORS}" + "${ROOT_SECTORS}" \) \* 512 \/ 1024 \/ 1024)M)" ": successfully created"
 
   # Create qemu qcow2 image
   if [ "$ENABLE_QEMU" = true ] ; then
     QEMU_IMAGE=${QEMU_IMAGE:=${BASEDIR}/qemu/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
     QEMU_SIZE=16G
 
-    qemu-img convert -f raw -O qcow2 $IMAGE_NAME.img $QEMU_IMAGE.qcow2
-    qemu-img resize $QEMU_IMAGE.qcow2 $QEMU_SIZE
+    qemu-img convert -f raw -O qcow2 "$IMAGE_NAME".img "$QEMU_IMAGE".qcow2
+    qemu-img resize "$QEMU_IMAGE".qcow2 $QEMU_SIZE
 
     echo "$QEMU_IMAGE.qcow2 ($QEMU_SIZE)" ": successfully created"
   fi

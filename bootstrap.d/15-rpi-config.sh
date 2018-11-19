@@ -8,13 +8,13 @@
 if [ "$BUILD_KERNEL" = true ] ; then
   if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
     # Install boot binaries from local directory
-    cp ${RPI_FIRMWARE_DIR}/boot/bootcode.bin ${BOOT_DIR}/bootcode.bin
-    cp ${RPI_FIRMWARE_DIR}/boot/fixup.dat ${BOOT_DIR}/fixup.dat
-    cp ${RPI_FIRMWARE_DIR}/boot/fixup_cd.dat ${BOOT_DIR}/fixup_cd.dat
-    cp ${RPI_FIRMWARE_DIR}/boot/fixup_x.dat ${BOOT_DIR}/fixup_x.dat
-    cp ${RPI_FIRMWARE_DIR}/boot/start.elf ${BOOT_DIR}/start.elf
-    cp ${RPI_FIRMWARE_DIR}/boot/start_cd.elf ${BOOT_DIR}/start_cd.elf
-    cp ${RPI_FIRMWARE_DIR}/boot/start_x.elf ${BOOT_DIR}/start_x.elf
+    cp "${RPI_FIRMWARE_DIR}"/boot/bootcode.bin "${BOOT_DIR}"/bootcode.bin
+    cp "${RPI_FIRMWARE_DIR}"/boot/fixup.dat "${BOOT_DIR}"/fixup.dat
+    cp "${RPI_FIRMWARE_DIR}"/boot/fixup_cd.dat "${BOOT_DIR}"/fixup_cd.dat
+    cp "${RPI_FIRMWARE_DIR}"/boot/fixup_x.dat "${BOOT_DIR}"/fixup_x.dat
+    cp "${RPI_FIRMWARE_DIR}"/boot/start.elf "${BOOT_DIR}"/start.elf
+    cp "${RPI_FIRMWARE_DIR}"/boot/start_cd.elf "${BOOT_DIR}"/start_cd.elf
+    cp "${RPI_FIRMWARE_DIR}"/boot/start_x.elf "${BOOT_DIR}"/start_x.elf
   else
     # Create temporary directory for boot binaries
     temp_dir=$(as_nobody mktemp -d)
@@ -50,9 +50,9 @@ fi
 # Add encrypted root partition to cmdline.txt
 if [ "$ENABLE_CRYPTFS" = true ] ; then
   if [ "$ENABLE_SPLITFS" = true ] ; then
-    CMDLINE=$(echo ${CMDLINE} | sed "s/sda1/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/sda1:${CRYPTFS_MAPPING}/")
+    CMDLINE=$(echo "${CMDLINE}" | sed "s/sda1/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/sda1:${CRYPTFS_MAPPING}/")
   else
-    CMDLINE=$(echo ${CMDLINE} | sed "s/mmcblk0p2/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/mmcblk0p2:${CRYPTFS_MAPPING}/")
+    CMDLINE=$(echo "${CMDLINE}" | sed "s/mmcblk0p2/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/mmcblk0p2:${CRYPTFS_MAPPING}/")
   fi
 fi
 
@@ -139,7 +139,7 @@ if [ "$ENABLE_SPI" = true ] ; then
 fi
 
 # Disable RPi2/3 under-voltage warnings
-if [ ! -z "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
+if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
   echo "avoid_warnings=${DISABLE_UNDERVOLT_WARNINGS}" >> "${BOOT_DIR}/config.txt"
 fi
 
