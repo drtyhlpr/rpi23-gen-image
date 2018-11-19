@@ -99,6 +99,49 @@ if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
   if [ "$ENABLE_CONSOLE" = true ] && [ "$ENABLE_UBOOT" = false ] ; then
     echo "dtoverlay=pi3-disable-bt" >> "${BOOT_DIR}/config.txt"
     echo "enable_uart=1" >> "${BOOT_DIR}/config.txt"
+  else
+    # Create temporary directory for Bluetooth sources
+    temp_dir=$(as_nobody mktemp -d)
+
+    # Fetch Bluetooth sources
+    as_nobody git -C "${temp_dir}" clone "${BLUETOOTH_URL}"
+
+    # Copy downloaded sources
+    mv "${temp_dir}/pi-bluetooth" "${R}/tmp/"
+
+    # Set permissions
+    chown -R root:root "${R}/tmp/pi-bluetooth"
+
+    # Install files to chroot
+    # Install tools
+    install_readonly "${R}/tmp/pi-bluetooth/usr/bin/btuart" "${R}/usr/bin/btuart"
+    install_readonly "${R}/tmp/pi-bluetooth/usr/bin/bthelper" "${R}/usr/bin/bthelper"
+
+    # Install bluetooth udev rule
+    install_readonly "${R}/tmp/pi-bluetooth/lib/udev/rules.d/90-pi-bluetooth.rules" "${LIB_DIR}/udev/rules.d/90-pi-bluetooth.rules"
+    #aur
+    #install_readonly "${R}/tmp/pi-bluetooth/50-bluetooth-hci-auto-poweron.rules" "${ETC_DIR}/udev/rules.d/50-bluetooth-hci-auto-poweron.rules"
+
+    # Install Firmware Flash file and apropiate licence
+    mkdir "${ETC_DIR}/firmware/"
+
+    #aur https://aur.archlinux.org/packages/pi-bluetooth/
+    #install_readonly "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" "${ETC_DIR}/firmware/LICENCE.broadcom_bcm43xx"
+    #install_readonly "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" "${ETC_DIR}/firmware/BCM43430A1.hcd"
+    
+    wget -O "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" https://aur.archlinux.org/cgit/aur.git/plain/LICENCE.broadcom_bcm43xx?h=pi-bluetooth
+    wget -O "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" https://aur.archlinux.org/cgit/aur.git/plain/BCM43430A1.hcd?h=pi-bluetooth
+    
+    # Install systemd service for bluetooth
+    #install_readonly "${R}/tmp/pi-bluetooth/brcm43438.service" "${ETC_DIR}/systemd/system/brcm43438.service"
+
+    # Remove temporary directory
+    #rm -fr "${temp_dir}"
+
+    # Get /dev/serial back for compability
+    # Raspberry-sys-mod package
+    wget -O "${ETC_DIR}/udev/rules.d/99-com.rules" https://raw.githubusercontent.com/RPi-Distro/raspberrypi-sys-mods/master/etc.armhf/udev/rules.d/99-com.rules
+
   fi
 fi
 
@@ -107,17 +150,17 @@ ln -sf firmware/config.txt "${R}/boot/config.txt"
 ln -sf firmware/cmdline.txt "${R}/boot/cmdline.txt"
 
 # Install and setup kernel modules to load at boot
-mkdir -p "${R}/lib/modules-load.d/"
-install_readonly files/modules/rpi2.conf "${R}/lib/modules-load.d/rpi2.conf"
+mkdir -p "${LIB_DIR}/modules-load.d/"
+install_readonly files/modules/rpi2.conf "${LIB_DIR}/modules-load.d/rpi2.conf"
 
 # Load hardware random module at boot
 if [ "$ENABLE_HWRANDOM" = true ] && [ "$BUILD_KERNEL" = false ] ; then
-  sed -i "s/^# bcm2708_rng/bcm2708_rng/" "${R}/lib/modules-load.d/rpi2.conf"
+  sed -i "s/^# bcm2708_rng/bcm2708_rng/" "${LIB_DIR}/modules-load.d/rpi2.conf"
 fi
 
 # Load sound module at boot
 if [ "$ENABLE_SOUND" = true ] ; then
-  sed -i "s/^# snd_bcm2835/snd_bcm2835/" "${R}/lib/modules-load.d/rpi2.conf"
+  sed -i "s/^# snd_bcm2835/snd_bcm2835/" "${LIB_DIR}/modules-load.d/rpi2.conf"
 else
   echo "dtparam=audio=off" >> "${BOOT_DIR}/config.txt"
 fi
@@ -125,16 +168,16 @@ fi
 # Enable I2C interface
 if [ "$ENABLE_I2C" = true ] ; then
   echo "dtparam=i2c_arm=on" >> "${BOOT_DIR}/config.txt"
-  sed -i "s/^# i2c-bcm2708/i2c-bcm2708/" "${R}/lib/modules-load.d/rpi2.conf"
-  sed -i "s/^# i2c-dev/i2c-dev/" "${R}/lib/modules-load.d/rpi2.conf"
+  sed -i "s/^# i2c-bcm2708/i2c-bcm2708/" "${LIB_DIR}/modules-load.d/rpi2.conf"
+  sed -i "s/^# i2c-dev/i2c-dev/" "${LIB_DIR}/modules-load.d/rpi2.conf"
 fi
 
 # Enable SPI interface
 if [ "$ENABLE_SPI" = true ] ; then
   echo "dtparam=spi=on" >> "${BOOT_DIR}/config.txt"
-  echo "spi-bcm2708" >> "${R}/lib/modules-load.d/rpi2.conf"
+  echo "spi-bcm2708" >> "${LIB_DIR}/modules-load.d/rpi2.conf"
   if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]; then
-    sed -i "s/spi-bcm2708/spi-bcm2835/" "${R}/lib/modules-load.d/rpi2.conf"
+    sed -i "s/spi-bcm2708/spi-bcm2835/" "${LIB_DIR}/modules-load.d/rpi2.conf"
   fi
 fi
 
