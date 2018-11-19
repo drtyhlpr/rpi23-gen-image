@@ -62,8 +62,6 @@ RPI3_64_BIS_KERNEL_URL=${RPI3_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcmr
 RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel/releases/download/4.14.80.20181113/bcmrpi3-kernel-4.14.80.20181113.tar.xz}
 #enhanced kernel
 RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_BIS_KERNEL_URL}
-#https://aur.archlinux.org/packages/pi-bluetooth/
-#BLUETOOTH_URL=${BLUETOOTH_URL:=https://aur.archlinux.org/pi-bluetooth.git}
 BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
 
 # Build directories
