@@ -247,7 +247,7 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
-APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils"
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup"
 
 #Packages to exclude from chroot build environment
 APT_EXCLUDES=${APT_EXCLUDES:=""}
@@ -265,6 +265,10 @@ set +x
 if [ "$ENABLE_SYSVINIT" = false ] ; then
 APT_EXCLUDES="--exclude=${APT_EXCLUDES},init,systemd-sysv"
 fi
+
+#Check if apt-cacher-ng has its default port open on and set APT_PROXY
+if [ -n "$(lsof -i :3142)" ] ; then
+HTTP_PROXY=http://127.0.0.1:3142/
 
 # Set Raspberry Pi model specific configuration
 if [ "$RPI_MODEL" = 0 ] ; then
@@ -358,7 +362,7 @@ fi
 
 # Add device-tree-compiler required for building the U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
-  APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex"
+  APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex,bc"
 fi
 
 # Check if root SSH (v2) public key file exists
@@ -468,11 +472,6 @@ trap cleanup 0 1 2 3 6
 # Add required packages for the minbase installation
 if [ "$ENABLE_MINBASE" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},vim-tiny,netbase,net-tools,ifupdown"
-fi
-
-# Add required locales packages
-if [ "$DEFLOCAL" != "en_US.UTF-8" ] || ([ -n XKB_MODEL ] || [ -n XKB_LAYOUT ] ||  [ -n XKB_VARIANT ] ||  [ -n XKB_OPTIONS ]); then
-  APT_INCLUDES="${APT_INCLUDES},locales,keyboard-configuration,console-setup"
 fi
 
 # Add parted package, required to get partprobe utility
