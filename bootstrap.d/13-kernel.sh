@@ -381,7 +381,7 @@ if [ "$KERNEL_ARCH" = arm64 ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]
 	# Fetch kernel dl
 	as_nobody wget -O "${temp_dir}"/kernel.tar.xz -c "$RPI3_64_KERNEL_URL" 
 	#extract download
-    tar -xJf kernel.tar.xz -C "${R}"
+    tar -xJf "${temp_dir}"/kernel.tar.xz -C "${R}"
 
     # Remove temporary directory for kernel sources
     rm -fr "${temp_dir}"

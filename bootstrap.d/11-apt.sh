@@ -11,14 +11,14 @@ if [ -z "$APT_PROXY" ] ; then
   sed -i "s/\"\"/\"${APT_PROXY}\"/" "${ETC_DIR}/apt/apt.conf.d/10proxy"
 fi
 
-if [ "$BUILD_KERNEL" = false ] ; then
-  echo "Downloading precompiled kernel"
-  echo "error: not configured"
-  exit 1;
+#if [ "$BUILD_KERNEL" = false ] ; then
+#  echo "Downloading precompiled kernel"
+#  echo "error: not configured"
+#  exit 1;
 # BUILD_KERNEL=true
-else
-  echo "No precompiled kernel repositories were added"
-fi
+#else
+#  echo "No precompiled kernel repositories were added"
+#fi
 
 # Upgrade package index and update all installed packages and changed dependencies
 chroot_exec apt-get -qq -y update
