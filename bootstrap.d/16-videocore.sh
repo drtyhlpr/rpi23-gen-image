@@ -9,7 +9,7 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   # Copy existing videocore sources into chroot directory
   if [ -n "$VIDEOCORESRC_DIR" ] && [ -d "$VIDEOCORESRC_DIR" ] ; then
     # Copy local U-Boot sources
-    cp -r "${VIDEOCORESRC_DIR}" "${R}/tmp"
+    cp -r "${VIDEOCORESRC_DIR}" "${R}/tmp/userland"
   else
     # Create temporary directory for U-Boot sources
     temp_dir=$(as_nobody mktemp -d)
@@ -26,8 +26,26 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
     # Remove temporary directory for U-Boot sources
     rm -fr "${temp_dir}"
   fi
+  
+  # Create build dir
+  mkdir "${R}"/tmp/userland/build
+  # push us to build directory
+  pushd "${R}"/tmp/userland/build
 
-  cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DARM64=ON -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_ASM_COMPILER=aarch64-linux-gnu-gcc -DVIDEOCORE_BUILD_DIR="${R}"/opt/vc
+  if [ "$RELEASE_ARCH" = "arm64" ] ; then
+  cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DARM64=ON -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_ASM_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -U_FORTIFY_SOURCE" -DCMAKE_ASM_FLAGS="${CMAKE_ASM_FLAGS} -c" -DVIDEOCORE_BUILD_DIR="${R}" "${R}/tmp/userland"
+  fi
+
+  if [ "$RELEASE_ARCH" = "armel" ] ; then
+  cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DCMAKE_C_COMPILER=arm-linux-gnueabi-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabi-g++ -DCMAKE_ASM_COMPILER=arm-linux-gnueabi-gcc -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -U_FORTIFY_SOURCE" -DCMAKE_ASM_FLAGS="${CMAKE_ASM_FLAGS} -c" -DCMAKE_SYSTEM_PROCESSOR="arm" -DVIDEOCORE_BUILD_DIR="${R}" "${R}/tmp/userland"
+  fi
+
+  if [ "$RELEASE_ARCH" = "armhf" ] ; then
+  cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DCMAKE_TOOLCHAIN_FILE="${R}"/tmp/userland/makefiles/cmake/toolchains/arm-linux-gnueabihf.cmake -DVIDEOCORE_BUILD_DIR="${R}" "${R}/tmp/userland"
+  fi
+
+  #build userland
   make -j "$(nproc)"
-  chroot_exec PATH="${PATH}":/opt/vc/bin
+  #pop us out of build dir
+  popd
 fi
