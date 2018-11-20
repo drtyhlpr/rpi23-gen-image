@@ -97,33 +97,33 @@ if [ "$BUILD_KERNEL" = true ] ; then
         # requires activation via kernel parameter or sysfs
         # see e.g. https://askubuntu.com/a/472227 for a summary of ZSWAP (vs ZRAM etc.)
         # and e.g. https://wiki.archlinux.org/index.php/zswap for parameters etc.
-        set_kernel_config ZPOOL y 
-        set_kernel_config ZSWAP y 
-        set_kernel_config ZBUD y 
-        set_kernel_config Z3FOLD y 
-        set_kernel_config ZSMALLOC y 
-        set_kernel_config PGTABLE_MAPPING y 
+        set_kernel_config ZPOOL y
+        set_kernel_config ZSWAP y
+        set_kernel_config ZBUD y
+        set_kernel_config Z3FOLD y
+        set_kernel_config ZSMALLOC y
+        set_kernel_config PGTABLE_MAPPING y
 	  fi
 	
 	  if [ "$KERNEL_VIRT" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
        # enable basic KVM support; see e.g.
         # https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
-        set_kernel_config VIRTUALIZATION y 
-        set_kernel_config KVM y 
-        set_kernel_config VHOST_NET m 
-        set_kernel_config VHOST_CROSS_ENDIAN_LEGACY y 
+        set_kernel_config VIRTUALIZATION y
+        set_kernel_config KVM y
+        set_kernel_config VHOST_NET m
+        set_kernel_config VHOST_CROSS_ENDIAN_LEGACY y
 	  fi
 	  #See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
       # Netfilter kernel support
 	  if [ "$KERNEL_NF" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
-	    set_kernel_config CONFIG_NETFILTER_XTABLES m
-	    set_kernel_config CONFIG_NF_DUP_NETDEV m
-	    set_kernel_config CONFIG_NF_NAT_SIP m
-	    set_kernel_config CONFIG_NF_TABLES_ARP m
-	    set_kernel_config CONFIG_NF_TABLES_BRIDGE m    
-	    set_kernel_config NF_TABLES m
+        set_kernel_config CONFIG_NETFILTER_XTABLES m
+        set_kernel_config CONFIG_NF_DUP_NETDEV m
+        set_kernel_config CONFIG_NF_NAT_SIP m
+        set_kernel_config CONFIG_NF_TABLES_ARP m
+        set_kernel_config CONFIG_NF_TABLES_BRIDGE m
+        set_kernel_config NF_TABLES m
         set_kernel_config CONFIG_BRIDGE_EBT_BROUTE m
-        set_kernel_config CONFIG_BRIDGE_EBT_T_FILTER m 
+        set_kernel_config CONFIG_BRIDGE_EBT_T_FILTER m
         set_kernel_config CONFIG_BRIDGE_NF_EBTABLES m
         set_kernel_config CONFIG_IP6_NF_IPTABLES m
         set_kernel_config CONFIG_IP6_NF_MATCH_AH m
@@ -205,15 +205,15 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_NF_TABLES_NETDEV m
         set_kernel_config NETFILTER_XTABLES m
       fi
-	
+
 	  #https://groups.google.com/forum/#!topic/linux.gentoo.user/_2aSc_ztGpA
 	  #https://github.com/torvalds/linux/blob/master/init/Kconfig#L848
 	  # Enables BPF syscall for systemd-journald
 	  if [ "$KERNEL_BPF" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
-        set_kernel_config CONFIG_BPF_SYSCALL y
+            set_kernel_config CONFIG_BPF_SYSCALL y
 	    set_kernel_config CONFIG_CGROUP_BPF y
 	  fi
-	  
+
 	  #Revert to previous directory
 	  popd
 
@@ -387,8 +387,8 @@ if [ "$KERNEL_ARCH" = arm64 ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]
     rm -fr "${temp_dir}"
 
     # Set permissions of the kernel sources
-    chown -R root:root "${R}/boot/firmware"
-	chown -R root:root "${R}/lib"
+    chown -R root:root "${R}/boot/"
+    chown -R root:root "${R}/lib"
 fi
 
   # Check if kernel installation was successful
