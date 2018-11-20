@@ -387,8 +387,13 @@ if [ "$KERNEL_ARCH" = arm64 ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]
     rm -fr "${temp_dir}"
 
     # Set permissions of the kernel sources
-    chown -R root:root "${R}/boot/"
-    chown -R root:root "${R}/lib"
+	mkdir "${R}/boot/firmware"
+	cp -r "${R}/boot/ "${R}/boot/firmware"
+    chown -R root:root "${R}/boot/firmware"
+	chown -R root:root "${R}/lib"
+	
+	#Create cmdline.txt
+	touch "${BOOT_DIR}/cmdline.txt"
 fi
 
   # Check if kernel installation was successful
@@ -398,13 +403,5 @@ fi
     cleanup
     exit 1
   fi
-
-  if [ "$SET_ARCH" = 64 ] ; then
-  echo "Using precompiled arm64 kernel"
-  else
-    echo "error: no precompiled arm64 (bcmrpi3) kernel found"
-    exit 1
-    # inset precompiled 64 bit kernel code here
-  fi
-#fi build_kernel=true
+  
 fi
