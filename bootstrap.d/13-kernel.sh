@@ -86,13 +86,12 @@ if [ "$BUILD_KERNEL" = true ] ; then
     if [ "$KERNELSRC_CONFIG" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
-
-	  #Switch to KERNELSRC_DIR
-	  pushd "${KERNEL_DIR}"
+      #Switch to KERNELSRC_DIR
+      pushd "${KERNEL_DIR}"
 	
-	  # GPL v2.0
-	  #https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
-	  if [ "$KERNEL_ZSWAP" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
+      # GPL v2.0
+      #https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
+      if [ "$KERNEL_ZSWAP" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
         # enable ZSWAP support for better performance during large builds etc.
         # requires activation via kernel parameter or sysfs
         # see e.g. https://askubuntu.com/a/472227 for a summary of ZSWAP (vs ZRAM etc.)
@@ -105,7 +104,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config PGTABLE_MAPPING y
 	  fi
 	
-	  if [ "$KERNEL_VIRT" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
+	  if [ "$KERNEL_VIRT" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
        # enable basic KVM support; see e.g.
         # https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
         set_kernel_config VIRTUALIZATION y
@@ -115,7 +114,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  fi
 	  #See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
       # Netfilter kernel support
-	  if [ "$KERNEL_NF" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
+	  if [ "$KERNEL_NF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
         set_kernel_config CONFIG_NETFILTER_XTABLES m
         set_kernel_config CONFIG_NF_DUP_NETDEV m
         set_kernel_config CONFIG_NF_NAT_SIP m
@@ -209,7 +208,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  #https://groups.google.com/forum/#!topic/linux.gentoo.user/_2aSc_ztGpA
 	  #https://github.com/torvalds/linux/blob/master/init/Kconfig#L848
 	  # Enables BPF syscall for systemd-journald
-	  if [ "$KERNEL_BPF" = true ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
+	  if [ "$KERNEL_BPF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
             set_kernel_config CONFIG_BPF_SYSCALL y
 	    set_kernel_config CONFIG_CGROUP_BPF y
 	  fi
@@ -238,7 +237,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
             echo "CONFIG_CRYPTO_XTS=y"
             echo "CONFIG_CRYPTO_SHA512=y"
             echo "CONFIG_CRYPTO_MANAGER=y"
-          } >> ${KERNEL_DIR}/.config
+          } >> "${KERNEL_DIR}/.config"
         fi
       fi
 
@@ -269,7 +268,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     make -C "${KERNEL_DIR}" -j"${KERNEL_THREADS}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" "${KERNEL_BIN_IMAGE}" dtbs
 
     # Cross compile kernel modules
-    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
+    if grep -q "CONFIG_MODULES=y" "${KERNEL_DIR}/.config" ; then
       make -C "${KERNEL_DIR}" -j"${KERNEL_THREADS}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" modules
     fi
   fi
@@ -283,16 +282,16 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Install kernel modules
   if [ "$ENABLE_REDUCE" = true ] ; then
-    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
+    if grep -q "CONFIG_MODULES=y" "${KERNEL_DIR}/.config" ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=../../.. modules_install
     fi
   else
-    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
+    if grep -q "CONFIG_MODULES=y" "${KERNEL_DIR}/.config" ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH=../../.. modules_install
     fi
 
     # Install kernel firmware
-    if [ "$(grep "^firmware_install:" "${KERNEL_DIR}/Makefile")" ] ; then
+    if grep -q "^firmware_install:" "${KERNEL_DIR}/Makefile" ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_FW_PATH=../../../lib firmware_install
     fi
   fi
@@ -360,8 +359,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
     rm -fr "${KERNEL_DIR}"
   else
     # Prepare compiled kernel modules
-    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
-      if [ "$(grep "^modules_prepare:" "${KERNEL_DIR}/Makefile")" ] ; then
+    if grep -q "CONFIG_MODULES=y" "${KERNEL_DIR}/.config" ; then
+      if grep -q "^modules_prepare:" "${KERNEL_DIR}/Makefile" ; then
         make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" modules_prepare
       fi
 
@@ -372,29 +371,26 @@ if [ "$BUILD_KERNEL" = true ] ; then
   fi
 
 else # BUILD_KERNEL=false
-#  echo " Install precompiled kernel..."
-#  echo "error: not implemented"
-if [ "$KERNEL_ARCH" = arm64 ] && ( [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ) ; then
+  #  echo Install precompiled kernel...
+  #  echo error: not implemented
+  if [ "$KERNEL_ARCH" = arm64 ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
     # Create temporary directory for dl
     temp_dir=$(as_nobody mktemp -d)
 	
-	# Fetch kernel dl
-	as_nobody wget -O "${temp_dir}"/kernel.tar.xz -c "$RPI3_64_KERNEL_URL" 
-	#extract download
+    # Fetch kernel dl
+    as_nobody wget -O "${temp_dir}"/kernel.tar.xz -c "$RPI3_64_KERNEL_URL" 
+    #extract download
     tar -xJf "${temp_dir}"/kernel.tar.xz -C "${R}"
-
     # Remove temporary directory for kernel sources
     rm -fr "${temp_dir}"
-
     # Set permissions of the kernel sources
-	mkdir "${R}/boot/firmware"
-	cp -r "${R}/boot/ "${R}/boot/firmware"
+    mkdir "${R}/boot/firmware"
+    cp -r "${R}/boot/" "${R}/boot/firmware"
     chown -R root:root "${R}/boot/firmware"
-	chown -R root:root "${R}/lib"
-	
-	#Create cmdline.txt
-	touch "${BOOT_DIR}/cmdline.txt"
-fi
+    chown -R root:root "${R}/lib"
+    #Create cmdline.txt
+    touch "${BOOT_DIR}/cmdline.txt"
+  fi
 
   # Check if kernel installation was successful
   KERNEL="$(ls -1 "${R}"/boot/kernel* | sort | tail -n 1)"
@@ -403,5 +399,4 @@ fi
     cleanup
     exit 1
   fi
-  
 fi
