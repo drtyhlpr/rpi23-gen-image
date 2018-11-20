@@ -329,21 +329,6 @@ if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
   fi
 fi
 
-# Add packages required for kernel cross compilation
-if [ "$BUILD_KERNEL" = true ] ; then
-  if [ "$KERNEL_ARCH" = "arm" ] ; then
-    if [ "$RELEASE_ARCH" = "armel" ]; then
-      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
-    fi
-    if [ "$RELEASE_ARCH" = "armhf" ]; then
-      REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
-    fi
-  fi
-  if [ "$RELEASE_ARCH" = "arm64" ]; then
-    REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
-  fi
-fi
-
 if [ "$ENABLE_VIDEOCORE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cmake"
 fi
