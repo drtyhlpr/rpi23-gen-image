@@ -380,15 +380,19 @@ else # BUILD_KERNEL=false
     # Fetch kernel dl
     as_nobody wget -O "${temp_dir}"/kernel.tar.xz -c "$RPI3_64_KERNEL_URL" 
     #extract download
-    tar -xJf "${temp_dir}"/kernel.tar.xz -C "${R}"
+    tar -xJf "${temp_dir}"/kernel.tar.xz -C "${temp_dir}"
+	
+	#move extracted kernel to /boot/firmware
+	mkdir "${R}/boot/firmware"
+	cp "${temp_dir}"/boot/* "${R}"/boot/firmware/
+	cp -r "${temp_dir}"/lib/* "${R}"/lib/
+    
     # Remove temporary directory for kernel sources
     rm -fr "${temp_dir}"
     # Set permissions of the kernel sources
-    mkdir "${R}/boot/firmware"
-    cp -r "${R}/boot/" "${R}/boot/firmware"
     chown -R root:root "${R}/boot/firmware"
-    chown -R root:root "${R}/lib"
-    #Create cmdline.txt
+    chown -R root:root "${R}/lib/modules"
+    #Create cmdline.txt for 15-rpi-config.sh
     touch "${BOOT_DIR}/cmdline.txt"
   fi
 
