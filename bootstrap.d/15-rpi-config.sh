@@ -42,9 +42,9 @@ fi
 
 # Setup firmware boot cmdline
 if [ "$ENABLE_SPLITFS" = true ] ; then
-  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1"
+  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1 init=/bin/systemd"
 else
-  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1"
+  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1 init=/bin/systemd"
 fi
 
 # Add encrypted root partition to cmdline.txt
@@ -71,11 +71,6 @@ if [ "$ENABLE_IFNAMES" = false ] ; then
   CMDLINE="${CMDLINE} net.ifnames=0"
 else
   CMDLINE="${CMDLINE} net.ifnames=1"
-fi
-
-# Set init to systemd if required by Debian release
-if [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
-  CMDLINE="${CMDLINE} init=/bin/systemd"
 fi
 
 # Install firmware boot cmdline

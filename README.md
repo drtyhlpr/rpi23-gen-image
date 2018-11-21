@@ -448,13 +448,13 @@ After the image file was successfully created by the `rpi23-gen-image.sh` script
 
 ##### Flashing examples:
 ```shell
-bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie.img /dev/mmcblk0
-dd bs=4M if=./images/jessie/2017-01-23-rpi3-jessie.img of=/dev/mmcblk0
+bmaptool copy ./images/buster/2017-01-23-rpi3-buster.img /dev/mmcblk0
+dd bs=4M if=./images/buster/2017-01-23-rpi3-buster.img of=/dev/mmcblk0
 ```
 If you have set `ENABLE_SPLITFS`, copy the `-frmw` image on the microSD card, then the `-root` one on the USB drive:
 ```shell
-bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie-frmw.img /dev/mmcblk0
-bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie-root.img /dev/sdc
+bmaptool copy ./images/buster/2017-01-23-rpi3-buster-frmw.img /dev/mmcblk0
+bmaptool copy ./images/buster/2017-01-23-rpi3-buster-root.img /dev/sdc
 ```
 
 ## QEMU emulation
