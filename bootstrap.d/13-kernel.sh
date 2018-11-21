@@ -88,7 +88,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
       #Switch to KERNELSRC_DIR
       pushd "${KERNEL_DIR}"
-	
+
       # GPL v2.0
       #https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
       if [ "$KERNEL_ZSWAP" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
@@ -103,7 +103,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config ZSMALLOC y
         set_kernel_config PGTABLE_MAPPING y
 	  fi
-	
+
 	  if [ "$KERNEL_VIRT" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
        # enable basic KVM support; see e.g.
         # https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
@@ -209,7 +209,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  #https://github.com/torvalds/linux/blob/master/init/Kconfig#L848
 	  # Enables BPF syscall for systemd-journald
 	  if [ "$KERNEL_BPF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-        set_kernel_config CONFIG_BPF_SYSCALL y
+            set_kernel_config CONFIG_BPF_SYSCALL y
 	    set_kernel_config CONFIG_CGROUP_BPF y
 	  fi
 
@@ -237,7 +237,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
             echo "CONFIG_CRYPTO_XTS=y"
             echo "CONFIG_CRYPTO_SHA512=y"
             echo "CONFIG_CRYPTO_MANAGER=y"
-          } >> "${KERNEL_DIR}"/.config
+          } >> "${KERNEL_DIR}/.config"
         fi
       fi
 
@@ -376,17 +376,17 @@ else # BUILD_KERNEL=false
   if [ "$KERNEL_ARCH" = arm64 ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
     # Create temporary directory for dl
     temp_dir=$(as_nobody mktemp -d)
-	
+
     # Fetch kernel dl
     as_nobody wget -O "${temp_dir}"/kernel.tar.xz -c "$RPI3_64_KERNEL_URL" 
     #extract download
     tar -xJf "${temp_dir}"/kernel.tar.xz -C "${temp_dir}"
-	
-	#move extracted kernel to /boot/firmware
-	mkdir "${R}/boot/firmware"
-	cp "${temp_dir}"/boot/* "${R}"/boot/firmware/
-	cp -r "${temp_dir}"/lib/* "${R}"/lib/
-    
+
+    #move extracted kernel to /boot/firmware
+    mkdir "${R}/boot/firmware"
+    cp "${temp_dir}"/boot/* "${R}"/boot/firmware/
+    cp -r "${temp_dir}"/lib/* "${R}"/lib/
+
     # Remove temporary directory for kernel sources
     rm -fr "${temp_dir}"
     # Set permissions of the kernel sources
@@ -397,7 +397,7 @@ else # BUILD_KERNEL=false
   fi
 
   # Check if kernel installation was successful
-  KERNEL="$(ls -1 "${R}"/boot/kernel* | sort | tail -n 1)"
+  KERNEL="$(ls -1 "${R}"/boot/firmware/kernel* | sort | tail -n 1)"
   if [ -z "$KERNEL" ] ; then
     echo "error: kernel installation failed! (/boot/kernel* not found)"
     cleanup

@@ -114,11 +114,10 @@ if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     # Copy downloaded sources
     mv "${temp_dir}/pi-bluetooth" "${R}/tmp/"
 
-	# Raspberry-sys-mod package for /dev/serial device needed by bluetooth service
-	wget -O "${R}/tmp/pi-bluetooth/99-com.rules" https://raw.githubusercontent.com/RPi-Distro/raspberrypi-sys-mods/master/etc.armhf/udev/rules.d/99-com.rules	
-
-	# Bluetooth firmware from arch aur https://aur.archlinux.org/packages/pi-bluetooth/
-	wget -O "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" https://aur.archlinux.org/cgit/aur.git/plain/LICENCE.broadcom_bcm43xx?h=pi-bluetooth
+    # Raspberry-sys-mod package for /dev/serial device needed by bluetooth service
+    wget -O "${R}/tmp/pi-bluetooth/99-com.rules" https://raw.githubusercontent.com/RPi-Distro/raspberrypi-sys-mods/master/etc.armhf/udev/rules.d/99-com.rules	
+    # Bluetooth firmware from arch aur https://aur.archlinux.org/packages/pi-bluetooth/
+    wget -O "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" https://aur.archlinux.org/cgit/aur.git/plain/LICENCE.broadcom_bcm43xx?h=pi-bluetooth
     wget -O "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" https://aur.archlinux.org/cgit/aur.git/plain/BCM43430A1.hcd?h=pi-bluetooth
 
     # Set permissions
@@ -128,28 +127,31 @@ if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     # Install tools
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/btuart" "${R}/usr/bin/btuart"
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/bthelper" "${R}/usr/bin/bthelper"
-
     # Install bluetooth udev rule
     install_readonly "${R}/tmp/pi-bluetooth/lib/udev/rules.d/90-pi-bluetooth.rules" "${LIB_DIR}/udev/rules.d/90-pi-bluetooth.rules"
     # aur
     # install_readonly "${R}/tmp/pi-bluetooth/50-bluetooth-hci-auto-poweron.rules" "${ETC_DIR}/udev/rules.d/50-bluetooth-hci-auto-poweron.rules"
-
     # Install Firmware Flash file and apropiate licence
     mkdir "${ETC_DIR}/firmware/"
-
     # Install firmware and licence
     # install_readonly "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" "${ETC_DIR}/firmware/LICENCE.broadcom_bcm43xx"
     # install_readonly "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" "${ETC_DIR}/firmware/BCM43430A1.hcd"
     install_readonly "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" "${ETC_DIR}/firmware/LICENCE.broadcom_bcm43xx"
-	install_readonly "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" "${ETC_DIR}/firmware/LICENCE.broadcom_bcm43xx"
-
+    install_readonly "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" "${ETC_DIR}/firmware/LICENCE.broadcom_bcm43xx"
     # Install systemd service for bluetooth
     # install_readonly "${R}/tmp/pi-bluetooth/brcm43438.service" "${ETC_DIR}/systemd/system/brcm43438.service"
+<<<<<<< HEAD
+    install_readonly "${R}/tmp/pi-bluetooth/debian/pi-bluetooth.bthelper@.service" "${ETC_DIR}/systemd/system/pi-bluetooth.bthelper@.service"
+    install_readonly "${R}/tmp/pi-bluetooth/debian/pi-bluetooth.hciuart.service" "${ETC_DIR}/systemd/system/pi-bluetooth.hciuart.service"
+    # Install udev rule for bluetooth device
+    install_readonly "${R}/tmp/pi-bluetooth/99-com.rules" "${ETC_DIR}/udev/rules.d/99-com.rules"
+=======
 	install_readonly "${R}/tmp/pi-bluetooth/debian/pi-bluetooth.bthelper@.service" "${ETC_DIR}/systemd/system/pi-bluetooth.bthelper@.service"
 	install_readonly "${R}/tmp/pi-bluetooth/debian/pi-bluetooth.hciuart.service" "${ETC_DIR}/systemd/system/pi-bluetooth.hciuart.service"
 	install_readonly "${R}/tmp/pi-bluetooth/99-com.rules" "${ETC_DIR}/udev/rules.d/99-com.rules"
+>>>>>>> bc6d966f8243dd759dfc1c0811528e37879ceb1b
 
-	# Remove temporary directory
+    # Remove temporary directory
     rm -fr "${temp_dir}"
   fi
 fi
