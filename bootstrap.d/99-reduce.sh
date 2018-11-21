@@ -46,23 +46,14 @@ if [ "$ENABLE_REDUCE" = true ] ; then
 
   # Replace bash shell by dash shell (experimental)
   if [ "$REDUCE_BASH" = true ] ; then
-    if [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
-      echo "Yes, do as I say!" | chroot_exec apt-get purge -qq -y --allow-remove-essential bash
-    else
-      echo "Yes, do as I say!" | chroot_exec apt-get purge -qq -y --force-yes bash
-    fi
-
+    # Purge bash and update alternatives
+    echo "Yes, do as I say!" | chroot_exec apt-get purge -qq -y --allow-remove-essential bash
     chroot_exec update-alternatives --install /bin/bash bash /bin/dash 100
   fi
 
   # Remove sound utils and libraries
   if [ "$ENABLE_SOUND" = false ] ; then
     chroot_exec apt-get -qq -y purge alsa-utils libsamplerate0 libasound2 libasound2-data
-  fi
-
-  # Re-install tools for managing kernel modules
-  if [ "$RELEASE" = "jessie" ] ; then
-    chroot_exec apt-get -qq -y install module-init-tools
   fi
 
   # Remove GPU kernels

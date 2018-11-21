@@ -7,11 +7,11 @@
 
 # Install and setup hostname
 install_readonly files/network/hostname "${ETC_DIR}/hostname"
-sed -i "s/^rpi2-jessie/${HOSTNAME}/" "${ETC_DIR}/hostname"
+sed -i "s/^RaspberryPI/${HOSTNAME}/" "${ETC_DIR}/hostname"
 
 # Install and setup hosts
 install_readonly files/network/hosts "${ETC_DIR}/hosts"
-sed -i "s/rpi2-jessie/${HOSTNAME}/" "${ETC_DIR}/hosts"
+sed -i "s/RaspberryPI/${HOSTNAME}/" "${ETC_DIR}/hosts"
 
 # Setup hostname entry with static IP
 if [ "$NET_ADDRESS" != "" ] ; then
@@ -65,13 +65,12 @@ sed -i "/.*=\$/d" "${ETC_DIR}/systemd/network/eth.network"
 sed -i "/.*=\$/d" "${ETC_DIR}/systemd/network/wlan.network"
 
 # Move systemd network configuration if required by Debian release
-if [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
-  mv -v "${ETC_DIR}/systemd/network/eth.network" "${LIB_DIR}/systemd/network/10-eth.network"
-	if [ "$ENABLE_WIRELESS" = true ] ; then
-	mv -v "${ETC_DIR}/systemd/network/wlan.network" "${LIB_DIR}/systemd/network/11-wlan.network"
-	fi
-  rm -fr "${ETC_DIR}/systemd/network"
+mv -v "${ETC_DIR}/systemd/network/eth.network" "${LIB_DIR}/systemd/network/10-eth.network"
+# If WLAN is enabled copy wlan configuration too
+if [ "$ENABLE_WIRELESS" = true ] ; then
+  mv -v "${ETC_DIR}/systemd/network/wlan.network" "${LIB_DIR}/systemd/network/11-wlan.network"
 fi
+rm -fr "${ETC_DIR}/systemd/network"
 
 # Enable systemd-networkd service
 chroot_exec systemctl enable systemd-networkd

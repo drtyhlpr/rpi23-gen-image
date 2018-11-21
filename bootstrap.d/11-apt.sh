@@ -12,28 +12,12 @@ if [ -z "$APT_PROXY" ] ; then
 fi
 
 if [ "$BUILD_KERNEL" = false ] ; then
-  # Install APT pinning configuration for flash-kernel package
-  install_readonly files/apt/flash-kernel "${ETC_DIR}/apt/preferences.d/flash-kernel"
-
-  # Install APT sources.list
-  install_readonly files/apt/sources.list "${ETC_DIR}/apt/sources.list"
-  echo "deb ${COLLABORA_URL} ${RELEASE} rpi2" >> "${ETC_DIR}/apt/sources.list"
-
-  # Upgrade collabora package index and install collabora keyring
-  chroot_exec apt-get -qq -y update
-  chroot_exec apt-get -qq -y --allow-unauthenticated install collabora-obs-archive-keyring
-else # BUILD_KERNEL=true
-  # Install APT sources.list
-  install_readonly files/apt/sources.list "${ETC_DIR}/apt/sources.list"
-
-  # Use specified APT server and release
-  sed -i "s/\/ftp.debian.org\//\/${APT_SERVER}\//" "${ETC_DIR}/apt/sources.list"
-  sed -i "s/ jessie/ ${RELEASE}/" "${ETC_DIR}/apt/sources.list"
-fi
-
-# Allow the installation of non-free Debian packages
-if [ "$ENABLE_NONFREE" = true ] ; then
-  sed -i "s/ contrib/ contrib non-free/" "${ETC_DIR}/apt/sources.list"
+  echo "Downloading precompiled kernel"
+  echo "error: not configured"
+  exit 1;
+# BUILD_KERNEL=true
+else
+  echo "No precompiled kernel repositories were added"
 fi
 
 # Upgrade package index and update all installed packages and changed dependencies
