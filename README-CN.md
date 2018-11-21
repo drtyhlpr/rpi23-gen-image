@@ -1,5 +1,5 @@
 ## 介绍
-`rpi23-gen-image.sh` 是一个自动生成树莓派2/3系统镜像的脚本工具, 当前支持自动生成32位 armhf 架构的Debian, 发行版本`jessie`, `stretch` 和 `buster`. 树莓派3 64位镜像需要使用特定的配置参数 (```templates/rpi3-stretch-arm64-4.11.y```). 
+`rpi23-gen-image.sh` 是一个自动生成树莓派2/3系统镜像的脚本工具, 当前支持自动生成32位 armhf 架构的Debian, 发行版本`jessie`, `stretch` 和 `buster`. 树莓派3 64位镜像需要使用特定的配置参数 (```templates/rpi3-stretch-arm64-4.14.y```). 
 
 ## 构建环境所依赖的包
 一定要安装好下列deb包, 他们是构建过程需要的核心包. 脚本会自动检查, 如果缺少,经用户确认后会自动安装. 
