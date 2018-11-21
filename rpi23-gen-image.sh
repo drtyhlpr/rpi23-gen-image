@@ -250,8 +250,8 @@ else
 fi
 
 #sed and cut the result string so we can use it as APT_SERVER
-APT_SERVER=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3)
-APT_SERVER=${APT_SERVER::-1}
+tmp=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3)
+APT_SERVER=${tmp:0:-1}
 
 #make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
 if [ -n "$SET_ARCH" ] ; then
@@ -426,7 +426,7 @@ fi
 
 # Check if all required packages are installed on the build system
 for package in $REQUIRED_PACKAGES ; do
-  if [ "$(dpkg-query -W -f='${Status}' $package)" != "install ok installed" ] ; then
+  if [ "$(dpkg-query -W -f='${Status}' "$package")" != "install ok installed" ] ; then
     MISSING_PACKAGES="${MISSING_PACKAGES} $package"
   fi
 done
