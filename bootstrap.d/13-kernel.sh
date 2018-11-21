@@ -82,7 +82,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       -e "s/\(^CONFIG_DRM.*\=\).*/\1n/"\
       "${KERNEL_DIR}/.config"
     fi
-	
+
     if [ "$KERNELSRC_CONFIG" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
@@ -209,7 +209,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  #https://github.com/torvalds/linux/blob/master/init/Kconfig#L848
 	  # Enables BPF syscall for systemd-journald
 	  if [ "$KERNEL_BPF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-            set_kernel_config CONFIG_BPF_SYSCALL y
+        set_kernel_config CONFIG_BPF_SYSCALL y
 	    set_kernel_config CONFIG_CGROUP_BPF y
 	  fi
 
@@ -237,7 +237,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
             echo "CONFIG_CRYPTO_XTS=y"
             echo "CONFIG_CRYPTO_SHA512=y"
             echo "CONFIG_CRYPTO_MANAGER=y"
-          } >> "${KERNEL_DIR}/.config"
+          } >> "${KERNEL_DIR}"/.config
         fi
       fi
 

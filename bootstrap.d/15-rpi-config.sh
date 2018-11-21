@@ -100,7 +100,7 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
 fi
 
 # Disable RPi3 Bluetooth and restore ttyAMA0 serial device
-if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 3P ]; then
+if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
   if [ "$ENABLE_CONSOLE" = true ] && [ "$ENABLE_UBOOT" = false ] ; then
     echo "dtoverlay=pi3-disable-bt" >> "${BOOT_DIR}/config.txt"
     echo "enable_uart=1" >> "${BOOT_DIR}/config.txt"
@@ -147,16 +147,10 @@ if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 3P ]; then
     # install_readonly "${R}/tmp/pi-bluetooth/brcm43438.service" "${ETC_DIR}/systemd/system/brcm43438.service"
 	install_readonly "${R}/tmp/pi-bluetooth/debian/pi-bluetooth.bthelper@.service" "${ETC_DIR}/systemd/system/pi-bluetooth.bthelper@.service"
 	install_readonly "${R}/tmp/pi-bluetooth/debian/pi-bluetooth.hciuart.service" "${ETC_DIR}/systemd/system/pi-bluetooth.hciuart.service"
-
- 
 	install_readonly "${R}/tmp/pi-bluetooth/99-com.rules" "${ETC_DIR}/udev/rules.d/99-com.rules"
 
 	# Remove temporary directory
     rm -fr "${temp_dir}"
-
-    # Get /dev/serial back for compability
-
-
   fi
 fi
 

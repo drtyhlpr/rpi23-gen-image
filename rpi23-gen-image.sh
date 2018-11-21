@@ -40,13 +40,13 @@ echo -n -e "\n#\n# RPi2/3 Bootstrap Settings\n#\n"
 set -x
 
 # Raspberry Pi model configuration
-export RPI_MODEL=${RPI_MODEL:=2}
+RPI_MODEL=${RPI_MODEL:=2}
 
 # Debian release
-export RELEASE=${RELEASE:=buster}
+RELEASE=${RELEASE:=buster}
 
 #Kernel Branch
-export KERNEL_BRANCH=${KERNEL_BRANCH:=""}
+KERNEL_BRANCH=${KERNEL_BRANCH:=""}
 
 # URLs
 KERNEL_URL=${KERNEL_URL:=https://github.com/raspberrypi/linux}
@@ -86,6 +86,7 @@ WLAN_FIRMWARE_DIR="${LIB_DIR}/firmware/brcm"
 
 # Firmware directory: Blank if download from github
 RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
+
 # General settings
 SET_ARCH=${SET_ARCH:=32}
 HOSTNAME=${HOSTNAME:=rpi${RPI_MODEL}-${RELEASE}}
