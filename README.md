@@ -1,6 +1,6 @@
 # rpi23-gen-image
 ## Introduction
-`rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for Raspberry Pi 2 (RPi2) and Raspberry Pi 3 (RPi3) computers. The script at this time supports the bootstrapping of the Debian (armhf) releases `jessie`, `stretch` and `buster`. Raspberry Pi 3 images are generated for 32-bit mode only. Raspberry Pi 3 64-bit images can be generated using custom configuration parameters (```templates/rpi3-stretch-arm64-4.11.y```).
+`rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for Raspberry Pi 2 (RPi2) and Raspberry Pi 3 (RPi3) computers. The script at this time supports the bootstrapping of the Debian (armhf) releases `stretch` and `buster`. Raspberry Pi 3 images are generated for 32-bit mode only. Raspberry Pi 3 64-bit images can be generated using custom configuration parameters (```templates/rpi3-stretch-arm64-4.11.y```).
 
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
@@ -9,16 +9,7 @@ The following list of Debian packages must be installed on the build system beca
 
 It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandatory. Kernel compilation and linking will be performed on the build system using an ARM (armhf) cross-compiler toolchain.
 
-The script has been tested using the default `crossbuild-essential-armhf` toolchain meta package on Debian Linux `jessie` and `stretch` build systems. Please check the [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains) for further information.
-
-If a Debian Linux `jessie` build system is used it will be required to add the [Debian Cross-toolchains repository](http://emdebian.org/tools/debian/) first:
-
-```
-echo "deb http://emdebian.org/tools/debian/ jessie main" > /etc/apt/sources.list.d/crosstools.list
-sudo -u nobody wget -O - http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add -
-dpkg --add-architecture armhf
-apt-get update
-```
+The script has been tested using the default `crossbuild-essential-armhf` toolchain meta package on Debian Linux and `stretch` build systems. Please check the [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains) for further information.
 
 ## Command-line parameters
 The script accepts certain command-line parameters to enable or disable specific OS features, services and configuration settings. These parameters are passed to the `rpi23-gen-image.sh` script via (simple) shell-variables. Unlike environment shell-variables (simple) shell-variables are defined at the beginning of the command-line call of the `rpi23-gen-image.sh` script.
@@ -55,7 +46,7 @@ CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
 Set Debian packages server address. Choose a server from the list of Debian worldwide [mirror sites](https://www.debian.org/mirror/list). Using a nearby server will probably speed-up all required downloads within the bootstrapping process.
 
 ##### `APT_PROXY`=""
-Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once.
+Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once. If `apt-cacher-ng` is running on default `http://127.0.0.1:3142` it is autodetected and you don't need to set this.
 
 ##### `APT_INCLUDES`=""
 A comma separated list of additional packages to be installed by debootstrap during bootstrapping.
@@ -66,6 +57,10 @@ A comma separated list of additional packages to be installed by apt after boots
 ---
 
 #### General system settings:
+##### `SET_ARCH`=32
+Set Architecture to default 32bit. If you want to to compile 64bit (RPI3 or RPI3+) set it to `64`. This Option will set every needed crosscompiler or boeard specific option for a successful build.
+If you want to change e.g. cross-compiler -> Templates alwys override defaults
+
 ##### `RPI_MODEL`=2
 Specifiy the target Raspberry Pi hardware model. The script at this time supports the following Raspberry Pi models:
 `0`  = Used for Raspberry Pi 0 and Raspberry Pi 0 W
@@ -76,8 +71,8 @@ Specifiy the target Raspberry Pi hardware model. The script at this time support
 `3P` = Used for Pi 3 model B+
 `BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` or `3P` is used.
 
-##### `RELEASE`="jessie"
-Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases "jessie", "stretch" and "buster". `BUILD_KERNEL`=true will automatically be set if the Debian releases `stretch` or `buster` are used.
+##### `RELEASE`="buster"
+Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases "stretch" and "buster". `BUILD_KERNEL`=true will automatically be set if the Debian releases `stretch` or `buster` are used.
 
 ##### `RELEASE_ARCH`="armhf"
 Set the desired Debian release architecture.
@@ -453,13 +448,13 @@ After the image file was successfully created by the `rpi23-gen-image.sh` script
 
 ##### Flashing examples:
 ```shell
-bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie.img /dev/mmcblk0
-dd bs=4M if=./images/jessie/2017-01-23-rpi3-jessie.img of=/dev/mmcblk0
+bmaptool copy ./images/buster/2017-01-23-rpi3-buster.img /dev/mmcblk0
+dd bs=4M if=./images/buster/2017-01-23-rpi3-buster.img of=/dev/mmcblk0
 ```
 If you have set `ENABLE_SPLITFS`, copy the `-frmw` image on the microSD card, then the `-root` one on the USB drive:
 ```shell
-bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie-frmw.img /dev/mmcblk0
-bmaptool copy ./images/jessie/2017-01-23-rpi3-jessie-root.img /dev/sdc
+bmaptool copy ./images/buster/2017-01-23-rpi3-buster-frmw.img /dev/mmcblk0
+bmaptool copy ./images/buster/2017-01-23-rpi3-buster-root.img /dev/sdc
 ```
 
 ## QEMU emulation
