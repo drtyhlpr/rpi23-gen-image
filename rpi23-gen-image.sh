@@ -250,8 +250,11 @@ else
 fi
 
 #sed and cut the result string so we can use it as APT_SERVER
-tmp=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3)
-APT_SERVER=${tmp:0:-1}
+APT_SERVER=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3)
+#non sh compatible
+#APT_SERVER=${tmp:0:-1}
+#sh compatible
+APT_SERVER=echo "$APT_SERVER" | sed 's|/$|''|'
 
 #make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
 if [ -n "$SET_ARCH" ] ; then
