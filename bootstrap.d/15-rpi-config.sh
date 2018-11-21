@@ -83,11 +83,6 @@ else
   CMDLINE="${CMDLINE} net.ifnames=1"
 fi
 
-# Set init to systemd if required by Debian release
-if [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
-  CMDLINE="${CMDLINE} init=/bin/systemd"
-fi
-
 # Install firmware boot cmdline
 echo "${CMDLINE}" > "${BOOT_DIR}/cmdline.txt"
 

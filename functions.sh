@@ -63,12 +63,8 @@ chroot_install_cc() {
   # Install c/c++ build environment inside the chroot
   if [ -z "${COMPILER_PACKAGES}" ] ; then
     COMPILER_PACKAGES=$(chroot_exec apt-get -s install g++ make bc | grep "^Inst " | awk -v ORS=" " '{ print $2 }')
-
-    if [ "$RELEASE" = "jessie" ] ; then
-      chroot_exec apt-get -q -y --no-install-recommends install ${COMPILER_PACKAGES}
-    elif [ "$RELEASE" = "stretch" ] || [ "$RELEASE" = "buster" ] ; then
-      chroot_exec apt-get -q -y --allow-unauthenticated --no-install-recommends install ${COMPILER_PACKAGES}
-    fi
+	# Install COMPILER_PACKAGES in chroot
+    chroot_exec apt-get -q -y --allow-unauthenticated --no-install-recommends install ${COMPILER_PACKAGES}
   fi
 }
 
