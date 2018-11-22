@@ -29,6 +29,7 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   
   # Create build dir
   mkdir "${R}"/tmp/userland/build
+
   # push us to build directory
   pushd "${R}"/tmp/userland/build
 
@@ -46,6 +47,7 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
 
   #build userland
   make -j "$(nproc)"
+
   #pop us out of build dir
   popd
 fi
