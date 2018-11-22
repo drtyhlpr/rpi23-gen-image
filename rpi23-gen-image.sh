@@ -226,12 +226,6 @@ if [ -n "$(lsof -i :3142)" ] ; then
 HTTP_PROXY=http://127.0.0.1:3142/
 fi
 
-#ipinfo=$(curl ipinfo.io | grep country )
-#grep -o '\"[^"]*\"' $ipinfo | tr -d '"'
-#grep -Po '"country":.*?[^\\]",' $(curl ipinfo.io | grep country )
-#sed -i "s,http:,https:,g" "${ETC_DIR}/apt/sources.list"
-#autconfigure best apt server to not spam ftp.debian.org
-#rm files/apt/sources.list
 #netselect-apt does not know buster yet
 if  [ "$RELEASE" = "buster" ] ; then
   RLS=testing
@@ -250,11 +244,7 @@ else
 fi
 
 #sed and cut the result string so we can use it as APT_SERVER
-APT_SERVER=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3)
-#non sh compatible
-#APT_SERVER=${tmp:0:-1}
-#sh compatible
-APT_SERVER=echo "$APT_SERVER" | sed 's|/$|''|'
+APT_SERVER=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3 | sed 's|/$|''|')
 
 #make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
 if [ -n "$SET_ARCH" ] ; then
@@ -263,7 +253,6 @@ if [ -n "$SET_ARCH" ] ; then
   # 64 bit config
   ##################################
   if [ "$SET_ARCH" = 64 ] ; then
-    echo "64 bit mode selected - Setting up enviroment"
     # 64 bit depended settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm64}
@@ -285,7 +274,6 @@ if [ -n "$SET_ARCH" ] ; then
   # 32 bit config
   ##################################
   if [ "$SET_ARCH" = 32 ] ; then
-    echo "32 bit mode selected - Setting up enviroment"
     #General 32bit configuration
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm}
@@ -293,7 +281,6 @@ if [ -n "$SET_ARCH" ] ; then
 
     #Raspberry setting grouped by board compability
     if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
-      echo "Setting settings for bcm2835 Raspberry PI boards"
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
       RELEASE_ARCH=${RELEASE_ARCH:=armel}
@@ -301,7 +288,6 @@ if [ -n "$SET_ARCH" ] ; then
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
     fi
     if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-      echo "Setting settings for bcm2837 Raspberry PI boards"
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
       RELEASE_ARCH=${RELEASE_ARCH:=armhf}
@@ -316,7 +302,6 @@ else
 fi
 
     #Device specific configuration
-    echo "Select DTB-File"
     case "$RPI_MODEL" in
     0)
       DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
@@ -347,7 +332,6 @@ fi
       exit 1
       ;;
     esac
-    echo "$DTB_FILE selected"
 
 #DEBUG off
 set +x
@@ -357,8 +341,6 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
   if [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ] ; then
     echo "error: The selected Raspberry Pi model has no internal wireless interface"
     exit 1
-  else
-    echo "Raspberry Pi $RPI_MODEL has WIFI support"
   fi
 fi
 
