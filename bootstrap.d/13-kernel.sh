@@ -80,7 +80,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       -e "s/\(^CONFIG_TOUCHSCREEN.*\=\).*/\1n/"\
       -e "s/\(^CONFIG_USB_GSPCA_.*\=\).*/\1n/"\
       -e "s/\(^CONFIG_DRM.*\=\).*/\1n/"\
-      "${KERNEL_DIR}/.config"
+      "${KERNEL_DIR}"/.config
     fi
 
     if [ "$KERNELSRC_CONFIG" = true ] ; then
