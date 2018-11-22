@@ -49,5 +49,5 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   make -j "$(nproc)"
 
   #back to root of scriptdir
-  cd "${WORKDIR}
+  cd "${WORKDIR}"
 fi
