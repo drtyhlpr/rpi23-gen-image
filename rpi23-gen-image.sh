@@ -253,11 +253,12 @@ if [ -n "$SET_ARCH" ] ; then
   # 64 bit config
   ##################################
   if [ "$SET_ARCH" = 64 ] ; then
-    # 64 bit depended settings
+    # General 64 bit depended settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm64}
     KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="Image"}
 
+    # Board specific settings
     if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
@@ -265,21 +266,19 @@ if [ -n "$SET_ARCH" ] ; then
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
       CROSS_COMPILE=${CROSS_COMPILE:=aarch64-linux-gnu-}
     else
-      echo "error: Only Raspberry PI 3 and 3B+ support 64bit"
+      echo "error: Only Raspberry PI 3 and 3B+ support 64 bit"
       exit 1
     fi
   fi
 
-  ##################################
-  # 32 bit config
-  ##################################
+  # 32 bit configuration
   if [ "$SET_ARCH" = 32 ] ; then
-    #General 32bit configuration
+    # General 32 bit dependend settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm}
     KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="zImage"}
 
-    #Raspberry setting grouped by board compability
+    # Hardware specific settings
     if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
@@ -287,6 +286,8 @@ if [ -n "$SET_ARCH" ] ; then
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel.img}
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
     fi
+
+    # Hardware specific settings
     if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
@@ -300,8 +301,7 @@ else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
 fi
-
-    #Device specific configuration
+    # Device specific configuration and U-Boot configuration
     case "$RPI_MODEL" in
     0)
       DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
@@ -352,6 +352,7 @@ if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
   fi
 fi
 
+# Add cmake to compile videocore sources
 if [ "$ENABLE_VIDEOCORE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cmake"
 fi
@@ -562,6 +563,11 @@ if [ "$ENABLE_REDUCE" = true ] ; then
   if [ "$REDUCE_SSHD" = true ] ; then
     APT_INCLUDES="$(echo "${APT_INCLUDES}" | sed "s/openssh-server/dropbear/")"
   fi
+fi
+
+# Configure systemd-sysv exclude to make halt/reboot/shutdown scripts available
+if [ "$ENABLE_SYSVINIT" = false ] ; then
+  APT_EXCLUDES="--exclude=${APT_EXCLUDES},init,systemd-sysv"
 fi
 
 # Configure kernel sources if no KERNELSRC_DIR
