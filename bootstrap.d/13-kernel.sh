@@ -87,7 +87,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
       #Switch to KERNELSRC_DIR
-      pushd "${KERNEL_DIR}"
+      cd "${KERNEL_DIR}"
 
       # GPL v2.0
       #https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
@@ -214,7 +214,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  fi
 
 	  #Revert to previous directory
-	  popd
+	  cd "${R}"
 
       # Set kernel configuration parameters to enable qemu emulation
       if [ "$ENABLE_QEMU" = true ] ; then
