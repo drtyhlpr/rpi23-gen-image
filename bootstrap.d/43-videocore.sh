@@ -8,16 +8,16 @@
 if [ "$ENABLE_VIDEOCORE" = true ] ; then
   # Copy existing videocore sources into chroot directory
   if [ -n "$VIDEOCORESRC_DIR" ] && [ -d "$VIDEOCORESRC_DIR" ] ; then
-    # Copy local U-Boot sources
+    # Copy local videocore sources
     cp -r "${VIDEOCORESRC_DIR}" "${R}/tmp/userland"
   else
-    # Create temporary directory for U-Boot sources
+    # Create temporary directory for videocore sources
     temp_dir=$(as_nobody mktemp -d)
 
-    # Fetch U-Boot sources
+    # Fetch videocore sources
     as_nobody git -C "${temp_dir}" clone "${VIDEOCORE_URL}"
 
-    # Copy downloaded U-Boot sources
+    # Copy downloaded videocore sources
     mv "${temp_dir}/userland" "${R}/tmp/"
 
     # Set permissions of the U-Boot sources
