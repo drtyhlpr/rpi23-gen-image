@@ -209,7 +209,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  #https://github.com/torvalds/linux/blob/master/init/Kconfig#L848
 	  # Enables BPF syscall for systemd-journald
 	  if [ "$KERNEL_BPF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-            set_kernel_config CONFIG_BPF_SYSCALL y
+        set_kernel_config CONFIG_BPF_SYSCALL y
 	    set_kernel_config CONFIG_CGROUP_BPF y
 	  fi
 
