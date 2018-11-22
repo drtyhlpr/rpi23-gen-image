@@ -69,14 +69,6 @@ WORKDIR=$(pwd)
 BASEDIR=${BASEDIR:=${WORKDIR}/images/${RELEASE}}
 BUILDDIR="${BASEDIR}/build"
 
-# Prepare date string for default image file name
-DATE="$(date +%Y-%m-%d)"
-if [ -z "$KERNEL_BRANCH" ] ; then
-  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
-else
-  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
-fi
-
 # Chroot directories
 R="${BUILDDIR}/chroot"
 ETC_DIR="${R}/etc"
@@ -244,10 +236,7 @@ APT_SERVER=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -
 
 #make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
 if [ -n "$SET_ARCH" ] ; then
-  echo "Setting Architecture specific settings"
-  ##################################
-  # 64 bit config
-  ##################################
+  # 64 bit configuration
   if [ "$SET_ARCH" = 64 ] ; then
     # General 64 bit depended settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
@@ -329,8 +318,13 @@ fi
       ;;
     esac
 
-#DEBUG off
-set +x
+# Prepare date string for default image file name
+DATE="$(date +%Y-%m-%d)"
+if [ -z "$KERNEL_BRANCH" ] ; then
+  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
+else
+  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
+fi
 
 # Check if the internal wireless interface is supported by the RPi model
 if [ "$ENABLE_WIRELESS" = true ] ; then
