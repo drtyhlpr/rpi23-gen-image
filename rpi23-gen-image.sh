@@ -217,11 +217,6 @@ MISSING_PACKAGES=""
 # Packages installed for c/c++ build environment in chroot (keep empty)
 COMPILER_PACKAGES=""
 
-#If init and systemd-sysv are wanted e.g. halt/reboot/shutdown scripts
-if [ "$ENABLE_SYSVINIT" = false ] ; then
-APT_EXCLUDES="--exclude=${APT_EXCLUDES},init,systemd-sysv"
-fi
-
 #Check if apt-cacher-ng has its default port open on and set APT_PROXY
 if [ -n "$(lsof -i :3142)" ] ; then
 HTTP_PROXY=http://127.0.0.1:3142/

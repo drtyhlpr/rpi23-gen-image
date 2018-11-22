@@ -30,7 +30,7 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   # Create build dir
   mkdir "${R}"/tmp/userland/build
   # push us to build directory
-  pushd "${R}"/tmp/userland/build
+  cd "${R}"/tmp/userland/build
 
   if [ "$RELEASE_ARCH" = "arm64" ] ; then
   cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DARM64=ON -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_ASM_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -U_FORTIFY_SOURCE" -DCMAKE_ASM_FLAGS="${CMAKE_ASM_FLAGS} -c" -DVIDEOCORE_BUILD_DIR="${R}" "${R}/tmp/userland"
@@ -47,5 +47,5 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   #build userland
   make -j "$(nproc)"
   #pop us out of build dir
-  popd
+  cd "${WORKDIR}"
 fi

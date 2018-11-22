@@ -1,3 +1,4 @@
+#!/bin/sh
 # This file contains utility functions used by rpi23-gen-image.sh
 
 cleanup (){
@@ -79,8 +80,8 @@ chroot_remove_cc() {
 #https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
 set_kernel_config() {
   # flag as $1, value to set as $2, config must exist at "./.config"
-  local TGT="CONFIG_${1#CONFIG_}"
-  local REP="${2//\//\\/}"
+  TGT="CONFIG_${1#CONFIG_}"
+  REP="${2}"
   if grep -q "^${TGT}[^_]" .config; then
     sed -i "s/^\(${TGT}=.*\|# ${TGT} is not set\)/${TGT}=${REP}/" .config
   else
