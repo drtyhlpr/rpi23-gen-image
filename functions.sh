@@ -31,22 +31,22 @@ cleanup (){
 
 chroot_exec() {
   # Exec command in chroot
-  LANG=C LC_ALL=C DEBIAN_FRONTEND=noninteractive chroot "${R}" "$*"
+  LANG=C LC_ALL=C DEBIAN_FRONTEND=noninteractive chroot "${R}" "$@"
 }
 
 as_nobody() {
   # Exec command as user nobody
-  sudo -E -u nobody LANG=C LC_ALL=C "$*"
+  sudo -E -u nobody LANG=C LC_ALL=C "$@"
 }
 
 install_readonly() {
   # Install file with user read-only permissions
-  install -o root -g root -m 644 "$*"
+  install -o root -g root -m 644 "$@"
 }
 
 install_exec() {
   # Install file with root exec permissions
-  install -o root -g root -m 744 "$*"
+  install -o root -g root -m 744 "$@"
 }
 
 use_template () {
