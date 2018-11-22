@@ -107,36 +107,21 @@ if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     # Set permissions
     chown -R root:root "${R}/tmp/pi-bluetooth"
 
-    # Install files to chroot
     # Install tools
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/btuart" "${R}/usr/bin/btuart"
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/bthelper" "${R}/usr/bin/bthelper"
 
     # Install bluetooth udev rule
     install_readonly "${R}/tmp/pi-bluetooth/lib/udev/rules.d/90-pi-bluetooth.rules" "${LIB_DIR}/udev/rules.d/90-pi-bluetooth.rules"
-    #aur
-    #install_readonly "${R}/tmp/pi-bluetooth/50-bluetooth-hci-auto-poweron.rules" "${ETC_DIR}/udev/rules.d/50-bluetooth-hci-auto-poweron.rules"
 
     # Install Firmware Flash file and apropiate licence
     mkdir "${ETC_DIR}/firmware/"
 
-    #aur https://aur.archlinux.org/packages/pi-bluetooth/
-    #install_readonly "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" "${ETC_DIR}/firmware/LICENCE.broadcom_bcm43xx"
-    #install_readonly "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" "${ETC_DIR}/firmware/BCM43430A1.hcd"
-    
     wget -O "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" https://aur.archlinux.org/cgit/aur.git/plain/LICENCE.broadcom_bcm43xx?h=pi-bluetooth
     wget -O "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" https://aur.archlinux.org/cgit/aur.git/plain/BCM43430A1.hcd?h=pi-bluetooth
     
-    # Install systemd service for bluetooth
-    #install_readonly "${R}/tmp/pi-bluetooth/brcm43438.service" "${ETC_DIR}/systemd/system/brcm43438.service"
-
-    # Remove temporary directory
-    #rm -fr "${temp_dir}"
-
     # Get /dev/serial back for compability
-    # Raspberry-sys-mod package
     wget -O "${ETC_DIR}/udev/rules.d/99-com.rules" https://raw.githubusercontent.com/RPi-Distro/raspberrypi-sys-mods/master/etc.armhf/udev/rules.d/99-com.rules
-
   fi
 fi
 

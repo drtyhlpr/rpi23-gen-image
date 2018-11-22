@@ -1,0 +1,24 @@
+add table ip6 filter
+add chain ip6 filter INPUT { type filter hook input priority 0; }
+add chain ip6 filter FORWARD { type filter hook forward priority 0; }
+add chain ip6 filter OUTPUT { type filter hook output priority 0; }
+add chain ip6 filter TCP
+add chain ip6 filter UDP
+add chain ip6 filter SSH
+add rule ip6 filter INPUT rt type 0 counter drop
+add rule ip6 filter OUTPUT rt type 0 counter drop
+add rule ip6 filter FORWARD rt type 0 counter drop
+add rule ip6 filter INPUT meta l4proto ipv6-icmp icmpv6 type echo-request  limit rate 30/minute burst 8 packets counter accept
+add rule ip6 filter INPUT meta l4proto ipv6-icmp icmpv6 type echo-request  counter drop
+add rule ip6 filter INPUT ct state related,established counter accept
+add rule ip6 filter INPUT iifname lo counter accept
+add rule ip6 filter INPUT ct state invalid counter drop
+add rule ip6 filter INPUT tcp dport 22 ct state new counter jump SSH
+# -t filter -A SSH -m recent --name sshbf --rttl --rcheck --hitcount 3 --seconds 10 -j DROP 
+# -t filter -A SSH -m recent --name sshbf --rttl --rcheck --hitcount 20 --seconds 1800 -j DROP 
+# -t filter -A SSH -m recent --name sshbf --set -j ACCEPT 
+add rule ip6 filter INPUT meta l4proto udp ct state new counter jump UDP
+add rule ip6 filter INPUT tcp flags & fin|syn|rst|ack == syn ct state new counter jump TCP
+add rule ip6 filter INPUT meta l4proto udp counter reject with icmpv6 type admin-prohibited
+add rule ip6 filter INPUT meta l4proto tcp counter reject with icmpv6 type admin-prohibited
+add rule ip6 filter INPUT counter reject with icmpv6 type admin-prohibited

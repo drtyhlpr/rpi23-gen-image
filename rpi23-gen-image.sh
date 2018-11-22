@@ -45,7 +45,7 @@ RPI_MODEL=${RPI_MODEL:=2}
 # Debian release
 RELEASE=${RELEASE:=buster}
 
-#Kernel Branch
+# Kernel Branch
 KERNEL_BRANCH=${KERNEL_BRANCH:=""}
 
 # URLs
@@ -146,7 +146,7 @@ ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
 ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
-ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=true}
+ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=false}
 VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
 FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
@@ -196,7 +196,7 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup"
 
-#Packages to exclude from chroot build environment
+# Packages to exclude from chroot build environment
 APT_EXCLUDES=${APT_EXCLUDES:=""}
 
 # Packages required for bootstrapping
@@ -208,29 +208,17 @@ COMPILER_PACKAGES=""
 
 set +x
 
-#If init and systemd-sysv are wanted e.g. halt/reboot/shutdown scripts
-if [ "$ENABLE_SYSVINIT" = false ] ; then
-APT_EXCLUDES="--exclude=${APT_EXCLUDES},init,systemd-sysv"
-fi
-
-#Check if apt-cacher-ng has its default port open on and set APT_PROXY
-if [ -n "$(lsof -i :3142)" ] ; then
-HTTP_PROXY=http://127.0.0.1:3142/
-fi
-
-#make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
+# Setup architecture specific settings
 if [ -n "$SET_ARCH" ] ; then
-  echo "Setting Architecture specific settings"
-  ##################################
-  # 64 bit config
-  ##################################
+
+  # 64 bit configuration
   if [ "$SET_ARCH" = 64 ] ; then
-    echo "64 bit mode selected - Setting up enviroment"
-    # 64 bit depended settings
+    # General 64 bit depended settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm64}
     KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="Image"}
 
+    # Board specific settings
     if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
@@ -238,32 +226,29 @@ if [ -n "$SET_ARCH" ] ; then
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
       CROSS_COMPILE=${CROSS_COMPILE:=aarch64-linux-gnu-}
     else
-      echo "error: Only Raspberry PI 3 and 3B+ support 64bit"
+      echo "error: Only Raspberry PI 3 and 3B+ support 64 bit"
       exit 1
     fi
   fi
 
-  ##################################
-  # 32 bit config
-  ##################################
+  # 32 bit configuration
   if [ "$SET_ARCH" = 32 ] ; then
-    echo "32 bit mode selected - Setting up enviroment"
-    #General 32bit configuration
+    # General 32 bit dependend settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm}
     KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="zImage"}
 
-    #Raspberry setting grouped by board compability
+    # Hardware specific settings
     if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
-      echo "Setting settings for bcm2835 Raspberry PI boards"
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
       RELEASE_ARCH=${RELEASE_ARCH:=armel}
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel.img}
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
     fi
+
+    # Hardware specific settings
     if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-      echo "Setting settings for bcm2837 Raspberry PI boards"
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
       RELEASE_ARCH=${RELEASE_ARCH:=armhf}
@@ -276,9 +261,7 @@ else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
 fi
-
-    #Device specific configuration and uboot-config
-    echo "Select DTB-File"
+    # Device specific configuration and U-Boot configuration
     case "$RPI_MODEL" in
     0)
       DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
@@ -329,6 +312,7 @@ if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
   fi
 fi
 
+# Add cmake to compile videocore sources
 if [ "$ENABLE_VIDEOCORE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cmake"
 fi
@@ -534,6 +518,21 @@ if [ "$ENABLE_REDUCE" = true ] ; then
   if [ "$REDUCE_SSHD" = true ] ; then
     APT_INCLUDES="$(echo "${APT_INCLUDES}" | sed "s/openssh-server/dropbear/")"
   fi
+fi
+
+# Configure systemd-sysv exclude to make halt/reboot/shutdown scripts available
+if [ "$ENABLE_SYSVINIT" = false ] ; then
+  APT_EXCLUDES="--exclude=${APT_EXCLUDES},init,systemd-sysv"
+fi
+
+# Check if kernel is getting compiled
+if [ "$BUILD_KERNEL" = false ] ; then
+  echo "Downloading precompiled kernel"
+  echo "error: not configured"
+  exit 1;
+# BUILD_KERNEL=true
+else
+  echo "No precompiled kernel repositories were added"
 fi
 
 # Configure kernel sources if no KERNELSRC_DIR

@@ -11,5 +11,5 @@ QEMU_BINARY=/usr/bin/qemu-aarch64-static
 KERNEL_DEFCONFIG=bcmrpi3_defconfig
 KERNEL_BIN_IMAGE=Image
 KERNEL_IMAGE=kernel8.img
-KERNEL_BRANCH=rpi-4.11.y
+KERNEL_BRANCH=rpi-4.14.y
 ENABLE_WIRELESS=true

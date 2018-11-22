@@ -1,0 +1,21 @@
+add table ip filter
+add chain ip filter INPUT { type filter hook input priority 0; }
+add chain ip filter FORWARD { type filter hook forward priority 0; }
+add chain ip filter OUTPUT { type filter hook output priority 0; }
+add chain ip filter TCP
+add chain ip filter UDP
+add chain ip filter SSH
+add rule ip filter INPUT icmp type echo-request limit rate 30/minute burst 8 packets counter accept
+add rule ip filter INPUT icmp type echo-request counter drop
+add rule ip filter INPUT ct state related,established counter accept
+add rule ip filter INPUT iifname lo counter accept
+add rule ip filter INPUT ct state invalid counter drop
+add rule ip filter INPUT tcp dport 22 ct state new counter jump SSH
+# -t filter -A SSH -m recent --name sshbf --rttl --rcheck --hitcount 3 --seconds 10 -j DROP 
+# -t filter -A SSH -m recent --name sshbf --rttl --rcheck --hitcount 20 --seconds 1800 -j DROP 
+# -t filter -A SSH -m recent --name sshbf --set -j ACCEPT 
+add rule ip filter INPUT ip protocol udp ct state new counter jump UDP
+add rule ip filter INPUT tcp flags & fin|syn|rst|ack == syn ct state new counter jump TCP
+add rule ip filter INPUT ip protocol udp counter reject
+add rule ip filter INPUT ip protocol tcp counter reject with tcp reset
+add rule ip filter INPUT counter reject with icmp type prot-unreachable
