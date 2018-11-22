@@ -65,7 +65,8 @@ RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_BIS_KERNEL_URL}
 BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
 
 # Build directories
-BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
+WORKDIR=$(pwd)
+BASEDIR=${BASEDIR:=${WORKDIR}/images/${RELEASE}}
 BUILDDIR="${BASEDIR}/build"
 
 # Prepare date string for default image file name
