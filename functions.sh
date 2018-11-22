@@ -31,22 +31,22 @@ cleanup (){
 
 chroot_exec() {
   # Exec command in chroot
-  LANG=C LC_ALL=C DEBIAN_FRONTEND=noninteractive chroot ${R} $*
+  LANG=C LC_ALL=C DEBIAN_FRONTEND=noninteractive chroot "${R}" "$*"
 }
 
 as_nobody() {
   # Exec command as user nobody
-  sudo -E -u nobody LANG=C LC_ALL=C $*
+  sudo -E -u nobody LANG=C LC_ALL=C "$*"
 }
 
 install_readonly() {
   # Install file with user read-only permissions
-  install -o root -g root -m 644 $*
+  install -o root -g root -m 644 "$*"
 }
 
 install_exec() {
   # Install file with root exec permissions
-  install -o root -g root -m 744 $*
+  install -o root -g root -m 744 "$*"
 }
 
 use_template () {
@@ -65,14 +65,14 @@ chroot_install_cc() {
   if [ -z "${COMPILER_PACKAGES}" ] ; then
     COMPILER_PACKAGES=$(chroot_exec apt-get -s install g++ make bc | grep "^Inst " | awk -v ORS=" " '{ print $2 }')
 	# Install COMPILER_PACKAGES in chroot
-    chroot_exec apt-get -q -y --allow-unauthenticated --no-install-recommends install ${COMPILER_PACKAGES}
+    chroot_exec apt-get -q -y --allow-unauthenticated --no-install-recommends install "${COMPILER_PACKAGES}"
   fi
 }
 
 chroot_remove_cc() {
   # Remove c/c++ build environment from the chroot
-  if [ ! -z "${COMPILER_PACKAGES}" ] ; then
-    chroot_exec apt-get -qq -y --auto-remove purge ${COMPILER_PACKAGES}
+  if [ -n "${COMPILER_PACKAGES}" ] ; then
+    chroot_exec apt-get -qq -y --auto-remove purge "${COMPILER_PACKAGES}"
     COMPILER_PACKAGES=""
   fi
 }
@@ -91,8 +91,7 @@ set_kernel_config() {
 
 unset_kernel_config() {
   # unsets flag with the value of $1, config must exist at "./.config"
-  local TGT="CONFIG_${1#CONFIG_}"
+  TGT="CONFIG_${1#CONFIG_}"
   sed -i "s/^${TGT}=.*/# ${TGT} is not set/" .config
 }
 #
-
