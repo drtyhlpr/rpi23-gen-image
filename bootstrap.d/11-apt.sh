@@ -11,7 +11,6 @@ if [ -z "$APT_PROXY" ] ; then
   sed -i "s/\"\"/\"${APT_PROXY}\"/" "${ETC_DIR}/apt/apt.conf.d/10proxy"
 fi
 
-
 # Upgrade package index and update all installed packages and changed dependencies
 chroot_exec apt-get -qq -y update
 chroot_exec apt-get -qq -y -u dist-upgrade
