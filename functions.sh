@@ -77,24 +77,21 @@ chroot_remove_cc() {
 }
 #GPL v2.0
 #https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
-# edited with thir param
-#start
 set_kernel_config() {
-    # flag as $1, value to set as $2, config must exist at "./.config"
-    local TGT="CONFIG_${1}"
-    local REP="${2//\//\\/}"
-    if grep -q "^${TGT}[^_]" .config; then
-        sed -i "s/^\(${TGT}=.*\|# ${TGT} is not set\)/${TGT}=${REP}/" .config
-    else
-        echo "${TGT}=${2}" >> .config
-    fi
+  # flag as $1, value to set as $2, config must exist at "./.config"
+  local TGT="CONFIG_${1#CONFIG_}"
+  local REP="${2//\//\\/}"
+  if grep -q "^${TGT}[^_]" .config; then
+    sed -i "s/^\(${TGT}=.*\|# ${TGT} is not set\)/${TGT}=${REP}/" .config
+  else
+    echo "${TGT}=${2}" >> .config
+  fi
 }
 
 unset_kernel_config() {
-    # unsets flag with the value of $1, config must exist at "./.config"
-    local TGT="CONFIG_${1}"
-    sed -i "s/^${TGT}=.*/# ${TGT} is not set/" .config
+  # unsets flag with the value of $1, config must exist at "./.config"
+  local TGT="CONFIG_${1#CONFIG_}"
+  sed -i "s/^${TGT}=.*/# ${TGT} is not set/" .config
 }
 #
-#end
-#
+
