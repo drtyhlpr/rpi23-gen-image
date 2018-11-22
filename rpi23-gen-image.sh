@@ -62,14 +62,6 @@ BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
 BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
 BUILDDIR="${BASEDIR}/build"
 
-# Prepare date string for default image file name
-DATE="$(date +%Y-%m-%d)"
-if [ -z "$KERNEL_BRANCH" ] ; then
-  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
-else
-  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
-fi
-
 # Chroot directories
 R="${BUILDDIR}/chroot"
 ETC_DIR="${R}/etc"
@@ -210,7 +202,6 @@ set +x
 
 # Setup architecture specific settings
 if [ -n "$SET_ARCH" ] ; then
-
   # 64 bit configuration
   if [ "$SET_ARCH" = 64 ] ; then
     # General 64 bit depended settings
@@ -292,7 +283,14 @@ fi
       exit 1
       ;;
     esac
-    echo "$DTB_FILE selected"
+
+# Prepare date string for default image file name
+DATE="$(date +%Y-%m-%d)"
+if [ -z "$KERNEL_BRANCH" ] ; then
+  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
+else
+  IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
+fi
 
 # Check if the internal wireless interface is supported by the RPi model
 if [ "$ENABLE_WIRELESS" = true ] ; then
