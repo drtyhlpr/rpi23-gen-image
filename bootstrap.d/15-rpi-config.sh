@@ -115,10 +115,10 @@ if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     mv "${temp_dir}/pi-bluetooth" "${R}/tmp/"
 
     # Raspberry-sys-mod package for /dev/serial device needed by bluetooth service
-    wget -O "${R}/tmp/pi-bluetooth/99-com.rules" https://raw.githubusercontent.com/RPi-Distro/raspberrypi-sys-mods/master/etc.armhf/udev/rules.d/99-com.rules	
+    as_nobody wget -q -O "${R}/tmp/pi-bluetooth/99-com.rules" https://raw.githubusercontent.com/RPi-Distro/raspberrypi-sys-mods/master/etc.armhf/udev/rules.d/99-com.rules	
     # Bluetooth firmware from arch aur https://aur.archlinux.org/packages/pi-bluetooth/
-    wget -O "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" https://aur.archlinux.org/cgit/aur.git/plain/LICENCE.broadcom_bcm43xx?h=pi-bluetooth
-    wget -O "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" https://aur.archlinux.org/cgit/aur.git/plain/BCM43430A1.hcd?h=pi-bluetooth
+    as_nobody wget -q -O "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" https://aur.archlinux.org/cgit/aur.git/plain/LICENCE.broadcom_bcm43xx?h=pi-bluetooth
+    as_nobody wget -q -O "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" https://aur.archlinux.org/cgit/aur.git/plain/BCM43430A1.hcd?h=pi-bluetooth
 
     # Set permissions
     chown -R root:root "${R}/tmp/pi-bluetooth"
