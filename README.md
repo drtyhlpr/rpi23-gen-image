@@ -1,13 +1,13 @@
 # rpi23-gen-image
 ## Introduction
-`rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for all Raspberry Pi computers. The script at this time supports the bootstrapping of the Debian (armhf/armel) releases `stretch` and `buster`. Raspberry Pi 3 images are generated for 32-bit mode only. Raspberry Pi 3 64-bit images can be generated using custom configuration parameters (```templates/rpi3-stretch-arm64-4.14.y```).
+`rpi23-gen-image.sh` is an advanced Debian Linux bootstrapping shell script for generating Debian OS images for all Raspberry Pi computers. The script at this time supports the bootstrapping of the Debian (armhf/armel) releases `stretch` and `buster`. Raspberry Pi 0/1/2/3 images are generated for 32-bit mode only. Raspberry Pi 3 supports 64-bit images that can be generated using custom configuration parameters (```templates/rpi3-stretch-arm64-4.14.y```).
 
 ## Build dependencies
 The following list of Debian packages must be installed on the build system because they are essentially required for the bootstrapping process. The script will check if all required packages are installed and missing packages will be installed automatically if confirmed by the user.
 
   ```debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo```
 
-It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the RPi3 this is mandatory. Kernel compilation and linking will be performed on the build system using an ARM (armhf/armel) cross-compiler toolchain.
+It is recommended to configure the `rpi23-gen-image.sh` script to build and install the latest Raspberry Pi Linux kernel. For the Raspberry 3 this is mandatory. Kernel compilation and linking will be performed on the build system using an ARM (armhf/armel) cross-compiler toolchain.
 
 The script has been tested using the default `crossbuild-essential-armhf` and `crossbuild-essential-armel` toolchain meta packages on Debian Linux `stretch` build systems. Please check the [Debian CrossToolchains Wiki](https://wiki.debian.org/CrossToolchains) for further information.
 
@@ -61,14 +61,19 @@ A comma separated list of additional packages to be installed by apt after boots
 Set Architecture to default 32bit. If you want to to compile 64bit (RPI3 or RPI3+) set it to `64`. This option will set every needed crosscompiler or boeard specific option for a successful build.
 
 ##### `RPI_MODEL`=2
-Specifiy the target Raspberry Pi hardware model. The script at this time supports the following Raspberry Pi models:
+Specifiy the target Raspberry Pi hardware model. The script at this time supports the following Raspberry Pi models (`BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` or `3P` is used) :
+
 `0`  = Used for Raspberry Pi 0 and Raspberry Pi 0 W
-`1`  = Used for Pi 1 model A and B
-`1P` = Used for Pi 1 model B+ and A+
-`2`  = Used for Pi 2 model B
-`3`  = Used for Pi 3 model B
-`3P` = Used for Pi 3 model B+
-`BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` or `3P` is used.
+
+`1`  = Used for Raspberry Pi 1 model A and B
+
+`1P` = Used for Raspberry Pi 1 model B+ and A+
+
+`2`  = Used for Raspberry Pi 2 model B
+
+`3`  = Used for Raspberry Pi 3 model B
+
+`3P` = Used for Raspberry Pi 3 model B+
 
 ##### `RELEASE`="buster"
 Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases `stretch` and `buster`.
@@ -152,13 +157,13 @@ Set the IP address for the second NTP server.
 
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
-Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi0/1/2/3. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
+Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi 0/1/2/3. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
 
 ##### `ENABLE_I2C`=false
-Enable I2C interface on the RPi0/1/2/3. Please check the [RPi0/1/2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
+Enable I2C interface on the RPi 0/1/2/3. Please check the [RPi 0/1/2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
 
 ##### `ENABLE_SPI`=false
-Enable SPI interface on the RPi0/1/2/3. Please check the [RPi0/1/2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
+Enable SPI interface on the RPi 0/1/2/3. Please check the [RPi 0/1/2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
 
 ##### `ENABLE_IPV6`=true
 Enable IPv6 support. The network interface configuration is managed via systemd-networkd.
@@ -207,7 +212,7 @@ Use debootstrap script variant `minbase` which only includes essential packages 
 Reduce the disk space usage by deleting packages and files. See `REDUCE_*` parameters for detailed information.
 
 ##### `ENABLE_UBOOT`=false
-Replace the default RPi0/1/2/3 second stage bootloader (bootcode.bin) with [U-Boot bootloader](https://git.denx.de/?p=u-boot.git;a=summary). U-Boot can boot images via the network using the BOOTP/TFTP protocol.
+Replace the default RPi 0/1/2/3 second stage bootloader (bootcode.bin) with [U-Boot bootloader](https://git.denx.de/?p=u-boot.git;a=summary). U-Boot can boot images via the network using the BOOTP/TFTP protocol.
 
 ##### `UBOOTSRC_DIR`=""
 Path to a directory (`u-boot`) of [U-Boot bootloader sources](https://git.denx.de/?p=u-boot.git;a=summary) that will be copied, configured, build and installed inside the chroot.
@@ -276,7 +281,7 @@ Add SSH (v2) public key(s) from specified file to `authorized_keys` file to enab
 
 #### Kernel compilation:
 ##### `BUILD_KERNEL`=true
-Build and install the latest RPi0/1/2/3 Linux kernel. Currently only the default RPi0/1/2/3 kernel configuration is used.
+Build and install the latest RPi 0/1/2/3 Linux kernel. Currently only the default RPi 0/1/2/3 kernel configuration is used.
 
 ##### `CROSS_COMPILE`="arm-linux-gnueabihf-"
 This sets the cross compile enviornment for the compiler.
@@ -399,9 +404,9 @@ The functions of this script that are required for the different stages of the b
 | `10-bootstrap.sh` | Debootstrap basic system |
 | `11-apt.sh` | Setup APT repositories |
 | `12-locale.sh` | Setup Locales and keyboard settings |
-| `13-kernel.sh` | Build and install RPi0/1/2/3 Kernel |
+| `13-kernel.sh` | Build and install RPi 0/1/2/3 Kernel |
 | `14-fstab.sh` | Setup fstab and initramfs |
-| `15-rpi-config.sh` | Setup RPi0/1/2/3 config and cmdline |
+| `15-rpi-config.sh` | Setup RPi 0/1/2/3 config and cmdline |
 | `20-networking.sh` | Setup Networking |
 | `21-firewall.sh` | Setup Firewall |
 | `30-security.sh` | Setup Users and Security settings |
@@ -418,7 +423,7 @@ All the required configuration files that will be copied to the generated OS ima
 | Directory | Description |
 | --- | --- |
 | `apt` | APT management configuration files |
-| `boot` | Boot and RPi0/1/2/3 configuration files |
+| `boot` | Boot and RPi 0/1/2/3 configuration files |
 | `dpkg` | Package Manager configuration |
 | `etc` | Configuration files and rc scripts |
 | `firstboot` | Scripts that get executed on first boot  |
@@ -444,7 +449,7 @@ script -c 'APT_SERVER=ftp.de.debian.org ./rpi23-gen-image.sh' ./build.log
 ```
 
 ## Flashing the image file
-After the image file was successfully created by the `rpi23-gen-image.sh` script it can be copied to the microSD card that will be used by the RPi0/1/2/3 computer. This can be performed by using the tools `bmaptool` or `dd`. Using `bmaptool` will probably speed-up the copy process because `bmaptool` copies more wisely than `dd`.
+After the image file was successfully created by the `rpi23-gen-image.sh` script it can be copied to the microSD card that will be used by the RPi 0/1/2/3 computer. This can be performed by using the tools `bmaptool` or `dd`. Using `bmaptool` will probably speed-up the copy process because `bmaptool` copies more wisely than `dd`.
 
 ##### Flashing examples:
 ```shell
