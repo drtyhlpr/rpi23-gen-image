@@ -209,9 +209,10 @@ MISSING_PACKAGES=""
 # Packages installed for c/c++ build environment in chroot (keep empty)
 COMPILER_PACKAGES=""
 
-#Check if apt-cacher-ng has its default port open on and set APT_PROXY
-if [ -n "$(lsof -i :3142)" ] ; then
-HTTP_PROXY=http://127.0.0.1:3142/
+#Check if apt-cacher-ng has port 3142 open and set APT_PROXY
+APT_CACHER_RUNNING=$(lsof -i :3142 | grep apt-cacher-ng |  cut -d ' ' -f3 | uniq)
+if [ -n ${APT_CACHER_RUNNING} ] ; then
+  APT_PROXY=http://127.0.0.1:3142/
 fi
 
 #netselect-apt does not know buster yet
