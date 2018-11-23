@@ -59,7 +59,8 @@ VIDEOCORE_URL=${VIDEOCORE_URL:=https://github.com/raspberrypi/userland}
 BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
 
 # Build directories
-BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
+WORKDIR=$(pwd)
+BASEDIR=${BASEDIR:=${WORKDIR}/images/${RELEASE}}
 BUILDDIR="${BASEDIR}/build"
 
 # Chroot directories
@@ -186,7 +187,7 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
-APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup"
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup,libnss-systemd"
 
 # Packages to exclude from chroot build environment
 APT_EXCLUDES=${APT_EXCLUDES:=""}
@@ -199,6 +200,11 @@ MISSING_PACKAGES=""
 COMPILER_PACKAGES=""
 
 set +x
+
+#Check if apt-cacher-ng has its default port open on and set APT_PROXY
+if [ -n "$(lsof -i :3142)" ] ; then
+HTTP_PROXY=http://127.0.0.1:3142/
+fi
 
 # Setup architecture specific settings
 if [ -n "$SET_ARCH" ] ; then
@@ -252,37 +258,37 @@ else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
 fi
-    # Device specific configuration and U-Boot configuration
-    case "$RPI_MODEL" in
-    0)
-      DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
-      ;;
-    1)
-      DTB_FILE=${DTB_FILE:=bcm2708-rpi-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
-      ;;
-    1P)
-      DTB_FILE=${DTB_FILE:=bcm2708-rpi-b-plus.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
-      ;;
-    2)
-      DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
-      ;;
-    3)
-      DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
-      ;;
-    3P)
-      DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
-      ;;
-    *)
-      echo "error: Raspberry Pi model $RPI_MODEL is not supported!"
-      exit 1
-      ;;
-    esac
+# Device specific configuration and U-Boot configuration
+case "$RPI_MODEL" in
+  0)
+    DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+    ;;
+  1)
+    DTB_FILE=${DTB_FILE:=bcm2708-rpi-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+    ;;
+  1P)
+    DTB_FILE=${DTB_FILE:=bcm2708-rpi-b-plus.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+    ;;
+  2)
+    DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
+    ;;
+  3)
+    DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
+    ;;
+  3P)
+    DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
+    ;;
+  *)
+    echo "error: Raspberry Pi model $RPI_MODEL is not supported!"
+    exit 1
+    ;;
+esac
 
 # Prepare date string for default image file name
 DATE="$(date +%Y-%m-%d)"
@@ -297,8 +303,6 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
   if [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ] ; then
     echo "error: The selected Raspberry Pi model has no internal wireless interface"
     exit 1
-  else
-    echo "Raspberry Pi $RPI_MODEL has WIFI support"
   fi
 fi
 
@@ -365,7 +369,7 @@ fi
 
 # Check if all required packages are installed on the build system
 for package in $REQUIRED_PACKAGES ; do
-  if [ "$(dpkg-query -W -f='${Status}' $package)" != "install ok installed" ] ; then
+  if [ "$(dpkg-query -W -f='${Status}' "$package")" != "install ok installed" ] ; then
     MISSING_PACKAGES="${MISSING_PACKAGES} $package"
   fi
 done
