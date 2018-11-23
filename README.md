@@ -153,7 +153,8 @@ Set the IP address for the second NTP server.
 
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
-Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2/3. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system. On `RPI_MODEL= 0,3,3P` - Bluetooth gets auto enabled if `ENABLE_CONSOLE` and `ENABLE_UBOOT` are set to `false` 
+Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2/3. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
+On `RPI_MODEL= 0,3,3P` - Bluetooth gets auto enabled if `ENABLE_CONSOLE` and `ENABLE_UBOOT` are set to `false` 
 
 ##### `ENABLE_I2C`=false
 Enable I2C interface on the RPi2/3. Please check the [RPi2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
@@ -174,8 +175,7 @@ Allow the installation of non-free Debian packages that do not comply with the D
 Download and install the [closed-source firmware binary blob](https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm) that is required to run the internal wireless interface of the Raspberry Pi model `3`. This parameter is ignored if the specified `RPI_MODEL` is not `3`.
 
 ##### `ENABLE_RSYSLOG`=true
-If set to false, disable and uninstall rsyslog (so logs will be available only
-in journal files)
+If set to false, disable and uninstall rsyslog (so logs will be available only in journal files)
 
 ##### `ENABLE_SOUND`=true
 Enable sound hardware and install Advanced Linux Sound Architecture.
