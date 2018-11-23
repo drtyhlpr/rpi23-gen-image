@@ -123,14 +123,13 @@ if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     # Set permissions
     chown -R root:root "${R}/tmp/pi-bluetooth"
 
-    # Install files to chroot
     # Install tools
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/btuart" "${R}/usr/bin/btuart"
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/bthelper" "${R}/usr/bin/bthelper"
+
     # Install bluetooth udev rule
     install_readonly "${R}/tmp/pi-bluetooth/lib/udev/rules.d/90-pi-bluetooth.rules" "${LIB_DIR}/udev/rules.d/90-pi-bluetooth.rules"
-    # aur
-    # install_readonly "${R}/tmp/pi-bluetooth/50-bluetooth-hci-auto-poweron.rules" "${ETC_DIR}/udev/rules.d/50-bluetooth-hci-auto-poweron.rules"
+
     # Install Firmware Flash file and apropiate licence
     mkdir "${ETC_DIR}/firmware/"
     install_readonly "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" "${ETC_DIR}/firmware/LICENCE.broadcom_bcm43xx"

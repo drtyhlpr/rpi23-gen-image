@@ -237,7 +237,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
             echo "CONFIG_CRYPTO_XTS=y"
             echo "CONFIG_CRYPTO_SHA512=y"
             echo "CONFIG_CRYPTO_MANAGER=y"
-          } >> "${KERNEL_DIR}/.config"
+          } >> "${KERNEL_DIR}"/.config
         fi
       fi
 
