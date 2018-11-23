@@ -197,7 +197,7 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
-APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup"
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup,libnss-systemd"
 
 #Packages to exclude from chroot build environment
 APT_EXCLUDES=${APT_EXCLUDES:=""}
@@ -286,37 +286,37 @@ else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
 fi
-    # Device specific configuration and U-Boot configuration
-    case "$RPI_MODEL" in
-    0)
-      DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
-      ;;
-    1)
-      DTB_FILE=${DTB_FILE:=bcm2708-rpi-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
-      ;;
-    1P)
-      DTB_FILE=${DTB_FILE:=bcm2708-rpi-b-plus.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
-      ;;
-    2)
-      DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
-      ;;
-    3)
-      DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
-      ;;
-    3P)
-      DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
-      ;;
-    *)
-      echo "error: Raspberry Pi model $RPI_MODEL is not supported!"
-      exit 1
-      ;;
-    esac
+# Device specific configuration and U-Boot configuration
+case "$RPI_MODEL" in
+  0)
+    DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+    ;;
+  1)
+    DTB_FILE=${DTB_FILE:=bcm2708-rpi-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+    ;;
+  1P)
+    DTB_FILE=${DTB_FILE:=bcm2708-rpi-b-plus.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+    ;;
+  2)
+    DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
+    ;;
+  3)
+    DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
+    ;;
+  3P)
+    DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
+    ;;
+  *)
+    echo "error: Raspberry Pi model $RPI_MODEL is not supported!"
+    exit 1
+    ;;
+esac
 
 # Prepare date string for default image file name
 DATE="$(date +%Y-%m-%d)"
