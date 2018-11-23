@@ -42,12 +42,12 @@ fi
 
 # Setup firmware boot cmdline
 if [ "$ENABLE_UBOOTUSB" = true ] ; then
-  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1"
+  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1 init=/bin/systemd"
 else
   if [ "$ENABLE_SPLITFS" = true ] ; then
-    CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1"
+    CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1 init=/bin/systemd"
   else
-    CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1"
+    CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1 init=/bin/systemd"
   fi
 fi
 
