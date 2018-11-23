@@ -84,7 +84,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   fi
 
   # Set mkfile to use the correct dtb file
-  sed -i "s/^\(setenv dtbfile \).*/\1${DTB_FILE}/" "${BOOT_DIR}/uboot.mkimage"
+  sed -i "s|bcm2709-rpi-2-b.dtb|${DTB_FILE}|" "${BOOT_DIR}/uboot.mkimage"
 
   # Set mkfile to use the correct mach id
   if [ "$ENABLE_QEMU" = true ] ; then
@@ -92,7 +92,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   fi
 
   # Set mkfile to use kernel image
-  sed -i "s/^\(fatload mmc 0:1 \${kernel_addr_r} \).*/\1${KERNEL_IMAGE}/" "${BOOT_DIR}/uboot.mkimage"
+  sed -i "s|kernel7.img|${KERNEL_IMAGE}|" "${BOOT_DIR}/uboot.mkimage"
 
   # Remove all leading blank lines
   sed -i "/./,\$!d" "${BOOT_DIR}/uboot.mkimage"
