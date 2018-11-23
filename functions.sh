@@ -85,7 +85,7 @@ set_kernel_config() {
   if grep -q "^${TGT}[^_]" .config; then
     sed -i "s/^\(${TGT}=.*\|# ${TGT} is not set\)/${TGT}=${REP}/" .config
   else
-    echo "${TGT}=${2}" >> .config
+    echo "${TGT}"="${2}" >> .config
   fi
 }
 
