@@ -112,6 +112,7 @@ APT_PROXY=${APT_PROXY:=""}
 APT_SERVER=${APT_SERVER:="ftp.debian.org"}
 
 # Feature settings
+ENABLE_BLUETOOTH=${ENABLE_BLUETOOTH:=false}
 ENABLE_CONSOLE=${ENABLE_CONSOLE:=true}
 ENABLE_I2C=${ENABLE_I2C:=false}
 ENABLE_SPI=${ENABLE_SPI:=false}
@@ -384,6 +385,14 @@ else
   if [ "$ENABLE_UBOOTUSB" = true ] ; then  
     echo "error: Enabling UBOOTUSB requires u-boot to be enabled"
 	exit 1
+  fi
+fi
+
+if [ "$ENABLE_BLUETOOTH" = true ] ; then
+  if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+    if [ "$ENABLE_CONSOLE" = false ] ; then
+	  APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
+	fi
   fi
 fi
 
