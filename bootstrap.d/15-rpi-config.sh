@@ -67,9 +67,9 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
 fi
 
 # Add serial console support
-if [ "$ENABLE_CONSOLE" = true ] ; then
-  CMDLINE="${CMDLINE} console=ttyAMA0,115200 kgdboc=ttyAMA0,115200"
-fi
+#if [ "$ENABLE_CONSOLE" = true ] ; then
+#  CMDLINE="${CMDLINE} console=ttyAMA0,115200 kgdboc=ttyAMA0,115200"
+#fi
 
 # Remove IPv6 networking support
 if [ "$ENABLE_IPV6" = false ] ; then
