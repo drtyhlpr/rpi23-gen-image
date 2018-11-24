@@ -330,12 +330,22 @@ else
   IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
 fi
 
-# Check if the internal wireless interface is supported by the RPi model
-if [ "$ENABLE_WIRELESS" = true ] ; then
-  if [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ] ; then
-    echo "error: The selected Raspberry Pi model has no internal wireless interface"
-    exit 1
+if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+  # Include bluetooth packages on supported boards
+  if [ "$ENABLE_BLUETOOTH" = true ] && [ "$ENABLE_CONSOLE" = false ]; then
+    APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
   fi
+  # Check if console or bluetooth configuration is invalid on RPI 0,3,3P
+  if [ "$ENABLE_BLUETOOTH" = true ] && [ "$ENABLE_CONSOLE" = true ]; then
+    echo "error: ENABLE_BLUETOOTH and ENABLE_CONSOLE can't be active on the same time."
+    exit 1
+  fi 
+  else # if [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ] ; then
+    # Check if the internal wireless interface is not supported by the RPi model
+    if [ "$ENABLE_WIRELESS" = true ] ; then
+      echo "error: The selected Raspberry Pi model has no internal wireless interface"
+      exit 1
+	fi
 fi
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
@@ -385,22 +395,6 @@ else
   if [ "$ENABLE_UBOOTUSB" = true ] ; then  
     echo "error: Enabling UBOOTUSB requires u-boot to be enabled"
 	exit 1
-  fi
-fi
-
-if [ "$ENABLE_BLUETOOTH" = true ] ; then
-  if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-    if [ "$ENABLE_CONSOLE" = false ] ; then
-	  APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
-	fi
-  fi
-fi
-
-if [ "$ENABLE_BLUETOOTH" = true ] ; then
-  if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-    if [ "$ENABLE_CONSOLE" = false ] ; then
-	  APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
-	fi
   fi
 fi
 
