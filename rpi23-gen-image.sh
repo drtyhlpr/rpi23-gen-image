@@ -106,6 +106,7 @@ APT_PROXY=${APT_PROXY:=""}
 APT_SERVER=${APT_SERVER:="ftp.debian.org"}
 
 # Feature settings
+ENABLE_BLUETOOTH=${ENABLE_BLUETOOTH:=false}
 ENABLE_CONSOLE=${ENABLE_CONSOLE:=true}
 ENABLE_I2C=${ENABLE_I2C:=false}
 ENABLE_SPI=${ENABLE_SPI:=false}
@@ -350,6 +351,14 @@ fi
 # Add device-tree-compiler required for building the U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex,bc"
+fi
+
+if [ "$ENABLE_BLUETOOTH" = true ] ; then
+  if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+    if [ "$ENABLE_CONSOLE" = false ] ; then
+	  APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
+	fi
+  fi
 fi
 
 # Check if root SSH (v2) public key file exists
