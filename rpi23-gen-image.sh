@@ -396,6 +396,14 @@ if [ "$ENABLE_BLUETOOTH" = true ] ; then
   fi
 fi
 
+if [ "$ENABLE_BLUETOOTH" = true ] ; then
+  if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+    if [ "$ENABLE_CONSOLE" = false ] ; then
+	  APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
+	fi
+  fi
+fi
+
 # Check if root SSH (v2) public key file exists
 if [ -n "$SSH_ROOT_PUB_KEY" ] ; then
   if [ ! -f "$SSH_ROOT_PUB_KEY" ] ; then

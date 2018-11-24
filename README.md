@@ -154,7 +154,6 @@ Set the IP address for the second NTP server.
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
 Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2/3. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
-On `RPI_MODEL= 0,3,3P` - Bluetooth gets auto enabled if `ENABLE_CONSOLE` and `ENABLE_UBOOT` are set to `false` 
 
 ##### `ENABLE_I2C`=false
 Enable I2C interface on the RPi2/3. Please check the [RPi2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
