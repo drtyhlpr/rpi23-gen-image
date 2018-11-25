@@ -92,30 +92,38 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
 	  # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
       if [ "$KERNEL_ZSWAP" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-        set_kernel_config ZPOOL y
-        set_kernel_config ZSWAP y
-        set_kernel_config ZBUD y
-        set_kernel_config Z3FOLD y
-        set_kernel_config ZSMALLOC y
-        set_kernel_config PGTABLE_MAPPING y
+        set_kernel_config CONFIG_ZPOOL y
+        set_kernel_config CONFIG_ZSWAP y
+        set_kernel_config CONFIG_ZBUD y
+        set_kernel_config CONFIG_Z3FOLD y
+        set_kernel_config CONFIG_ZSMALLOC y
+        set_kernel_config CONFIG_PGTABLE_MAPPING y
 	  fi
 	  
       # enable basic KVM support; see https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
-	  if [ "$KERNEL_VIRT" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-        set_kernel_config VIRTUALIZATION y
-        set_kernel_config KVM y
-        set_kernel_config VHOST_NET m
-        set_kernel_config VHOST_CROSS_ENDIAN_LEGACY y
+	  if [ "$KERNEL_VIRT" = true ] && { [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
+        set_kernel_config CONFIG_VIRTUALIZATION y
+        set_kernel_config CONFIG_KVM y
+        set_kernel_config CONFIG_VHOST_NET m
+        set_kernel_config CONFIG_VHOST_CROSS_ENDIAN_LEGACY y
 	  fi
 	  
       # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
 	  if [ "$KERNEL_NF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-        set_kernel_config CONFIG_NETFILTER_XTABLES m
-        set_kernel_config CONFIG_NF_DUP_NETDEV m
-        set_kernel_config CONFIG_NF_NAT_SIP m
-        set_kernel_config CONFIG_NF_TABLES_ARP m
-        set_kernel_config CONFIG_NF_TABLES_BRIDGE m
-        set_kernel_config NF_TABLES m
+		set_kernel_config CONFIG_IP_NF_TARGET_SYNPROXY m
+		set_kernel_config CONFIG_NETFILTER_XT_MATCH_CGROUP m
+		set_kernel_config CONFIG_NETFILTER_XT_MATCH_IPCOMP m
+		set_kernel_config CONFIG_NFT_FIB_INET m
+		set_kernel_config CONFIG_NFT_FIB_IPV4 m
+		set_kernel_config CONFIG_NFT_FIB_IPV6 m
+		set_kernel_config CONFIG_NFT_FIB_NETDEV m
+		set_kernel_config CONFIG_NFT_OBJREF m
+		set_kernel_config CONFIG_NFT_RT m
+		set_kernel_config CONFIG_NFT_SET_BITMAP m
+		set_kernel_config CONFIG_NF_CONNTRACK_TIMEOUT m
+		set_kernel_config CONFIG_NF_LOG_ARP m
+		set_kernel_config CONFIG_NF_SOCKET_IPV4 m
+		set_kernel_config CONFIG_NF_SOCKET_IPV6 m
         set_kernel_config CONFIG_BRIDGE_EBT_BROUTE m
         set_kernel_config CONFIG_BRIDGE_EBT_T_FILTER m
         set_kernel_config CONFIG_BRIDGE_NF_EBTABLES m
@@ -139,6 +147,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_IP_SET_HASH_NETPORT m
         set_kernel_config CONFIG_IP_SET_HASH_NETPORTNET m
         set_kernel_config CONFIG_IP_SET_LIST_SET m
+        set_kernel_config CONFIG_NETFILTER_XTABLES m
+        set_kernel_config CONFIG_NETFILTER_XTABLES m
         set_kernel_config CONFIG_NFT_BRIDGE_META m
         set_kernel_config CONFIG_NFT_BRIDGE_REJECT m
         set_kernel_config CONFIG_NFT_CHAIN_NAT_IPV4 m
@@ -179,6 +189,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_NF_DEFRAG_IPV6 m
         set_kernel_config CONFIG_NF_DUP_IPV4 m
         set_kernel_config CONFIG_NF_DUP_IPV6 m
+        set_kernel_config CONFIG_NF_DUP_NETDEV m
         set_kernel_config CONFIG_NF_LOG_BRIDGE m
         set_kernel_config CONFIG_NF_LOG_IPV4 m
         set_kernel_config CONFIG_NF_LOG_IPV6 m
@@ -189,21 +200,25 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_NF_NAT_PPTP m
         set_kernel_config CONFIG_NF_NAT_PROTO_GRE m
         set_kernel_config CONFIG_NF_NAT_REDIRECT m
+        set_kernel_config CONFIG_NF_NAT_SIP m
         set_kernel_config CONFIG_NF_NAT_SNMP_BASIC m
         set_kernel_config CONFIG_NF_NAT_TFTP m
         set_kernel_config CONFIG_NF_REJECT_IPV4 m
         set_kernel_config CONFIG_NF_REJECT_IPV6 m
+        set_kernel_config CONFIG_NF_TABLES m
+        set_kernel_config CONFIG_NF_TABLES_ARP m
+        set_kernel_config CONFIG_NF_TABLES_BRIDGE m
         set_kernel_config CONFIG_NF_TABLES_INET m
         set_kernel_config CONFIG_NF_TABLES_IPV4 m
         set_kernel_config CONFIG_NF_TABLES_IPV6 m
         set_kernel_config CONFIG_NF_TABLES_NETDEV m
-        set_kernel_config NETFILTER_XTABLES m
       fi
 
 	  # Enables BPF syscall for systemd-journald see https://github.com/torvalds/linux/blob/master/init/Kconfig#L848 or https://groups.google.com/forum/#!topic/linux.gentoo.user/_2aSc_ztGpA
 	  if [ "$KERNEL_BPF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
         set_kernel_config CONFIG_BPF_SYSCALL y
 		set_kernel_config CONFIG_BPF_EVENTS y
+		set_kernel_config CONFIG_BPF_STREAM_PARSER y
 	    set_kernel_config CONFIG_CGROUP_BPF y
 	  fi
 	  
