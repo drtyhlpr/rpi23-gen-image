@@ -199,7 +199,7 @@ CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
 CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
 #Dropbear-initramfs supports unlocking encrypted filesystem via SSH on bootup
-CRYPTFS_DROPBEAR=${CRYPTFS_DROPBEAR:=true}
+CRYPTFS_DROPBEAR=${CRYPTFS_DROPBEAR:=false}
 #Provide your own Dropbear Public RSA-OpenSSH Key otherwise it will be generated
 CRYPTFS_DROPBEAR_PUBKEY=${CRYPTFS_DROPBEAR_PUBKEY:=""}
 
