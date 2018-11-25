@@ -63,13 +63,13 @@ If you want to change e.g. cross-compiler -> Templates always override defaults
 
 ##### `RPI_MODEL`=2
 Specifiy the target Raspberry Pi hardware model. The script at this time supports the following Raspberry Pi models:
-`0`  = Used for Raspberry Pi 0 and Raspberry Pi 0 W
-`1`  = Used for Pi 1 model A and B
-`1P` = Used for Pi 1 model B+ and A+
-`2`  = Used for Pi 2 model B
-`3`  = Used for Pi 3 model B
-`3P` = Used for Pi 3 model B+
-`BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` or `3P` is used.
+- `0`  = Used for Raspberry Pi 0 and Raspberry Pi 0 W
+- `1`  = Used for Pi 1 model A and B
+- `1P` = Used for Pi 1 model B+ and A+
+- `2`  = Used for Pi 2 model B
+- `3`  = Used for Pi 3 model B
+- `3P` = Used for Pi 3 model B+
+- `BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` or `3P` is used.
 
 ##### `RELEASE`="buster"
 Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases `stretch` and `buster`.
@@ -411,6 +411,12 @@ Set cipher specification string. `aes-xts*` ciphers are strongly recommended.
 
 ##### `CRYPTFS_XTSKEYSIZE`=512
 Sets key size in bits. The argument has to be a multiple of 8.
+
+##### `CRYPTFS_DROPBEAR`=false
+Enable Dropbear Initramfs support
+
+##### `CRYPTFS_DROPBEAR_PUBKEY`=""
+Provide path to dropbear Public RSA-OpenSSH Key
 
 ---
 

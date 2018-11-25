@@ -198,6 +198,10 @@ CRYPTFS_PASSWORD=${CRYPTFS_PASSWORD:=""}
 CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
 CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
+#Dropbear-initramfs supports unlocking encrypted filesystem via SSH on bootup
+CRYPTFS_DROPBEAR=${CRYPTFS_DROPBEAR:=true}
+#Provide your own Dropbear Public RSA-OpenSSH Key otherwise it will be generated
+CRYPTFS_DROPBEAR_PUBKEY=${CRYPTFS_DROPBEAR_PUBKEY:=""}
 
 # Chroot scripts directory
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
@@ -378,6 +382,11 @@ if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
   APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup"
 
+  #If cryptfs,dropbear and initramfs are enabled include dropbear-initramfs package
+  if [ "$CRYPTFS_DROPBEAR" = true ] && [ "$ENABLE_INITRAMFS" = true ]; then
+    APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
+  fi
+  
   if [ -z "$CRYPTFS_PASSWORD" ] ; then
     echo "error: no password defined (CRYPTFS_PASSWORD)!"
     exit 1
@@ -472,7 +481,7 @@ if [ -n "$FBTURBOSRC_DIR" ] && [ ! -d "$FBTURBOSRC_DIR" ] ; then
   exit 1
 fi
 
-# Check if specified FBTURBOSRC_DIR directory exists
+# Check if specified NEXMON_DIR directory exists
 if [ -n "$NEXMON_DIR" ] && [ ! -d "$NEXMON_DIR" ] ; then
   echo "error: '${NEXMON_DIR}' specified directory not found (NEXMON_DIR)!"
   exit 1
