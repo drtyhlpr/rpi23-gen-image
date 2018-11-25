@@ -40,7 +40,7 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   #ZLIBFLATE="zlib-flate -compress"
   #Q=@
   #NEXMON_SETUP_ENV=1
-  source setup_env.sh
+  . ./setup_env.sh
   
   # Make nexmon
   make
@@ -77,4 +77,8 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
     cp ${NEXMON_ROOT}/patches/bcm43455c0/7_45_154/nexmon/brcmfmac43455-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43455-sdio.nexmon.bin
     cp -f ${NEXMON_ROOT}/patches/bcm43455c0/7_45_154/nexmon/brcmfmac43455-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43455-sdio.bin
   fi
+  
+#Revert to previous directory
+cd "${WORKDIR}"
+
 fi
