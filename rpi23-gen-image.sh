@@ -77,6 +77,7 @@ LIB_DIR="${R}/lib"
 BOOT_DIR="${R}/boot/firmware"
 KERNEL_DIR="${R}/usr/src/linux"
 WLAN_FIRMWARE_DIR="${LIB_DIR}/firmware/brcm"
+BLUETOOTH_FIRMWARE_DIR="${ETC_DIR}/firmware/bt"
 
 # Firmware directory: Blank if download from github
 RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
