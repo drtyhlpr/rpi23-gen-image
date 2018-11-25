@@ -89,13 +89,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
       #Switch to KERNELSRC_DIR
       cd "${KERNEL_DIR}"
 
-      # GPL v2.0
-      #https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
+	  # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
       if [ "$KERNEL_ZSWAP" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-        # enable ZSWAP support for better performance during large builds etc.
-        # requires activation via kernel parameter or sysfs
-        # see e.g. https://askubuntu.com/a/472227 for a summary of ZSWAP (vs ZRAM etc.)
-        # and e.g. https://wiki.archlinux.org/index.php/zswap for parameters etc.
         set_kernel_config ZPOOL y
         set_kernel_config ZSWAP y
         set_kernel_config ZBUD y
@@ -103,17 +98,16 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config ZSMALLOC y
         set_kernel_config PGTABLE_MAPPING y
 	  fi
-
+	  
+      # enable basic KVM support; see https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
 	  if [ "$KERNEL_VIRT" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-       # enable basic KVM support; see e.g.
-        # https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
         set_kernel_config VIRTUALIZATION y
         set_kernel_config KVM y
         set_kernel_config VHOST_NET m
         set_kernel_config VHOST_CROSS_ENDIAN_LEGACY y
 	  fi
-	  #See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
-      # Netfilter kernel support
+	  
+      # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
 	  if [ "$KERNEL_NF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
         set_kernel_config CONFIG_NETFILTER_XTABLES m
         set_kernel_config CONFIG_NF_DUP_NETDEV m
@@ -205,9 +199,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config NETFILTER_XTABLES m
       fi
 
-	  #https://groups.google.com/forum/#!topic/linux.gentoo.user/_2aSc_ztGpA
-	  #https://github.com/torvalds/linux/blob/master/init/Kconfig#L848
-	  # Enables BPF syscall for systemd-journald
+	  # Enables BPF syscall for systemd-journald see https://github.com/torvalds/linux/blob/master/init/Kconfig#L848 or https://groups.google.com/forum/#!topic/linux.gentoo.user/_2aSc_ztGpA
 	  if [ "$KERNEL_BPF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
         set_kernel_config CONFIG_BPF_SYSCALL y
 	    set_kernel_config CONFIG_CGROUP_BPF y

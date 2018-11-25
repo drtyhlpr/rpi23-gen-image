@@ -112,7 +112,9 @@ APT_PROXY=${APT_PROXY:=""}
 APT_SERVER=${APT_SERVER:="ftp.debian.org"}
 
 # Feature settings
+ENABLE_PRINTK=${ENABLE_PRINTK:=false}
 ENABLE_BLUETOOTH=${ENABLE_BLUETOOTH:=false}
+ENABLE_MINIUART_OVERLAY=${ENABLE_MINIUART_OVERLAY:=false}
 ENABLE_CONSOLE=${ENABLE_CONSOLE:=true}
 ENABLE_I2C=${ENABLE_I2C:=false}
 ENABLE_SPI=${ENABLE_SPI:=false}
@@ -214,7 +216,7 @@ set +x
 
 #Check if apt-cacher-ng has port 3142 open and set APT_PROXY
 APT_CACHER_RUNNING=$(lsof -i :3142 | grep apt-cacher-ng |  cut -d ' ' -f3 | uniq)
-if [ -n ${APT_CACHER_RUNNING} ] ; then
+if [ -n "${APT_CACHER_RUNNING}" ] ; then
   APT_PROXY=http://127.0.0.1:3142/
 fi
 
@@ -322,30 +324,26 @@ case "$RPI_MODEL" in
     ;;
 esac
 
+# Raspberry PI 0,3,3P with Bluetooth and Wifi onboard
+if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+  # Include bluetooth packages on supported boards
+  if [ "$ENABLE_BLUETOOTH" = true ] && [ "$ENABLE_CONSOLE" = false ]; then
+    APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
+  fi
+else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
+  # Check if the internal wireless interface is not supported by the RPi model
+  if [ "$ENABLE_WIRELESS" = true ] || [ "$ENABLE_BLUETOOTH" = true ]; then
+    echo "error: The selected Raspberry Pi model has no integrated interface for wireless or bluetooth"
+    exit 1
+  fi
+fi
+
 # Prepare date string for default image file name
 DATE="$(date +%Y-%m-%d)"
 if [ -z "$KERNEL_BRANCH" ] ; then
   IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
 else
   IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
-fi
-
-if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-  # Include bluetooth packages on supported boards
-  if [ "$ENABLE_BLUETOOTH" = true ] && [ "$ENABLE_CONSOLE" = false ]; then
-    APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
-  fi
-  # Check if console or bluetooth configuration is invalid on RPI 0,3,3P
-  if [ "$ENABLE_BLUETOOTH" = true ] && [ "$ENABLE_CONSOLE" = true ]; then
-    echo "error: ENABLE_BLUETOOTH and ENABLE_CONSOLE can't be active on the same time."
-    exit 1
-  fi 
-  else # if [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ] ; then
-    # Check if the internal wireless interface is not supported by the RPi model
-    if [ "$ENABLE_WIRELESS" = true ] ; then
-      echo "error: The selected Raspberry Pi model has no internal wireless interface"
-      exit 1
-	fi
 fi
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported

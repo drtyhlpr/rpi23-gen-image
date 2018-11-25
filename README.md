@@ -153,7 +153,19 @@ Set the IP address for the second NTP server.
 
 #### Basic system features:
 ##### `ENABLE_CONSOLE`=true
-Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2/3. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system.
+Enable serial console interface. Recommended if no monitor or keyboard is connected to the RPi2/3. In case of problems fe. if the network (auto) configuration failed - the serial console can be used to access the system. On RPI `0` `3` `3P` the CPU speed is locked at lowest speed.
+
+##### `ENABLE_PRINTK`=false
+Enables printing kernel messages to konsole. printk is `3 4 1 3` as in raspbian.
+
+##### `ENABLE_BLUETOOTH`=false
+Enable onboard Bluetooth interface on the RPi0/3/3P. See: https://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
+
+##### `ENABLE_MINIUART_OVERLAY`=false
+Enable Bluetooth to use this. Adds overlay to swap UART0 with UART1. Enabling (slower) Bluetooth and full speed serial console. - RPI `0` `3` `3P` have a fast `hardware UART0` (ttyAMA0) and a `mini UART1` (ttyS0)! RPI `1` `1P` `2` only have a `hardware UART0`. `UART0` is considered better, because is faster and more stable than `mini UART1`. By default the Bluetooth modem is mapped to the `hardware UART0` and `mini UART` is used for console. The `mini UART` is a problem for the serial console, because its baudrate depends on the cpu frequency, which is changing on runtime. Resulting in a volatile baudrate and thus in an unusable serial console.
+ 
+##### `ENABLE_TURBO`=false
+Enable Turbo mode. This setting locks cpu at highest frequency. As setting ENABLE_CONSOLE=true locks RPI to lowest CPU speed, this is can be used additionally to lock cpu hat max speed. Need a good power supply and probably cooling for the Raspberry PI.
 
 ##### `ENABLE_I2C`=false
 Enable I2C interface on the RPi2/3. Please check the [RPi2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
@@ -172,9 +184,6 @@ Allow the installation of non-free Debian packages that do not comply with the D
 
 ##### `ENABLE_WIRELESS`=false
 Download and install the [closed-source firmware binary blob](https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm) that is required to run the internal wireless interface of the Raspberry Pi model `3`. This parameter is ignored if the specified `RPI_MODEL` is not `3`.
-
-##### `ENABLE_BLUETOOTH`=false
-Enable Bluetooth interface on the RPi0/3/3P.
 
 ##### `ENABLE_RSYSLOG`=true
 If set to false, disable and uninstall rsyslog (so logs will be available only in journal files)
