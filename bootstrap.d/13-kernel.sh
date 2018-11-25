@@ -86,7 +86,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
     if [ "$KERNELSRC_CONFIG" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
-      #Switch to KERNELSRC_DIR
+	  
+      #Switch to KERNELSRC_DIR so we can use set_kernel_config
       cd "${KERNEL_DIR}"
 
 	  # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
@@ -202,6 +203,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  # Enables BPF syscall for systemd-journald see https://github.com/torvalds/linux/blob/master/init/Kconfig#L848 or https://groups.google.com/forum/#!topic/linux.gentoo.user/_2aSc_ztGpA
 	  if [ "$KERNEL_BPF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
         set_kernel_config CONFIG_BPF_SYSCALL y
+		set_kernel_config CONFIG_BPF_EVENTS y
 	    set_kernel_config CONFIG_CGROUP_BPF y
 	  fi
 
