@@ -118,6 +118,7 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
 	
     # Switch Pi3 Bluetooth function to use the mini-UART (ttyS0) and restore UART0/ttyAMA0 over GPIOs 14 & 15. Slow Bluetooth and slow cpu. Use /dev/ttyS0 instead of /dev/ttyAMA0
     if [ "$ENABLE_MINIUART_OVERLAY" = true ] ; then
+	  SET_SERIAL="ttyAMA0"
 
 	  # set overlay to swap ttyAMA0 and ttyS0
       echo "dtoverlay=pi3-miniuart-bt" >> "${BOOT_DIR}/config.txt"
@@ -126,6 +127,13 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
 	  if [ "$ENABLE_TURBO" = false ] ; then 
 	    echo "core_freq=250" >> "${BOOT_DIR}/config.txt"
 	  fi
+	  
+	  # Activate services
+	  chroot_exec systemctl enable pi-bluetooth.hciuart.service
+	  #chroot_exec systemctl enable pi-bluetooth.bthelper@.service
+	else
+	  chroot_exec systemctl enable pi-bluetooth.hciuart.service
+	  #chroot_exec systemctl enable pi-bluetooth.bthelper@.service
 	fi
 	
   else # if ENABLE_BLUETOOTH = false
@@ -140,19 +148,15 @@ fi
 
 # may need sudo systemctl disable hciuart
 if [ "$ENABLE_CONSOLE" = true ] ; then
-  echo "enable_uart=1"  >> "${BOOT_DIR}/config.txt"
-	  
+  echo "enable_uart=1"  >> "${BOOT_DIR}/config.txt" 
   # add string to cmdline
   CMDLINE="${CMDLINE} console=serial0,115200"
 	  
   # Enable serial console systemd style
-  chroot_exec systemctl start serial-getty@"$SET_SERIAL".service
   chroot_exec systemctl enable serial-getty@"$SET_SERIAL".service
 else
   echo "enable_uart=0"  >> "${BOOT_DIR}/config.txt"
-  
-  # Enable serial console systemd style
-  chroot_exec systemctl stop serial-getty@"$SET_SERIAL".service
+  # disable serial console systemd style
   chroot_exec systemctl disable serial-getty@"$SET_SERIAL".service
 fi
 

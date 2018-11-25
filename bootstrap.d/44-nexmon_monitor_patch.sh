@@ -1,5 +1,5 @@
 #
-# Build and Setup fbturbo Xorg driver
+# Build and Setup nexmon with monitor mode patch
 #
 
 # Load utility functions
