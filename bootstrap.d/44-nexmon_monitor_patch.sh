@@ -47,7 +47,7 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
 
   # Make ancient isl build
   cd buildtools/isl-0.10
-  CC=$CCgcc
+  CC="${CC}"gcc
   ./configure
   make
 

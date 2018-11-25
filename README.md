@@ -353,6 +353,9 @@ With this parameter set to true the script expects the existing kernel sources d
 ##### `RPI_FIRMWARE_DIR`=""
 The directory (`firmware`) containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.
 
+##### `KERNEL_DEFAULT_GOV`="ONDEMAND"
+Set the default cpu governor at kernel compilation. Supported values are: PERFORMANCE POWERSAVE USERSPACE ONDEMAND CONSERVATIVE SCHEDUTIL
+
 ##### `KERNEL_NF`=false
 Enable Netfilter modules as kernel modules
 

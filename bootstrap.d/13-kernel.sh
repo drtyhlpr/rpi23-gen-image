@@ -206,6 +206,36 @@ if [ "$BUILD_KERNEL" = true ] ; then
 		set_kernel_config CONFIG_BPF_EVENTS y
 	    set_kernel_config CONFIG_CGROUP_BPF y
 	  fi
+	  
+	  # KERNEL_DEFAULT_GOV was set by user 
+	  if ! [ "$KERNEL_DEFAULT_GOV" = POWERSAVE ] && [ -n "$KERNEL_DEFAULT_GOV" ]; then
+	    # unset default governor
+	    unset_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
+		
+	    case "$KERNEL_DEFAULT_GOV" in
+          "PERFORMANCE")
+	        set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE y
+            ;;
+          "USERSPACE")
+            set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE y
+            ;;
+          "ONDEMAND")
+		    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND y
+            ;;
+          "CONSERVATIVE")
+		    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE y
+		    ;;
+          "CONSERVATIVE")
+		    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL y
+            ;;
+          *)
+            echo "error: unsupported default cpu governor"
+            exit 1
+            ;;
+        esac
+	  fi
+	  
+
 
 	  #Revert to previous directory
 	  cd "${WORKDIR}"
@@ -249,6 +279,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       if [ "$KERNEL_MENUCONFIG" = true ] ; then
         make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" menuconfig
       fi
+	# end if "$KERNELSRC_CONFIG" = true
     fi
 
     # Use ccache to cross compile the kernel
@@ -265,6 +296,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     if grep -q "CONFIG_MODULES=y" "${KERNEL_DIR}/.config" ; then
       make -C "${KERNEL_DIR}" -j"${KERNEL_THREADS}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" modules
     fi
+  # end if "$KERNELSRC_PREBUILT" = false
   fi
 
   # Check if kernel compilation was successful
