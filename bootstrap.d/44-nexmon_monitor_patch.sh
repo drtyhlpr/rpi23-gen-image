@@ -32,14 +32,15 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   touch DISABLE_STATISTICS
   
   # Setup Enviroment: see https://github.com/NoobieDog/nexmon/blob/master/setup_env.sh
-  ARCH="${KERNEL_ARCH}"
-  SUBARCH="${KERNEL_ARCH}"
-  KERNEL="${KERNEL_IMAGE}"
-  CC="${NEXMON_ROOT}"/buildtools/gcc-arm-none-eabi-5_4-2016q2-linux-x86/bin/arm-none-eabi-
-  CCPLUGIN="${NEXMON_ROOT}"/buildtools/gcc-nexmon-plugin/nexmon.so
-  ZLIBFLATE="zlib-flate -compress"
-  Q=@
-  NEXMON_SETUP_ENV=1
+  #ARCH="${KERNEL_ARCH}"
+  #SUBARCH="${KERNEL_ARCH}"
+  #KERNEL="${KERNEL_IMAGE}"
+  #CC="${NEXMON_ROOT}"/buildtools/gcc-arm-none-eabi-5_4-2016q2-linux-x86/bin/arm-none-eabi-
+  #CCPLUGIN="${NEXMON_ROOT}"/buildtools/gcc-nexmon-plugin/nexmon.so
+  #ZLIBFLATE="zlib-flate -compress"
+  #Q=@
+  #NEXMON_SETUP_ENV=1
+  source setup_env.sh
   
   # Make nexmon
   make
@@ -59,6 +60,7 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
     LD_LIBRARY_PATH=${NEXMON_ROOT}/buildtools/isl-0.10/.libs make ARCH="${KERNEL_ARCH}" CC=${NEXMON_ROOT}/buildtools/gcc-arm-none-eabi-5_4-2016q2-linux-x86/bin/arm-none-eabi-
 	
     # copy RPi0W & RPi3 firmware
+	mv "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.org.bin
     cp ${NEXMON_ROOT}/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.nexmon.bin
     cp -f ${NEXMON_ROOT}/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.bin
   fi
@@ -71,6 +73,7 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
     LD_LIBRARY_PATH=${NEXMON_ROOT}/buildtools/isl-0.10/.libs make ARCH="${KERNEL_ARCH}" CC=${NEXMON_ROOT}/buildtools/gcc-arm-none-eabi-5_4-2016q2-linux-x86/bin/arm-none-eabi-
 
     # RPi3B+ firmware
+	mv "${WLAN_FIRMWARE_DIR}"/brcmfmac43455-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43455-sdio.org.bin
     cp ${NEXMON_ROOT}/patches/bcm43455c0/7_45_154/nexmon/brcmfmac43455-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43455-sdio.nexmon.bin
     cp -f ${NEXMON_ROOT}/patches/bcm43455c0/7_45_154/nexmon/brcmfmac43455-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43455-sdio.bin
   fi
