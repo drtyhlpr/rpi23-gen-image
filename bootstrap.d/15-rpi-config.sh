@@ -74,7 +74,7 @@ if [ "$ENABLE_PRINTK" = true ] ; then
 fi
 
 # Install udev rule for serial alias
-install_readonly files/etc/99-com.rules "${ETC_DIR}/udev/rules.d/99-com.rules"
+install_readonly files/etc/99-com.rules "${LIB_DIR}/udev/rules.d/99-com.rules"
 
 if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
   

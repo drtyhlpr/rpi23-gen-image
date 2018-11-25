@@ -63,6 +63,7 @@ RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmr
 #enhanced kernel
 RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_BIS_KERNEL_URL}
 BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
+NEXMON_URL=${NEXMON_URL:=https://github.com/seemoo-lab/nexmon.git}
 
 # Build directories
 WORKDIR=$(pwd)
@@ -152,6 +153,8 @@ ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=false}
 VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
 FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
+ENABLE_NEXMON=${ENABLE_NEXMON:=""}
+NEXMON_DIR=${NEXMON_DIR:=""}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
@@ -465,6 +468,12 @@ fi
 # Check if specified FBTURBOSRC_DIR directory exists
 if [ -n "$FBTURBOSRC_DIR" ] && [ ! -d "$FBTURBOSRC_DIR" ] ; then
   echo "error: '${FBTURBOSRC_DIR}' specified directory not found (FBTURBOSRC_DIR)!"
+  exit 1
+fi
+
+# Check if specified FBTURBOSRC_DIR directory exists
+if [ -n "$NEXMON_DIR" ] && [ ! -d "$NEXMON_DIR" ] ; then
+  echo "error: '${NEXMON_DIR}' specified directory not found (NEXMON_DIR)!"
   exit 1
 fi
 

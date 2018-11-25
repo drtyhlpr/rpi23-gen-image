@@ -234,7 +234,13 @@ Path to a directory (`xf86-video-fbturbo`) of [hardware accelerated Xorg video d
 Install and enable the [Source code for ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) `vcgencmd`. Please note that this driver is currently limited to hardware accelerated window moving and scrolling.
 
 ##### `VIDEOCORESRC_DIR`=""
-Path to a directory (`userland`) of [Source code for ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) that will be copied, configured, build and installed inside the chroot.
+Path to a directory (`userland`) of [Source code for a C-based firmware patching framework for Broadcom/Cypress WiFi chips that enables you to write your own firmware patches, for example, to enable monitor mode with radiotap headers and frame injection](https://github.com/seemoo-lab/nexmon.git) that will be copied, configured, build and installed inside the chroot.
+
+##### `ENABLE_NEXMON`=false
+Install and enable the [Source code for a C-based firmware patching framework for Broadcom/Cypress WiFi chips that enables you to write your own firmware patches, for example, to enable monitor mode with radiotap headers and frame injection](https://github.com/seemoo-lab/nexmon.git).
+
+##### `NEXMON_DIR`=""
+Path to a directory (`nexmon`) of [Source code for ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) that will be copied, configured, build and installed inside the chroot.
 
 ##### `ENABLE_IPTABLES`=false
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
