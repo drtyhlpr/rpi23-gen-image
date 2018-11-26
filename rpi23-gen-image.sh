@@ -61,11 +61,12 @@ RPI3_64_BIS_KERNEL_URL=${RPI3_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcmr
 #default bcmrpi3_defconfig target kernel
 RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel/releases/download/4.14.80.20181113/bcmrpi3-kernel-4.14.80.20181113.tar.xz}
 #enhanced kernel
-RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_BIS_KERNEL_URL}
+RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_DEF_KERNEL_URL}
 BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
 NEXMON_URL=${NEXMON_URL:=https://github.com/seemoo-lab/nexmon.git}
-ZSWAP_URL=${ZSWAP_URL:=https://github.com/Nefelim4ag/systemd-swap.git}
-
+SYSTEMDSWAP_URL=${SYSTEMDSWAP_URL:=https://github.com/Nefelim4ag/systemd-swap.git}
+RPI_32_KERNEL_URL=${RPI_32_KERNEL_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel_20180422-141901_armhf.deb}
+RPI_32_KERNELHEADER_URL=${RPI_32_KERNELHEADER_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel-headers_20180422-141901_armhf.deb}
 
 # Build directories
 WORKDIR=$(pwd)
@@ -147,6 +148,7 @@ SSH_ROOT_PUB_KEY=${SSH_ROOT_PUB_KEY:=""}
 SSH_USER_PUB_KEY=${SSH_USER_PUB_KEY:=""}
 
 # Advanced settings
+ENABLE_SYSTEMDSWAP=${ENABLE_MINBASE:=false}
 ENABLE_MINBASE=${ENABLE_MINBASE:=false}
 ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}

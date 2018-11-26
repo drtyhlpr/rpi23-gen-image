@@ -64,35 +64,6 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   fi
 fi
 
-if [ "$KERNEL_ZSWAP" = true ] ; then
-  # Create temporary directory for systemd-swap sources
-  temp_dir=$(as_nobody mktemp -d)
-
-  # Fetch systemd-swap sources
-  as_nobody git -C "${temp_dir}" clone "${ZSWAP_URL}"
-
-  # Copy downloaded systemd-swap sources
-  mv "${temp_dir}/systemd-swap" "${R}/tmp/"
-
-  # Set permissions of the systemd-swap sources
-  chown -R root:root "${R}/tmp/systemd-swap"
-
-  # Remove temporary directory for systemd-swap sources
-  rm -fr "${temp_dir}"
-  
-  # Change into downloaded src dir
-  cd "${R}/tmp/systemd-swap" || exit
-  
-  # Build package
-  . ./systemd-swap/package.sh debian
-  
-  # Install package
-  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap-*any.deb
-  
-  # Change back into script root dir
-  cd "${WORKDIR}" || exit
-fi
-
 #locks cpu at max frequency
 if [ "$ENABLE_TURBO" = true ] ; then
   echo "force_turbo=1" >> "${BOOT_DIR}/config.txt"
@@ -189,6 +160,48 @@ else
   echo "enable_uart=0"  >> "${BOOT_DIR}/config.txt"
   # disable serial console systemd style
   chroot_exec systemctl disable serial-getty@"$SET_SERIAL".service
+fi
+
+# Remove cmdline.txt entry of starting zswap
+if [ "$KERNEL_ZSWAP" = true ] ; then
+  CMDLINE="${CMDLINE} zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=lz4" 
+fi
+
+if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
+
+  # Remove cmdline.txt entry of starting zswap
+  if [ "$KERNEL_ZSWAP" = true ] ; then
+    sed -i 's|zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=lz4||g'
+  fi
+  # Create temporary directory for systemd-swap sources
+  temp_dir=$(as_nobody mktemp -d)
+
+  # Fetch systemd-swap sources
+  as_nobody git -C "${temp_dir}" clone "${ZSWAP_URL}"
+
+  # Copy downloaded systemd-swap sources
+  mv "${temp_dir}/systemd-swap" "${R}/tmp/"
+
+  # Set permissions of the systemd-swap sources
+  chown -R root:root "${R}/tmp/systemd-swap"
+
+  # Remove temporary directory for systemd-swap sources
+  rm -fr "${temp_dir}"
+  
+  # Change into downloaded src dir
+  cd "${R}/tmp/systemd-swap" || exit
+  
+  # Build package
+  . ./systemd-swap/package.sh debian
+  
+  # Install package
+  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap-*any.deb
+  
+  # Enable service
+  chroot_exec systemctl enable systemd-swap
+  
+  # Change back into script root dir
+  cd "${WORKDIR}" || exit
 fi
 
 # Remove IPv6 networking support

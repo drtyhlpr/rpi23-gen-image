@@ -212,6 +212,9 @@ Support for halt,init,poweroff,reboot,runlevel,shutdown,telinit commands
 ---
 
 #### Advanced system features:
+##### `ENABLE_SYSTEMDSWAP`=false
+Enables [Systemd-swap service](https://github.com/Nefelim4ag/systemd-swap). Usefull if `KERNEL_ZSWAP` is enabled.
+
 ##### `ENABLE_MINBASE`=false
 Use debootstrap script variant `minbase` which only includes essential packages and apt. This will reduce the disk usage by about 65 MB.
 

@@ -415,7 +415,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
 else # BUILD_KERNEL=false
   #  echo Install precompiled kernel...
   #  echo error: not implemented
-  if [ "$KERNEL_ARCH" = arm64 ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
+  if [ "$SET_ARCH" = 64 ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
+    if [ "$KERNEL_ZSWAP" = true ] ; then
+	RPI3_64_KERNEL_URL=RPI3_64_BIS_KERNEL_URL
+	fi
     # Create temporary directory for dl
     temp_dir=$(as_nobody mktemp -d)
 
@@ -437,6 +440,27 @@ else # BUILD_KERNEL=false
     #Create cmdline.txt for 15-rpi-config.sh
     touch "${BOOT_DIR}/cmdline.txt"
   fi
+  
+  # INstall Kernel from hypriot comptabile with all Raspberry PI
+  if [ "$SET_ARCH" = 32 ] ; then
+    # Create temporary directory for dl
+    temp_dir=$(as_nobody mktemp -d)
+
+    # Fetch kernel
+    as_nobody wget -O "${temp_dir}"/kernel.deb -c "$RPI_32_KERNEL_URL"
+	
+	# Fetch kernel header
+	as_nobody wget -O "${temp_dir}"/kernel-header.deb -c "$RPI_32_KERNELHEADER_URL"
+	
+	# Install kernel
+	chroot_exec dpkg -i "${temp_dir}"/kernel.deb
+	
+	# Install kernel header
+	chroot_exec dpkg -i "${temp_dir}"/kernel-header.deb
+
+    # Remove temporary directory for U-Boot sources
+    rm -fr "${temp_dir}"
+  fi
 
   # Check if kernel installation was successful
   KERNEL="$(ls -1 "${R}"/boot/firmware/kernel* | sort | tail -n 1)"
@@ -445,4 +469,4 @@ else # BUILD_KERNEL=false
     cleanup
     exit 1
   fi
-fi
+fi   
