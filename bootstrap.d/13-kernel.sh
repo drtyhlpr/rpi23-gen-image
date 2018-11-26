@@ -441,22 +441,19 @@ else # BUILD_KERNEL=false
     touch "${BOOT_DIR}/cmdline.txt"
   fi
   
-  # INstall Kernel from hypriot comptabile with all Raspberry PI
+  # Install Kernel from hypriot comptabile with all Raspberry PI
   if [ "$SET_ARCH" = 32 ] ; then
-    # Create temporary directory for dl
-    temp_dir=$(as_nobody mktemp -d)
-
     # Fetch kernel
-    as_nobody wget -O "${temp_dir}"/kernel.deb -c "$RPI_32_KERNEL_URL"
+    as_nobody wget -O "${R}"/kernel.deb -c "$RPI_32_KERNEL_URL"
 	
 	# Fetch kernel header
-	as_nobody wget -O "${temp_dir}"/kernel-header.deb -c "$RPI_32_KERNELHEADER_URL"
+	as_nobody wget -O "${R}"/kernel-header.deb -c "$RPI_32_KERNELHEADER_URL"
 	
 	# Install kernel
-	chroot_exec dpkg -i "${temp_dir}"/kernel.deb
+	chroot_exec dpkg -i "${R}"/kernel.deb
 	
 	# Install kernel header
-	chroot_exec dpkg -i "${temp_dir}"/kernel-header.deb
+	chroot_exec dpkg -i "${R}"/kernel-header.deb
 
     # Remove temporary directory for U-Boot sources
     rm -fr "${temp_dir}"
