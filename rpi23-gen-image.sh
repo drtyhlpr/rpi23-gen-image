@@ -59,7 +59,8 @@ VIDEOCORE_URL=${VIDEOCORE_URL:=https://github.com/raspberrypi/userland}
 BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
 
 # Build directories
-BASEDIR=${BASEDIR:=$(pwd)/images/${RELEASE}}
+WORKDIR=$(pwd)
+BASEDIR=${BASEDIR:=${WORKDIR}/images/${RELEASE}}
 BUILDDIR="${BASEDIR}/build"
 
 # Chroot directories
@@ -69,6 +70,7 @@ LIB_DIR="${R}/lib"
 BOOT_DIR="${R}/boot/firmware"
 KERNEL_DIR="${R}/usr/src/linux"
 WLAN_FIRMWARE_DIR="${LIB_DIR}/firmware/brcm"
+BLUETOOTH_FIRMWARE_DIR="${ETC_DIR}/firmware/bt"
 
 # Firmware directory: Blank if download from github
 RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
@@ -105,6 +107,9 @@ APT_PROXY=${APT_PROXY:=""}
 APT_SERVER=${APT_SERVER:="ftp.debian.org"}
 
 # Feature settings
+ENABLE_PRINTK=${ENABLE_PRINTK:=false}
+ENABLE_BLUETOOTH=${ENABLE_BLUETOOTH:=false}
+ENABLE_MINIUART_OVERLAY=${ENABLE_MINIUART_OVERLAY:=false}
 ENABLE_CONSOLE=${ENABLE_CONSOLE:=true}
 ENABLE_I2C=${ENABLE_I2C:=false}
 ENABLE_SPI=${ENABLE_SPI:=false}
@@ -186,7 +191,7 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
-APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup"
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup,libnss-systemd"
 
 # Packages to exclude from chroot build environment
 APT_EXCLUDES=${APT_EXCLUDES:=""}
@@ -199,6 +204,12 @@ MISSING_PACKAGES=""
 COMPILER_PACKAGES=""
 
 set +x
+
+#Check if apt-cacher-ng has port 3142 open and set APT_PROXY
+APT_CACHER_RUNNING=$(lsof -i :3142 | grep apt-cacher-ng |  cut -d ' ' -f3 | uniq)
+if [ -n "${APT_CACHER_RUNNING}" ] ; then
+  APT_PROXY=http://127.0.0.1:3142/
+fi
 
 # Setup architecture specific settings
 if [ -n "$SET_ARCH" ] ; then
@@ -252,37 +263,51 @@ else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
 fi
-    # Device specific configuration and U-Boot configuration
-    case "$RPI_MODEL" in
-    0)
-      DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
-      ;;
-    1)
-      DTB_FILE=${DTB_FILE:=bcm2708-rpi-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
-      ;;
-    1P)
-      DTB_FILE=${DTB_FILE:=bcm2708-rpi-b-plus.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
-      ;;
-    2)
-      DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
-      ;;
-    3)
-      DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
-      ;;
-    3P)
-      DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
-      UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
-      ;;
-    *)
-      echo "error: Raspberry Pi model $RPI_MODEL is not supported!"
-      exit 1
-      ;;
-    esac
+# Device specific configuration and U-Boot configuration
+case "$RPI_MODEL" in
+  0)
+    DTB_FILE=${DTB_FILE:=bcm2708-rpi-0-w.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+    ;;
+  1)
+    DTB_FILE=${DTB_FILE:=bcm2708-rpi-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+    ;;
+  1P)
+    DTB_FILE=${DTB_FILE:=bcm2708-rpi-b-plus.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_defconfig}
+    ;;
+  2)
+    DTB_FILE=${DTB_FILE:=bcm2709-rpi-2-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_2_defconfig}
+    ;;
+  3)
+    DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
+    ;;
+  3P)
+    DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
+    ;;
+  *)
+    echo "error: Raspberry Pi model $RPI_MODEL is not supported!"
+    exit 1
+    ;;
+esac
+
+# Raspberry PI 0,3,3P with Bluetooth and Wifi onboard
+if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+  # Include bluetooth packages on supported boards
+  if [ "$ENABLE_BLUETOOTH" = true ] && [ "$ENABLE_CONSOLE" = false ]; then
+    APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
+  fi
+else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
+  # Check if the internal wireless interface is not supported by the RPi model
+  if [ "$ENABLE_WIRELESS" = true ] || [ "$ENABLE_BLUETOOTH" = true ]; then
+    echo "error: The selected Raspberry Pi model has no integrated interface for wireless or bluetooth"
+    exit 1
+  fi
+fi
 
 # Prepare date string for default image file name
 DATE="$(date +%Y-%m-%d)"
@@ -290,16 +315,6 @@ if [ -z "$KERNEL_BRANCH" ] ; then
   IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-CURRENT-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
 else
   IMAGE_NAME=${IMAGE_NAME:=${BASEDIR}/${DATE}-${KERNEL_ARCH}-${KERNEL_BRANCH}-rpi${RPI_MODEL}-${RELEASE}-${RELEASE_ARCH}}
-fi
-
-# Check if the internal wireless interface is supported by the RPi model
-if [ "$ENABLE_WIRELESS" = true ] ; then
-  if [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] || [ "$RPI_MODEL" = 2 ] ; then
-    echo "error: The selected Raspberry Pi model has no internal wireless interface"
-    exit 1
-  else
-    echo "Raspberry Pi $RPI_MODEL has WIFI support"
-  fi
 fi
 
 # Check if DISABLE_UNDERVOLT_WARNINGS parameter value is supported
@@ -347,6 +362,14 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex,bc"
 fi
 
+if [ "$ENABLE_BLUETOOTH" = true ] ; then
+  if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+    if [ "$ENABLE_CONSOLE" = false ] ; then
+	  APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
+	fi
+  fi
+fi
+
 # Check if root SSH (v2) public key file exists
 if [ -n "$SSH_ROOT_PUB_KEY" ] ; then
   if [ ! -f "$SSH_ROOT_PUB_KEY" ] ; then
@@ -365,7 +388,7 @@ fi
 
 # Check if all required packages are installed on the build system
 for package in $REQUIRED_PACKAGES ; do
-  if [ "$(dpkg-query -W -f='${Status}' $package)" != "install ok installed" ] ; then
+  if [ "$(dpkg-query -W -f='${Status}' "$package")" != "install ok installed" ] ; then
     MISSING_PACKAGES="${MISSING_PACKAGES} $package"
   fi
 done

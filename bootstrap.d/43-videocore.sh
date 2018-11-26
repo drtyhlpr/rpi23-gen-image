@@ -8,16 +8,16 @@
 if [ "$ENABLE_VIDEOCORE" = true ] ; then
   # Copy existing videocore sources into chroot directory
   if [ -n "$VIDEOCORESRC_DIR" ] && [ -d "$VIDEOCORESRC_DIR" ] ; then
-    # Copy local U-Boot sources
+    # Copy local videocore sources
     cp -r "${VIDEOCORESRC_DIR}" "${R}/tmp/userland"
   else
-    # Create temporary directory for U-Boot sources
+    # Create temporary directory for videocore sources
     temp_dir=$(as_nobody mktemp -d)
 
-    # Fetch U-Boot sources
+    # Fetch videocore sources
     as_nobody git -C "${temp_dir}" clone "${VIDEOCORE_URL}"
 
-    # Copy downloaded U-Boot sources
+    # Copy downloaded videocore sources
     mv "${temp_dir}/userland" "${R}/tmp/"
 
     # Set permissions of the U-Boot sources
@@ -31,7 +31,7 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   mkdir "${R}"/tmp/userland/build
 
   # push us to build directory
-  pushd "${R}"/tmp/userland/build
+  cd "${R}"/tmp/userland/build
 
   if [ "$RELEASE_ARCH" = "arm64" ] ; then
   cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_BUILD_TYPE=release -DARM64=ON -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_ASM_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -U_FORTIFY_SOURCE" -DCMAKE_ASM_FLAGS="${CMAKE_ASM_FLAGS} -c" -DVIDEOCORE_BUILD_DIR="${R}" "${R}/tmp/userland"
@@ -48,6 +48,6 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   #build userland
   make -j "$(nproc)"
 
-  #pop us out of build dir
-  popd
+  #back to root of scriptdir
+  cd "${WORKDIR}"
 fi

@@ -11,8 +11,8 @@ ENCRYPTED_USER_PASSWORD=$(mkpasswd -m sha-512 "${USER_PASSWORD}")
 
 # Setup default user
 if [ "$ENABLE_USER" = true ] ; then
-  chroot_exec adduser --gecos $USER_NAME --add_extra_groups --disabled-password $USER_NAME
-  chroot_exec usermod -a -G sudo -p "${ENCRYPTED_USER_PASSWORD}" $USER_NAME
+  chroot_exec adduser --gecos "$USER_NAME" --add_extra_groups --disabled-password "$USER_NAME"
+  chroot_exec usermod -a -G sudo -p "${ENCRYPTED_USER_PASSWORD}" "$USER_NAME"
 fi
 
 # Setup root password or not
