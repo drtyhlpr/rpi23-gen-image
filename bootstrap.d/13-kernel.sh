@@ -452,20 +452,22 @@ else # BUILD_KERNEL=false
 	as_nobody wget -O "${temp_dir}"/kernel-header.deb -c "$RPI_32_KERNELHEADER_URL"
 	
     # Copy downloaded U-Boot sources
-    mv "${temp_dir}"/kernel.deb "${R}"/kernel.deb
-	mv "${temp_dir}"/kernel-header.deb "${R}"/kernel-header.deb
+    mv "${temp_dir}"/kernel.deb "${R}"/tmp/kernel.deb
+	mv "${temp_dir}"/kernel-header.deb "${R}"/tmp/kernel-header.deb
 
     # Set permissions
-    chown -R root:root "${R}"/kernel.deb
-	chown -R root:root "${R}"/kernel-header.deb
+    chown -R root:root "${R}"/tmp/kernel.deb
+	chown -R root:root "${R}"/tmp/kernel-header.deb
 	
 	# Install kernel
-	chroot_exec dpkg -i "${temp_dir}"/kernel.deb
+	chroot_exec dpkg -i "${R}"/tmp/kernel.deb
 	# Install kernel header
-	chroot_exec dpkg -i "${temp_dir}"/kernel-header.deb
+	chroot_exec dpkg -i "${R}"/tmp/kernel-header.deb
 
-    # Remove temporary directory for U-Boot sources
+    # Remove temporary directory and files
     rm -fr "${temp_dir}"
+	rm -f "${R}"/tmp/kernel.deb
+	rm -f "${R}"/tmp/kernel-header.deb
   fi
 
   # Check if kernel installation was successful
