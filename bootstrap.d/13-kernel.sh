@@ -460,9 +460,9 @@ else # BUILD_KERNEL=false
 	chown -R root:root "${R}"/tmp/kernel-header.deb
 	
 	# Install kernel
-	chroot_exec dpkg -i "${R}"/tmp/kernel.deb
+	chroot_exec dpkg -i /tmp/kernel.deb
 	# Install kernel header
-	chroot_exec dpkg -i "${R}"/tmp/kernel-header.deb
+	chroot_exec dpkg -i /tmp/kernel-header.deb
 
     # Remove temporary directory and files
     rm -fr "${temp_dir}"

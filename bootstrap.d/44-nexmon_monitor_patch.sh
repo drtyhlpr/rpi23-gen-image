@@ -55,6 +55,10 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   CC="${CC}"gcc
   ./configure
   make
+  
+  # Backup stock broadcom wlan driver - "${LIB_DIR}"/modules/${KERNEL_VERSION}/kernel/drivers/net/wireless/broadcom/brcm80211/brcmfmac/brcmfmac.ko
+  brcmfmac_path=$(modinfo brcmfmac | grep -m 1 -oP "^filename:(\s*?)(.*)$" | sed -e 's/^filename:\(\s*\)\(.*\)$/\2/g')
+  mv "${brcmfmac_path}" "${brcmfmac_path}".orig
 
   # build patches
   if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] ; then
@@ -68,6 +72,8 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
 	mv "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.org.bin
     cp "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.nexmon.bin
     cp -f "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.bin
+	
+	cp "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac_4.14.y-nexmon/brcmfmac.ko "${brcmfmac_path}"
   fi
   
   if [ "$RPI_MODEL" = 3P ] ; then
@@ -83,25 +89,7 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
     cp -f "${NEXMON_ROOT}"/patches/bcm43455c0/7_45_154/nexmon/brcmfmac43455-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43455-sdio.bin
   fi
   
-  # Install kernel module
-  "${LIB_DIR}"/modules/${KERNEL_VERSION}/
-  
 #Revert to previous directory
 cd "${WORKDIR}" || exit
 
 fi
-
-## To make the RPi load the modified driver after reboot
-# Find the path of the default driver at reboot
-# e.g. '/lib/modules/4.14.71-v7+/kernel/drivers/net/wireless/broadcom/brcm80211/brcmfmac/brcmfmac.ko'
-PATH_OF_DEFAULT_DRIVER_AT_REBOOT=$(modinfo brcmfmac | grep -m 1 -oP "^filename:(\s*?)(.*)$" | sed -e 's/^filename:\(\s*\)\(.*\)$/\2/g')
-# Backup the original driver
-mv $PATH_OF_DEFAULT_DRIVER_AT_REBOOT "$PATH_OF_DEFAULT_DRIVER_AT_REBOOT.orig"
-# Copy the modified driver (Kernel 4.14)
-if is_pizero ; then
-    cp ./patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac_4.14.y-nexmon/brcmfmac.ko $PATH_OF_DEFAULT_DRIVER_AT_REBOOT
-else
-    cp ./patches/bcm43455c0/7_45_154/nexmon/brcmfmac_4.14.y-nexmon/brcmfmac.ko $PATH_OF_DEFAULT_DRIVER_AT_REBOOT
-fi
-# Probe all modules and generate new dependency
-depmod -a
