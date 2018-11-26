@@ -88,7 +88,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
 	  
       #Switch to KERNELSRC_DIR so we can use set_kernel_config
-      cd "${KERNEL_DIR}"
+      cd "${KERNEL_DIR}" || exit
 
 	  # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
       if [ "$KERNEL_ZSWAP" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
@@ -253,7 +253,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
 
 	  #Revert to previous directory
-	  cd "${WORKDIR}"
+	  cd "${WORKDIR}" || exit
 
       # Set kernel configuration parameters to enable qemu emulation
       if [ "$ENABLE_QEMU" = true ] ; then
