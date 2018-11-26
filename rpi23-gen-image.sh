@@ -2,7 +2,7 @@
 ########################################################################
 # rpi23-gen-image.sh					       2015-2017
 #
-# Advanced Debian "stretch" and "buster" bootstrap script for RPi2/3
+# Advanced Debian "stretch" and "buster" bootstrap script for Raspberry Pi
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -36,7 +36,7 @@ fi
 
 # Introduce settings
 set -e
-echo -n -e "\n#\n# RPi2/3 Bootstrap Settings\n#\n"
+echo -n -e "\n#\n# RPi 0/1/2/3 Bootstrap Settings\n#\n"
 set -x
 
 # Raspberry Pi model configuration
@@ -213,14 +213,14 @@ fi
 
 # Setup architecture specific settings
 if [ -n "$SET_ARCH" ] ; then
-  # 64 bit configuration
+  # 64-bit configuration
   if [ "$SET_ARCH" = 64 ] ; then
-    # General 64 bit depended settings
+    # General 64-bit depended settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm64}
     KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="Image"}
 
-    # Board specific settings
+    # Raspberry Pi model specific settings
     if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
@@ -228,19 +228,19 @@ if [ -n "$SET_ARCH" ] ; then
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
       CROSS_COMPILE=${CROSS_COMPILE:=aarch64-linux-gnu-}
     else
-      echo "error: Only Raspberry PI 3 and 3B+ support 64 bit"
+      echo "error: Only Raspberry PI 3 and 3B+ support 64-bit"
       exit 1
     fi
   fi
 
-  # 32 bit configuration
+  # 32-bit configuration
   if [ "$SET_ARCH" = 32 ] ; then
-    # General 32 bit dependend settings
+    # General 32-bit dependend settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm}
     KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="zImage"}
 
-    # Hardware specific settings
+    # Raspberry Pi model specific settings
     if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
@@ -249,7 +249,7 @@ if [ -n "$SET_ARCH" ] ; then
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
     fi
 
-    # Hardware specific settings
+    # Raspberry Pi model specific settings
     if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
@@ -403,7 +403,7 @@ if [ -n "$MISSING_PACKAGES" ] ; then
   [ "$confirm" != "y" ] && exit 1
 
   # Make sure all missing required packages are installed
-  apt-get -qq -y install "${MISSING_PACKAGES}"
+  apt-get -qq -y install `echo "${MISSING_PACKAGES}" | sed "s/ //"`
 fi
 
 # Check if ./bootstrap.d directory exists
