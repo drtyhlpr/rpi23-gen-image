@@ -91,7 +91,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       cd "${KERNEL_DIR}" || exit
 
 	  # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
-      if [ "$KERNEL_ZSWAP" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
+      if [ "$KERNEL_ZSWAP" = true ] ; then
         set_kernel_config CONFIG_ZPOOL y
         set_kernel_config CONFIG_ZSWAP y
         set_kernel_config CONFIG_ZBUD y
@@ -109,7 +109,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  fi
 	  
       # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
-	  if [ "$KERNEL_NF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
+	  if [ "$KERNEL_NF" = true ] ; then
 		set_kernel_config CONFIG_IP_NF_TARGET_SYNPROXY m
 		set_kernel_config CONFIG_NETFILTER_XT_MATCH_CGROUP m
 		set_kernel_config CONFIG_NETFILTER_XT_MATCH_IPCOMP m
@@ -216,7 +216,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       fi
 
 	  # Enables BPF syscall for systemd-journald see https://github.com/torvalds/linux/blob/master/init/Kconfig#L848 or https://groups.google.com/forum/#!topic/linux.gentoo.user/_2aSc_ztGpA
-	  if [ "$KERNEL_BPF" = true ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
+	  if [ "$KERNEL_BPF" = true ] ; then
         set_kernel_config CONFIG_BPF_SYSCALL y
 		set_kernel_config CONFIG_BPF_EVENTS y
 		set_kernel_config CONFIG_BPF_STREAM_PARSER y

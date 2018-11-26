@@ -64,12 +64,40 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   fi
 fi
 
+if [ "$KERNEL_ZSWAP" = true ] ; then
+  # Create temporary directory for systemd-swap sources
+  temp_dir=$(as_nobody mktemp -d)
+
+  # Fetch systemd-swap sources
+  as_nobody git -C "${temp_dir}" clone "${ZSWAP_URL}"
+
+  # Copy downloaded systemd-swap sources
+  mv "${temp_dir}/systemd-swap" "${R}/tmp/"
+
+  # Set permissions of the systemd-swap sources
+  chown -R root:root "${R}/tmp/systemd-swap"
+
+  # Remove temporary directory for systemd-swap sources
+  rm -fr "${temp_dir}"
+  
+  # Change into downloaded src dir
+  cd "${R}/tmp/systemd-swap" || exit
+  
+  # Build package
+  . ./systemd-swap/package.sh debian
+  
+  # Install package
+  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap-*any.deb
+  
+  # Change back into script root dir
+  cd "${WORKDIR}" || exit
+fi
+
 #locks cpu at max frequency
 if [ "$ENABLE_TURBO" = true ] ; then
   echo "force_turbo=1" >> "${BOOT_DIR}/config.txt"
   # helps to avoid sdcard corruption when force_turbo is enabled.
   echo "boot_delay=1" >> "${BOOT_DIR}/config.txt"
-  
 fi
 
 if [ "$ENABLE_PRINTK" = true ] ; then

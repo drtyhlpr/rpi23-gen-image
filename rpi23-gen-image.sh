@@ -64,6 +64,8 @@ RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmr
 RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_BIS_KERNEL_URL}
 BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
 NEXMON_URL=${NEXMON_URL:=https://github.com/seemoo-lab/nexmon.git}
+ZSWAP_URL=${ZSWAP_URL:=https://github.com/Nefelim4ag/systemd-swap.git}
+
 
 # Build directories
 WORKDIR=$(pwd)
