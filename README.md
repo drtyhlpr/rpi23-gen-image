@@ -165,7 +165,7 @@ Enable onboard Bluetooth interface on the RPi0/3/3P. See: https://spellfoundry.c
 Enable Bluetooth to use this. Adds overlay to swap UART0 with UART1. Enabling (slower) Bluetooth and full speed serial console. - RPI `0` `3` `3P` have a fast `hardware UART0` (ttyAMA0) and a `mini UART1` (ttyS0)! RPI `1` `1P` `2` only have a `hardware UART0`. `UART0` is considered better, because is faster and more stable than `mini UART1`. By default the Bluetooth modem is mapped to the `hardware UART0` and `mini UART` is used for console. The `mini UART` is a problem for the serial console, because its baudrate depends on the cpu frequency, which is changing on runtime. Resulting in a volatile baudrate and thus in an unusable serial console.
  
 ##### `ENABLE_TURBO`=false
-Enable Turbo mode. This setting locks cpu at highest frequency. As setting ENABLE_CONSOLE=true locks RPI to lowest CPU speed, this is can be used additionally to lock cpu hat max speed. Need a good power supply and probably cooling for the Raspberry PI.
+VOIDS WARRANTY! Enable Turbo mode - NO overclocking. This setting locks cpu at highest frequency. As setting ENABLE_CONSOLE=true locks RPI to lowest CPU speed, this is can be used additionally to lock cpu hat max speed. Need a good power supply and probably cooling for the Raspberry PI.
 
 ##### `ENABLE_I2C`=false
 Enable I2C interface on the RPi2/3. Please check the [RPi2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.

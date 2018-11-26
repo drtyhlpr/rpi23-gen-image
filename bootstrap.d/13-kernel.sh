@@ -113,6 +113,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 		set_kernel_config CONFIG_IP_NF_TARGET_SYNPROXY m
 		set_kernel_config CONFIG_NETFILTER_XT_MATCH_CGROUP m
 		set_kernel_config CONFIG_NETFILTER_XT_MATCH_IPCOMP m
+		set_kernel_config CONFIG_NETFILTER_XT_MATCH_SOCKET m
 		set_kernel_config CONFIG_NFT_FIB_INET m
 		set_kernel_config CONFIG_NFT_FIB_IPV4 m
 		set_kernel_config CONFIG_NFT_FIB_IPV6 m
@@ -120,7 +121,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 		set_kernel_config CONFIG_NFT_OBJREF m
 		set_kernel_config CONFIG_NFT_RT m
 		set_kernel_config CONFIG_NFT_SET_BITMAP m
-		set_kernel_config CONFIG_NF_CONNTRACK_TIMEOUT m
+		set_kernel_config CONFIG_NF_CONNTRACK_TIMEOUT y
 		set_kernel_config CONFIG_NF_LOG_ARP m
 		set_kernel_config CONFIG_NF_SOCKET_IPV4 m
 		set_kernel_config CONFIG_NF_SOCKET_IPV6 m

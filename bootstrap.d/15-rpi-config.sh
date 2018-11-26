@@ -67,6 +67,9 @@ fi
 #locks cpu at max frequency
 if [ "$ENABLE_TURBO" = true ] ; then
   echo "force_turbo=1" >> "${BOOT_DIR}/config.txt"
+  # helps to avoid sdcard corruption when force_turbo is enabled.
+  echo "boot_delay=1" >> "${BOOT_DIR}/config.txt"
+  
 fi
 
 if [ "$ENABLE_PRINTK" = true ] ; then
