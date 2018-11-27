@@ -64,6 +64,28 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   fi
 fi
 
+if [ "$ENABLE_PRINTK" = true ] ; then
+  install_readonly files/sysctl.d/83-rpi-printk.conf "${ETC_DIR}/sysctl.d/83-rpi-printk.conf"
+fi
+
+# Install udev rule for serial alias - serial0 = console serial1=bluetooth
+install_readonly files/etc/99-com.rules "${LIB_DIR}/udev/rules.d/99-com.rules"
+
+# Remove IPv6 networking support
+if [ "$ENABLE_IPV6" = false ] ; then
+  CMDLINE="${CMDLINE} ipv6.disable=1"
+fi
+
+# Automatically assign predictable network interface names
+if [ "$ENABLE_IFNAMES" = false ] ; then
+  CMDLINE="${CMDLINE} net.ifnames=0"
+else
+  CMDLINE="${CMDLINE} net.ifnames=1"
+fi
+
+# Install firmware config
+install_readonly files/boot/config.txt "${BOOT_DIR}/config.txt"
+
 #locks cpu at max frequency
 if [ "$ENABLE_TURBO" = true ] ; then
   echo "force_turbo=1" >> "${BOOT_DIR}/config.txt"
@@ -71,17 +93,7 @@ if [ "$ENABLE_TURBO" = true ] ; then
   echo "boot_delay=1" >> "${BOOT_DIR}/config.txt"
 fi
 
-if [ "$ENABLE_PRINTK" = true ] ; then
-  install_readonly files/sysctl.d/83-rpi-printk.conf "${ETC_DIR}/sysctl.d/83-rpi-printk.conf"
-fi
-
-# Install udev rule for serial alias
-install_readonly files/etc/99-com.rules "${LIB_DIR}/udev/rules.d/99-com.rules"
-
 if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-  
-  # RPI0,3,3P Use default ttyS0 (mini-UART)as serial interface
-  SET_SERIAL="ttyS0"
   
   # Bluetooth enabled
   if [ "$ENABLE_BLUETOOTH" = true ] ; then
@@ -120,7 +132,6 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
 	
     # Switch Pi3 Bluetooth function to use the mini-UART (ttyS0) and restore UART0/ttyAMA0 over GPIOs 14 & 15. Slow Bluetooth and slow cpu. Use /dev/ttyS0 instead of /dev/ttyAMA0
     if [ "$ENABLE_MINIUART_OVERLAY" = true ] ; then
-	  SET_SERIAL="ttyAMA0"
 
 	  # set overlay to swap ttyAMA0 and ttyS0
       echo "dtoverlay=pi3-miniuart-bt" >> "${BOOT_DIR}/config.txt"
@@ -129,23 +140,16 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
 	  if [ "$ENABLE_TURBO" = false ] ; then 
 	    echo "core_freq=250" >> "${BOOT_DIR}/config.txt"
 	  fi
-	  
-	  # Activate services
-	  chroot_exec systemctl enable pi-bluetooth.hciuart.service
-	  #chroot_exec systemctl enable pi-bluetooth.bthelper@.service
-	else
-	  chroot_exec systemctl enable pi-bluetooth.hciuart.service
-	  #chroot_exec systemctl enable pi-bluetooth.bthelper@.service
 	fi
+		  
+	# Activate services
+	chroot_exec systemctl enable pi-bluetooth.hciuart.service
+	chroot_exec systemctl enable pi-bluetooth.bthelper@serial1.service
 	
   else # if ENABLE_BLUETOOTH = false
   	# set overlay to disable bluetooth
     echo "dtoverlay=pi3-disable-bt" >> "${BOOT_DIR}/config.txt"
   fi # ENABLE_BLUETOOTH end
-
-else
-  # RPI1,1P,2 Use default ttyAMA0 (full UART) as serial interface
-  SET_SERIAL="ttyAMA0"
 fi
 
 # may need sudo systemctl disable hciuart
@@ -155,11 +159,11 @@ if [ "$ENABLE_CONSOLE" = true ] ; then
   CMDLINE="${CMDLINE} console=serial0,115200"
 	  
   # Enable serial console systemd style
-  chroot_exec systemctl enable serial-getty@"$SET_SERIAL".service
+  chroot_exec systemctl enable serial-getty@serial0.service
 else
   echo "enable_uart=0"  >> "${BOOT_DIR}/config.txt"
   # disable serial console systemd style
-  chroot_exec systemctl disable serial-getty@"$SET_SERIAL".service
+  #chroot_exec systemctl disable serial-getty@serial0.service
 fi
 
 # Remove cmdline.txt entry of starting zswap
@@ -204,23 +208,8 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   cd "${WORKDIR}" || exit
 fi
 
-# Remove IPv6 networking support
-if [ "$ENABLE_IPV6" = false ] ; then
-  CMDLINE="${CMDLINE} ipv6.disable=1"
-fi
-
-# Automatically assign predictable network interface names
-if [ "$ENABLE_IFNAMES" = false ] ; then
-  CMDLINE="${CMDLINE} net.ifnames=0"
-else
-  CMDLINE="${CMDLINE} net.ifnames=1"
-fi
-
 # Install firmware boot cmdline
 echo "${CMDLINE}" > "${BOOT_DIR}/cmdline.txt"
-
-# Install firmware config
-install_readonly files/boot/config.txt "${BOOT_DIR}/config.txt"
 
 # Setup minimal GPU memory allocation size: 16MB (no X)
 if [ "$ENABLE_MINGPU" = true ] ; then

@@ -416,14 +416,18 @@ else # BUILD_KERNEL=false
   #  echo Install precompiled kernel...
   #  echo error: not implemented
   if [ "$SET_ARCH" = 64 ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-    if [ "$KERNEL_ZSWAP" = true ] ; then
-	RPI3_64_KERNEL_URL=RPI3_64_BIS_KERNEL_URL
+    
+	# Use Sakakis modified kernel if ZSWAP is active
+    if [ "$KERNEL_ZSWAP" = true ] || ; then
+	  RPI3_64_KERNEL_URL=RPI3_64_BIS_KERNEL_URL
 	fi
+	
     # Create temporary directory for dl
     temp_dir=$(as_nobody mktemp -d)
 
     # Fetch kernel dl
     as_nobody wget -O "${temp_dir}"/kernel.tar.xz -c "$RPI3_64_KERNEL_URL" 
+	
     #extract download
     tar -xJf "${temp_dir}"/kernel.tar.xz -C "${temp_dir}"
 
@@ -434,11 +438,10 @@ else # BUILD_KERNEL=false
 
     # Remove temporary directory for kernel sources
     rm -fr "${temp_dir}"
+	
     # Set permissions of the kernel sources
     chown -R root:root "${R}/boot/firmware"
     chown -R root:root "${R}/lib/modules"
-    #Create cmdline.txt for 15-rpi-config.sh
-    touch "${BOOT_DIR}/cmdline.txt"
   fi
   
   # INstall Kernel from hypriot comptabile with all Raspberry PI
@@ -448,26 +451,36 @@ else # BUILD_KERNEL=false
 
     # Fetch kernel
     as_nobody wget -O "${temp_dir}"/kernel.deb -c "$RPI_32_KERNEL_URL"
-	# Fetch kernel header
-	as_nobody wget -O "${temp_dir}"/kernel-header.deb -c "$RPI_32_KERNELHEADER_URL"
-	
+
     # Copy downloaded U-Boot sources
     mv "${temp_dir}"/kernel.deb "${R}"/tmp/kernel.deb
-	mv "${temp_dir}"/kernel-header.deb "${R}"/tmp/kernel-header.deb
 
     # Set permissions
     chown -R root:root "${R}"/tmp/kernel.deb
-	chown -R root:root "${R}"/tmp/kernel-header.deb
 	
 	# Install kernel
 	chroot_exec dpkg -i /tmp/kernel.deb
-	# Install kernel header
-	chroot_exec dpkg -i /tmp/kernel-header.deb
 
+	# move /boot to /boot/firmware to fit script env.
+	#mkdir "${BOOT_DIR}"
+	mkdir "${temp_dir}"/firmware
+	mv  "${R}"/boot/* "${temp_dir}"/firmware/
+	mv "${temp_dir}"/firmware "${R}"/boot/
+	
+	#same for kernel headers
+	if [ "$KERNEL_HEADERS" = true ] ; then
+	  # Fetch kernel header
+	  as_nobody wget -O "${temp_dir}"/kernel-header.deb -c "$RPI_32_KERNELHEADER_URL"
+	  mv "${temp_dir}"/kernel-header.deb "${R}"/tmp/kernel-header.deb
+	  chown -R root:root "${R}"/tmp/kernel-header.deb
+	  # Install kernel header
+	  chroot_exec dpkg -i /tmp/kernel-header.deb
+	  rm -f "${R}"/tmp/kernel-header.deb
+	fi
+	
     # Remove temporary directory and files
     rm -fr "${temp_dir}"
 	rm -f "${R}"/tmp/kernel.deb
-	rm -f "${R}"/tmp/kernel-header.deb
   fi
 
   # Check if kernel installation was successful
@@ -477,4 +490,4 @@ else # BUILD_KERNEL=false
     cleanup
     exit 1
   fi
-fi   
+fi

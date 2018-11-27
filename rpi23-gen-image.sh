@@ -225,8 +225,6 @@ MISSING_PACKAGES=""
 # Packages installed for c/c++ build environment in chroot (keep empty)
 COMPILER_PACKAGES=""
 
-set +x
-
 #Check if apt-cacher-ng has port 3142 open and set APT_PROXY
 APT_CACHER_RUNNING=$(lsof -i :3142 | cut -d ' ' -f3 | uniq | sed '/^\s*$/d')
 if [ "${APT_CACHER_RUNNING}" = "apt-cacher-ng" ] ; then
@@ -245,9 +243,9 @@ rm "$(pwd)/files/apt/sources.list"
 fi
 
 if [ "$ENABLE_NONFREE" = true ] ; then
-  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --nonfree  --outfile "$(pwd)/files/apt/sources.list"  -d "$RLS"
+  netselect-apt --arch "$RELEASE_ARCH" -t 3 --sources --nonfree  --outfile "$(pwd)/files/apt/sources.list"  -d "$RLS"
 else
-  netselect-apt --arch "$RELEASE_ARCH" --tests 10 --sources --outfile "$(pwd)/files/apt/sources.list" -d "$RLS"
+  netselect-apt --arch "$RELEASE_ARCH" -t 3 --sources --outfile "$(pwd)/files/apt/sources.list" -d "$RLS"
 fi
 
 #sed and cut the result string so we can use it as APT_SERVER
@@ -366,6 +364,8 @@ if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
     exit 1
   fi
 fi
+
+set +x
 
 # Add cmake to compile videocore sources
 if [ "$ENABLE_VIDEOCORE" = true ] ; then
