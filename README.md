@@ -49,26 +49,25 @@ Set Debian packages server address. Choose a server from the list of Debian worl
 Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once. If `apt-cacher-ng` is running on default `http://127.0.0.1:3142` it is autodetected and you don't need to set this.
 
 ##### `APT_INCLUDES`=""
-A comma separated list of additional packages to be installed by debootstrap during bootstrapping.
+A comma-separated list of additional packages to be installed by debootstrap during bootstrapping.
 
 ##### `APT_INCLUDES_LATE`=""
-A comma separated list of additional packages to be installed by apt after bootstrapping and after APT sources are set up.  This is useful for packages with pre-depends, which debootstrap do not handle well.
+A comma-separated list of additional packages to be installed by apt after bootstrapping and after APT sources are set up.  This is useful for packages with pre-depends, which debootstrap do not handle well.
 
 ---
 
 #### General system settings:
 ##### `SET_ARCH`=32
-Set Architecture to default 32bit. If you want to to compile 64bit (RPI3 or RPI3+) set it to `64`. This option will set every needed crosscompiler or boeard specific option for a successful build.
+Set Architecture to default 32bit. If you want to compile 64-bit (RPI3 or RPI3+) set it to `64`. This option will set every needed cross-compiler or board specific option for a successful build.
 
 ##### `RPI_MODEL`=2
-Specifiy the target Raspberry Pi hardware model. The script at this time supports the following Raspberry Pi models:
-- `0`  = Used for Raspberry Pi 0 and Raspberry Pi 0 W
-- `1`  = Used for Pi 1 model A and B
-- `1P` = Used for Pi 1 model B+ and A+
-- `2`  = Used for Pi 2 model B
-- `3`  = Used for Pi 3 model B
-- `3P` = Used for Pi 3 model B+
-- `BUILD_KERNEL`=true will automatically be set if the Raspberry Pi model `3` or `3P` is used.
+Specify the target Raspberry Pi hardware model. The script at this time supports the following Raspberry Pi models:
+- `0`  = Raspberry Pi 0 and Raspberry Pi 0 W
+- `1`  = Raspberry Pi 1 model A and B
+- `1P` = Raspberry Pi 1 model B+ and A+
+- `2`  = Raspberry Pi 2 model B
+- `3`  = Raspberry Pi 3 model B
+- `3P` = Raspberry Pi 3 model B+
 
 ##### `RELEASE`="buster"
 Set the desired Debian release name. The script at this time supports the bootstrapping of the Debian releases `stretch` and `buster`.
@@ -77,7 +76,7 @@ Set the desired Debian release name. The script at this time supports the bootst
 Set the desired Debian release architecture.
 
 ##### `HOSTNAME`="rpi$RPI_MODEL-$RELEASE"
-Set system host name. It's recommended that the host name is unique in the corresponding subnet.
+Set system hostname. It's recommended that the hostname is unique in the corresponding subnet.
 
 ##### `PASSWORD`="raspberry"
 Set system `root` password. It's **STRONGLY** recommended that you choose a custom password.
@@ -117,7 +116,7 @@ Set extra xkb configuration options.
 ---
 
 #### Networking settings (DHCP):
-This parameter is used to set up networking auto configuration in `/etc/systemd/network/eth.network`. The default location of network configuration files in the Debian `stretch` release was changed to `/lib/systemd/network`.`
+This parameter is used to set up networking auto-configuration in `/etc/systemd/network/eth.network`. The default location of network configuration files in the Debian `stretch` release was changed to `/lib/systemd/network`.`
 
 ##### `ENABLE_DHCP`=true
 Set the system to use DHCP. This requires an DHCP server.
@@ -140,7 +139,7 @@ Set the IP address for the first DNS server.
 Set the IP address for the second DNS server.
 
 ##### `NET_DNS_DOMAINS`=""
-Set the default DNS search domains to use for non fully qualified host names.
+Set the default DNS search domains to use for non fully qualified hostnames.
 
 ##### `NET_NTP_1`=""
 Set the IP address for the first NTP server.
@@ -158,13 +157,13 @@ Enable serial console interface. Recommended if no monitor or keyboard is connec
 Enables printing kernel messages to konsole. printk is `3 4 1 3` as in raspbian.
 
 ##### `ENABLE_BLUETOOTH`=false
-Enable onboard Bluetooth interface on the RPi0/3/3P. See: https://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
+Enable onboard Bluetooth interface on the RPi0/3/3P. See: [Configuring the GPIO serial port on Raspbian jessie and stretch](https://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/).
 
 ##### `ENABLE_MINIUART_OVERLAY`=false
-Enable Bluetooth to use this. Adds overlay to swap UART0 with UART1. Enabling (slower) Bluetooth and full speed serial console. - RPI `0` `3` `3P` have a fast `hardware UART0` (ttyAMA0) and a `mini UART1` (ttyS0)! RPI `1` `1P` `2` only have a `hardware UART0`. `UART0` is considered better, because is faster and more stable than `mini UART1`. By default the Bluetooth modem is mapped to the `hardware UART0` and `mini UART` is used for console. The `mini UART` is a problem for the serial console, because its baudrate depends on the cpu frequency, which is changing on runtime. Resulting in a volatile baudrate and thus in an unusable serial console.
+Enable Bluetooth to use this. Adds overlay to swap UART0 with UART1. Enabling (slower) Bluetooth and full speed serial console. - RPI `0` `3` `3P` have a fast `hardware UART0` (ttyAMA0) and a `mini UART1` (ttyS0)! RPI `1` `1P` `2` only have a `hardware UART0`. `UART0` is considered better, because is faster and more stable than `mini UART1`. By default the Bluetooth modem is mapped to the `hardware UART0` and `mini UART` is used for console. The `mini UART` is a problem for the serial console, because its baudrate depends on the CPU frequency, which is changing on runtime. Resulting in a volatile baudrate and thus in an unusable serial console.
  
 ##### `ENABLE_TURBO`=false
-Enable Turbo mode. This setting locks cpu at highest frequency. As setting ENABLE_CONSOLE=true locks RPI to lowest CPU speed, this is can be used additionally to lock cpu hat max speed. Need a good power supply and probably cooling for the Raspberry PI.
+Enable Turbo mode. This setting locks cpu at the highest frequency. As setting ENABLE_CONSOLE=true locks RPI to lowest CPU speed, this is can be used additionally to lock cpu hat max speed. Need a good power supply and probably cooling for the Raspberry PI.
 
 ##### `ENABLE_I2C`=false
 Enable I2C interface on the RPi 0/1/2/3. Please check the [RPi 0/1/2/3 pinout diagrams](https://elinux.org/RPi_Low-level_peripherals) to connect the right GPIO pins.
@@ -191,7 +190,7 @@ If set to false, disable and uninstall rsyslog (so logs will be available only i
 Enable sound hardware and install Advanced Linux Sound Architecture.
 
 ##### `ENABLE_HWRANDOM`=true
-Enable Hardware Random Number Generator. Strong random numbers are important for most network based communications that use encryption. It's recommended to be enabled.
+Enable Hardware Random Number Generator. Strong random numbers are important for most network-based communications that use encryption. It's recommended to be enabled.
 
 ##### `ENABLE_MINGPU`=false
 Minimize the amount of shared memory reserved for the GPU. It doesn't seem to be possible to fully disable the GPU.
@@ -203,7 +202,7 @@ Install and enable D-Bus message bus. Please note that systemd should work witho
 Install Xorg open-source X Window System.
 
 ##### `ENABLE_WM`=""
-Install a user defined window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_WM` is used. The `rpi23-gen-image.sh` script has been tested with the following list of window managers: `blackbox`, `openbox`, `fluxbox`, `jwm`, `dwm`, `xfce4`, `awesome`.
+Install a user-defined window manager for the X Window System. To make sure all X related package dependencies are getting installed `ENABLE_XORG` will automatically get enabled if `ENABLE_WM` is used. The `rpi23-gen-image.sh` script has been tested with the following list of window managers: `blackbox`, `openbox`, `fluxbox`, `jwm`, `dwm`, `xfce4`, `awesome`.
 
 ##### `ENABLE_SYSVINIT`=false
 Support for halt,init,poweroff,reboot,runlevel,shutdown,telinit commands
@@ -230,16 +229,16 @@ Install and enable the [hardware accelerated Xorg video driver](https://github.c
 Path to a directory (`xf86-video-fbturbo`) of [hardware accelerated Xorg video driver sources](https://github.com/ssvb/xf86-video-fbturbo) that will be copied, configured, build and installed inside the chroot.
 
 ##### `ENABLE_VIDEOCORE`=false
-Install and enable the [Source code for ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) `vcgencmd`. Please note that this driver is currently limited to hardware accelerated window moving and scrolling.
+Install and enable the [ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) `vcgencmd`. Please note that this driver is currently limited to hardware accelerated window moving and scrolling.
 
 ##### `VIDEOCORESRC_DIR`=""
-Path to a directory (`userland`) of [Source code for ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) that will be copied, configured, build and installed inside the chroot.
+Path to a directory (`userland`) of [ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) that will be copied, configured, build and installed inside the chroot.
 
 ##### `ENABLE_IPTABLES`=false
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
 
 ##### `ENABLE_USER`=true
-Create non-root user with password `USER_PASSWORD`=raspberry. Unless overridden with `USER_NAME`=user, username will be `pi`.
+Create non-root user with password `USER_PASSWORD`=raspberry. Unless overridden with `USER_NAME`=user, the username will be `pi`.
 
 ##### `USER_NAME`=pi
 Non-root user to create.  Ignored if `ENABLE_USER`=false
@@ -269,10 +268,10 @@ Disable RPi2/3 under-voltage warnings and overlays. Setting the parameter to `1`
 
 #### SSH settings:
 ##### `SSH_ENABLE_ROOT`=false
-Enable password root login via SSH. This may be a security risk with default password, use only in trusted environments. `ENABLE_ROOT` must be set to `true`.
+Enable password-based root login via SSH. This may be a security risk with the default password set, use only in trusted environments. `ENABLE_ROOT` must be set to `true`.
 
 ##### `SSH_DISABLE_PASSWORD_AUTH`=false
-Disable password based SSH authentication. Only public key based SSH (v2) authentication will be supported.
+Disable password-based SSH authentication. Only public key based SSH (v2) authentication will be supported.
 
 ##### `SSH_LIMIT_USERS`=false
 Limit the users that are allowed to login via SSH. Only allow user `USER_NAME`=pi and root if `SSH_ENABLE_ROOT`=true to login. This parameter will be ignored if `dropbear` SSH is used (`REDUCE_SSHD`=true).
@@ -290,7 +289,7 @@ Add SSH (v2) public key(s) from specified file to `authorized_keys` file to enab
 Build and install the latest RPi 0/1/2/3 Linux kernel. Currently only the default RPi 0/1/2/3 kernel configuration is used.
 
 ##### `CROSS_COMPILE`="arm-linux-gnueabihf-"
-This sets the cross compile enviornment for the compiler.
+This sets the cross-compile environment for the compiler.
 
 ##### `KERNEL_ARCH`="arm"
 This sets the kernel architecture for the compiler.
@@ -308,13 +307,13 @@ Sets the QEMU enviornment for the Debian archive. If not set, `QEMU_BINARY` will
 Sets the default config for kernel compiling. If not set, `KERNEL_DEFCONFIG` will be set to "bcmrpi3\_defconfig" automatically if building for arm64.
 
 ##### `KERNEL_REDUCE`=false
-Reduce the size of the generated kernel by removing unwanted device, network and filesystem drivers (experimental).
+Reduce the size of the generated kernel by removing unwanted devices, network and filesystem drivers (experimental).
 
 ##### `KERNEL_THREADS`=1
 Number of parallel kernel building threads. If the parameter is left untouched the script will automatically determine the number of CPU cores to set the number of parallel threads to speed the kernel compilation.
 
 ##### `KERNEL_HEADERS`=true
-Install kernel headers with built kernel.
+Install kernel headers with the built kernel.
 
 ##### `KERNEL_MENUCONFIG`=false
 Start `make menuconfig` interactive menu-driven kernel configuration. The script will continue after `make menuconfig` was terminated.
