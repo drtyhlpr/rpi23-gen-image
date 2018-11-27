@@ -22,13 +22,17 @@ if [ "$BUILD_KERNEL" = true ] ; then
   else # KERNELSRC_DIR=""
     # Create temporary directory for kernel sources
     temp_dir=$(as_nobody mktemp -d)
-
-    # Fetch current RPi2/3 kernel sources
-    if [ -z "${KERNEL_BRANCH}" ] ; then
-      as_nobody -H git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}" linux
+	
+	if [ "$ENABLE_NEXMON" = true ] ; then
+	  NEXMON_URL
     else
-      as_nobody -H git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}" linux
-    fi
+      # Fetch current RPi2/3 kernel sources
+      if [ -z "${KERNEL_BRANCH}" ] ; then
+        as_nobody -H git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}" linux
+      else
+        as_nobody -H git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}" linux
+      fi
+	fi
 
     # Copy downloaded kernel sources
     cp -r "${temp_dir}/linux/"* "${KERNEL_DIR}"
@@ -418,7 +422,7 @@ else # BUILD_KERNEL=false
   if [ "$SET_ARCH" = 64 ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
     
 	# Use Sakakis modified kernel if ZSWAP is active
-    if [ "$KERNEL_ZSWAP" = true ] || ; then
+    if [ "$KERNEL_ZSWAP" = true ] || [ "$KERNEL_VIRT" = true ] || [ "$KERNEL_NF" = true ] || [ "$KERNEL_BPF" = true ] ; then
 	  RPI3_64_KERNEL_URL=RPI3_64_BIS_KERNEL_URL
 	fi
 	
