@@ -1,4 +1,4 @@
 # Configuration template file used by rpi23-gen-image.sh
-RPI_MODEL=2
-RELEASE=stretch
+RPI_MODEL=1P
+RELEASE=buster
 BUILD_KERNEL=true
