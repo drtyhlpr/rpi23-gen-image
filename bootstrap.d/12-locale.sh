@@ -28,10 +28,10 @@ if [ "$(echo "$APT_INCLUDES" | grep ",locales")" ] ; then
   chroot_exec update-locale LANG="${DEFLOCAL}"
 
   # Install and setup default keyboard configuration
-  if [ "$XKB_MODEL" != "pc105" ] ; then
+  if [ "$XKB_MODEL" != "" ] ; then
     sed -i "s/^XKBMODEL.*/XKBMODEL=\"${XKB_MODEL}\"/" "${ETC_DIR}/default/keyboard"
   fi
-  if [ "$XKB_LAYOUT" != "us" ] ; then
+  if [ "$XKB_LAYOUT" != "" ] ; then
     sed -i "s/^XKBLAYOUT.*/XKBLAYOUT=\"${XKB_LAYOUT}\"/" "${ETC_DIR}/default/keyboard"
   fi
   if [ "$XKB_VARIANT" != "" ] ; then

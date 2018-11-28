@@ -108,7 +108,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
             echo "CONFIG_CRYPTO_XTS=y"
             echo "CONFIG_CRYPTO_SHA512=y"
             echo "CONFIG_CRYPTO_MANAGER=y"
-          } >> ${KERNEL_DIR}/.config
+          } >> "${KERNEL_DIR}"/.config
         fi
       fi
 
@@ -139,7 +139,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     make -C "${KERNEL_DIR}" -j"${KERNEL_THREADS}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" "${KERNEL_BIN_IMAGE}" dtbs
 
     # Cross compile kernel modules
-    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
+    if grep -q "CONFIG_MODULES=y" "${KERNEL_DIR}/.config" ; then
       make -C "${KERNEL_DIR}" -j"${KERNEL_THREADS}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" modules
     fi
   fi
@@ -153,16 +153,16 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Install kernel modules
   if [ "$ENABLE_REDUCE" = true ] ; then
-    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
+    if grep -q "CONFIG_MODULES=y" "${KERNEL_DIR}/.config" ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=../../.. modules_install
     fi
   else
-    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
+    if grep -q "CONFIG_MODULES=y" "${KERNEL_DIR}/.config" ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH=../../.. modules_install
     fi
 
     # Install kernel firmware
-    if [ "$(grep "^firmware_install:" "${KERNEL_DIR}/Makefile")" ] ; then
+    if grep -q "^firmware_install:" "${KERNEL_DIR}/Makefile" ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_FW_PATH=../../../lib firmware_install
     fi
   fi
@@ -225,8 +225,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
     rm -fr "${KERNEL_DIR}"
   else
     # Prepare compiled kernel modules
-    if [ "$(grep "CONFIG_MODULES=y" "${KERNEL_DIR}/.config")" ] ; then
-      if [ "$(grep "^modules_prepare:" "${KERNEL_DIR}/Makefile")" ] ; then
+    if grep -q "CONFIG_MODULES=y" "${KERNEL_DIR}/.config" ; then
+      if grep -q "^modules_prepare:" "${KERNEL_DIR}/Makefile" ; then
         make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" modules_prepare
       fi
 

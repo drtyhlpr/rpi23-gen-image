@@ -1,6 +1,6 @@
 # Configuration template file used by rpi23-gen-image.sh
-RPI_MODEL=3
-RELEASE=stretch
+RPI_MODEL=3P
+RELEASE=buster
 BUILD_KERNEL=true
 # ENABLE_WIRELESS=false
 # ENABLE_BLUETOOTH=false

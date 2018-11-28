@@ -1,4 +1,5 @@
 # Configuration template file used by rpi23-gen-image.sh
-RPI_MODEL=2
+RPI_MODEL=0
 RELEASE=stretch
 BUILD_KERNEL=true
+# ENABLE_BLUETOOTH=false
