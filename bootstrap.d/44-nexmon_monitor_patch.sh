@@ -35,8 +35,6 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   cd "${NEXMON_ROOT}" || exit
   
   # Make ancient isl build
-  export CC="${NEXMON_ROOT}"/buildtools/gcc-arm-none-eabi-5_4-2016q2-linux-x86/bin/arm-none-eabi-
-  export CC="${CC}"gcc
   cd buildtools/isl-0.10 || exit
   ./configure
   make
@@ -51,7 +49,8 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   export KERNEL="${KERNEL_IMAGE}"
   export ARCH=arm
   export SUBARCH=arm
-
+  export CC="${NEXMON_ROOT}"/buildtools/gcc-arm-none-eabi-5_4-2016q2-linux-x86/bin/arm-none-eabi-
+  export CC="${CC}"gcc
   export CCPLUGIN="${NEXMON_ROOT}"/buildtools/gcc-nexmon-plugin/nexmon.so
   export ZLIBFLATE="zlib-flate -compress"
   export Q=@
