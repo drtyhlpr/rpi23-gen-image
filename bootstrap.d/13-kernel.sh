@@ -23,16 +23,18 @@ if [ "$BUILD_KERNEL" = true ] ; then
     # Create temporary directory for kernel sources
     temp_dir=$(as_nobody mktemp -d)
 	
+	# Use kali kernel src if nexmon is enabled
 	if [ "$ENABLE_NEXMON" = true ] ; then
-	  NEXMON_URL
-    else
-      # Fetch current RPi2/3 kernel sources
-      if [ -z "${KERNEL_BRANCH}" ] ; then
-        as_nobody -H git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}" linux
-      else
-        as_nobody -H git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}" linux
-      fi
+	  KERNEL_URL="${NEXMON_URL}"
     fi
+	
+    # Fetch current RPi2/3 kernel sources
+    if [ -z "${KERNEL_BRANCH}" ] ; then
+      as_nobody -H git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}" linux
+    else
+      as_nobody -H git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}" linux
+    fi
+
     # Copy downloaded kernel sources
     cp -r "${temp_dir}/linux/"* "${KERNEL_DIR}"
 
