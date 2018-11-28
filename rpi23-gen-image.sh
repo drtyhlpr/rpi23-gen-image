@@ -376,7 +376,7 @@ fi
 
 # Add deps for nexmon
 if [ "$ENABLE_NEXMON" = true ] ; then
-  REQUIRED_PACKAGES="${REQUIRED_PACKAGES},libgmp3-dev,gawk,qpdf,bison,flex,make,autoconf,automake,build-essential,libtool"
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libgmp3-dev gawk qpdf bison flex make autoconf automake build-essential libtool"
 fi
 
 # Add libncurses5 to enable kernel menuconfig
