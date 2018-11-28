@@ -351,6 +351,11 @@ else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
   fi
 fi
 
+if [ "$BUILD_KERNEL" = false ] && [ "$ENABLE_NEXMON" = true ]; then
+  echo "error: You have to compile kernel sources, if you want to enable nexmon"
+  exit 1
+fi
+
 # Prepare date string for default image file name
 DATE="$(date +%Y-%m-%d)"
 if [ -z "$KERNEL_BRANCH" ] ; then

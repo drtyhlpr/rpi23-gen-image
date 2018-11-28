@@ -5,6 +5,11 @@
 # Load utility functions
 . ./functions.sh
 
+# Use kali kernel src if nexmon is enabled
+if [ "$ENABLE_NEXMON" = true ] ; then
+  KERNEL_URL="${NEXMON_URL}"
+fi
+
 # Fetch and build latest raspberry kernel
 if [ "$BUILD_KERNEL" = true ] ; then
   # Setup source directory
@@ -22,11 +27,6 @@ if [ "$BUILD_KERNEL" = true ] ; then
   else # KERNELSRC_DIR=""
     # Create temporary directory for kernel sources
     temp_dir=$(as_nobody mktemp -d)
-	
-	# Use kali kernel src if nexmon is enabled
-	if [ "$ENABLE_NEXMON" = true ] ; then
-	  KERNEL_URL="${NEXMON_URL}"
-    fi
 	
     # Fetch current RPi2/3 kernel sources
     if [ -z "${KERNEL_BRANCH}" ] ; then
