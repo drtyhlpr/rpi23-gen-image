@@ -34,7 +34,7 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
 fi
 
 # Generate initramfs file
-if [ "$BUILD_KERNEL" = true ] && [ "$ENABLE_INITRAMFS" = true ] ; then
+if [ "$ENABLE_INITRAMFS" = true ] ; then
   if [ "$ENABLE_CRYPTFS" = true ] ; then
     # Include initramfs scripts to auto expand encrypted root partition
     if [ "$EXPANDROOT" = true ] ; then

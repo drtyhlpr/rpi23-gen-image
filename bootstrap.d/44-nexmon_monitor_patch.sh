@@ -44,8 +44,6 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   touch DISABLE_STATISTICS
   
   # Setup Enviroment: see https://github.com/NoobieDog/nexmon/blob/master/setup_env.sh
-  #ARCH="${KERNEL_ARCH}"
-  #SUBARCH="${KERNEL_ARCH}"
   export KERNEL="${KERNEL_IMAGE}"
   export ARCH=arm
   export SUBARCH=arm
@@ -57,21 +55,14 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   export NEXMON_SETUP_ENV=1
   export HOSTUNAME=$(uname -s)
   export PLATFORMUNAME=$(uname -m)
-  #. ./setup_env.sh
   
   # Make nexmon
   make
-  
-  # Backup stock broadcom wlan driver - "${LIB_DIR}"/modules/${KERNEL_VERSION}/kernel/drivers/net/wireless/broadcom/brcm80211/brcmfmac/brcmfmac.ko
-  #brcmfmac_path=$(modinfo brcmfmac | grep -m 1 -oP "^filename:(\s*?)(.*)$" | sed -e 's/^filename:\(\s*\)\(.*\)$/\2/g')
-  #brcmfmac_path="${LIB_DIR}"/modules/"${KERNEL_VERSION}"/kernel/drivers/net/wireless/broadcom/brcm80211/brcmfmac/brcmfmac.ko
-  #mv "${brcmfmac_path}" "${brcmfmac_path}".orig
 
-  #
-  
   # build patches
   if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] ; then
     cd "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon || exit
+	sed -i -e 's/all:.*/all: $(RAM_FILE)/g' ${NEXMON_ROOT}/patches/bcm43430a1/7_45_41_46/nexmon/Makefile
     make clean
 	
     # We do this so we don't have to install the ancient isl version into /usr/local/lib on systems.
@@ -87,6 +78,7 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   
   if [ "$RPI_MODEL" = 3P ] ; then
     cd "${NEXMON_ROOT}"/patches/bcm43455c0/7_45_154/nexmon || exit
+	sed -i -e 's/all:.*/all: $(RAM_FILE)/g' ${NEXMON_ROOT}/patches/bcm43455c0/7_45_154/nexmon/Makefile
     make clean
 	
 	# We do this so we don't have to install the ancient isl version into /usr/local/lib on systems.
