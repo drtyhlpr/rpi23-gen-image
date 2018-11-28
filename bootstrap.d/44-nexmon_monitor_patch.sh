@@ -35,10 +35,12 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   cd "${NEXMON_ROOT}" || exit
   
   # Make ancient isl build
+  export CC="${NEXMON_ROOT}"/buildtools/gcc-arm-none-eabi-5_4-2016q2-linux-x86/bin/arm-none-eabi-
+  export CC="${CC}"gcc
   cd buildtools/isl-0.10 || exit
-  CC="${CC}"gcc
   ./configure
   make
+  cd ../.. || exit
   
   # Disable statistics
   touch DISABLE_STATISTICS
@@ -49,7 +51,7 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   export KERNEL="${KERNEL_IMAGE}"
   export ARCH=arm
   export SUBARCH=arm
-  export CC="${NEXMON_ROOT}"/buildtools/gcc-arm-none-eabi-5_4-2016q2-linux-x86/bin/arm-none-eabi-
+
   export CCPLUGIN="${NEXMON_ROOT}"/buildtools/gcc-nexmon-plugin/nexmon.so
   export ZLIBFLATE="zlib-flate -compress"
   export Q=@
@@ -62,9 +64,12 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   make
   
   # Backup stock broadcom wlan driver - "${LIB_DIR}"/modules/${KERNEL_VERSION}/kernel/drivers/net/wireless/broadcom/brcm80211/brcmfmac/brcmfmac.ko
-  brcmfmac_path=$(modinfo brcmfmac | grep -m 1 -oP "^filename:(\s*?)(.*)$" | sed -e 's/^filename:\(\s*\)\(.*\)$/\2/g')
-  mv "${brcmfmac_path}" "${brcmfmac_path}".orig
+  #brcmfmac_path=$(modinfo brcmfmac | grep -m 1 -oP "^filename:(\s*?)(.*)$" | sed -e 's/^filename:\(\s*\)\(.*\)$/\2/g')
+  #brcmfmac_path="${LIB_DIR}"/modules/"${KERNEL_VERSION}"/kernel/drivers/net/wireless/broadcom/brcm80211/brcmfmac/brcmfmac.ko
+  #mv "${brcmfmac_path}" "${brcmfmac_path}".orig
 
+  #
+  
   # build patches
   if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] ; then
     cd "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon || exit
