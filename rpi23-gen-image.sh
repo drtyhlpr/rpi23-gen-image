@@ -159,7 +159,7 @@ ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=false}
 ENABLE_NEXMON=${ENABLE_NEXMON:=false}
 VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
 FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
-NEXMON_DIR=${NEXMON_DIR:=""}
+NEXMONSRC_DIR=${NEXMONSRC_DIR:=""}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
@@ -372,6 +372,11 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cmake"
 fi
 
+# Add deps for nexmon
+if [ "$ENABLE_NEXMON" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES},libgmp3-dev,gawk,qpdf,bison,flex,make,autoconf,automake,build-essential,libtool"
+fi
+
 # Add libncurses5 to enable kernel menuconfig
 if [ "$KERNEL_MENUCONFIG" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses-dev"
@@ -486,9 +491,9 @@ if [ -n "$FBTURBOSRC_DIR" ] && [ ! -d "$FBTURBOSRC_DIR" ] ; then
   exit 1
 fi
 
-# Check if specified NEXMON_DIR directory exists
-if [ -n "$NEXMON_DIR" ] && [ ! -d "$NEXMON_DIR" ] ; then
-  echo "error: '${NEXMON_DIR}' specified directory not found (NEXMON_DIR)!"
+# Check if specified NEXMONSRC_DIR directory exists
+if [ -n "$NEXMONSRC_DIR" ] && [ ! -d "$NEXMONSRC_DIR" ] ; then
+  echo "error: '${NEXMONSRC_DIR}' specified directory not found (NEXMONSRC_DIR)!"
   exit 1
 fi
 

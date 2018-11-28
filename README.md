@@ -242,7 +242,7 @@ Path to a directory (`userland`) of [Source code for a C-based firmware patching
 ##### `ENABLE_NEXMON`=false
 Install and enable the [Source code for a C-based firmware patching framework for Broadcom/Cypress WiFi chips that enables you to write your own firmware patches, for example, to enable monitor mode with radiotap headers and frame injection](https://github.com/seemoo-lab/nexmon.git).
 
-##### `NEXMON_DIR`=""
+##### `NEXMONSRC_DIR`=""
 Path to a directory (`nexmon`) of [Source code for ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) that will be copied, configured, build and installed inside the chroot.
 
 ##### `ENABLE_IPTABLES`=false

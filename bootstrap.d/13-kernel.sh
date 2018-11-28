@@ -32,8 +32,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       else
         as_nobody -H git -C "${temp_dir}" clone --depth=1 --branch "${KERNEL_BRANCH}" "${KERNEL_URL}" linux
       fi
-	fi
-
+    fi
     # Copy downloaded kernel sources
     cp -r "${temp_dir}/linux/"* "${KERNEL_DIR}"
 

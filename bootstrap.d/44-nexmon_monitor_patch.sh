@@ -7,27 +7,38 @@
 . ./functions.sh
 
 if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
+  # Copy existing nexmon sources into chroot directory
+  if [ -n "$NEXMONSRC_DIR" ] && [ -d "$NEXMONSRC_DIR" ] ; then
+    # Copy local U-Boot sources
+    cp -r "${NEXMONSRC_DIR}" "${R}/tmp"
+  else
+    # Create temporary directory for nexmon sources
+    temp_dir=$(as_nobody mktemp -d)
 
-  # Create temporary directory for nexmon sources
-  temp_dir=$(as_nobody mktemp -d)
+    # Fetch nexmon sources
+    as_nobody git -C "${temp_dir}" clone "${NEXMON_URL}"
 
-  # Fetch nexmon sources
-  as_nobody git -C "${temp_dir}" clone "${NEXMON_URL}"
+    # Copy downloaded nexmon sources
+    mv "${temp_dir}/nexmon" "${R}"/tmp/
 
-  # Copy downloaded nexmon sources
-  mv "${temp_dir}/nexmon" "${R}"/tmp/
+    # Set permissions of the nexmon sources
+    chown -R root:root "${R}"/tmp/nexmon
 
-  # Set permissions of the nexmon sources
-  chown -R root:root "${R}"/tmp/nexmon
-  
+    # Remove temporary directory for nexmon sources
+    rm -fr "${temp_dir}"
+  fi
+	
   # Set script Root
   export NEXMON_ROOT="${R}"/tmp/nexmon
 
-  # Remove temporary directory for nexmon sources
-  rm -fr "${temp_dir}"
-
   # Build nexmon firmware outside the build system, if we can.
   cd "${NEXMON_ROOT}" || exit
+  
+  # Make ancient isl build
+  cd buildtools/isl-0.10 || exit
+  CC="${CC}"gcc
+  ./configure
+  make
   
   # Disable statistics
   touch DISABLE_STATISTICS
@@ -48,12 +59,6 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
   #. ./setup_env.sh
   
   # Make nexmon
-  make
-
-  # Make ancient isl build
-  cd buildtools/isl-0.10 || exit
-  CC="${CC}"gcc
-  ./configure
   make
   
   # Backup stock broadcom wlan driver - "${LIB_DIR}"/modules/${KERNEL_VERSION}/kernel/drivers/net/wireless/broadcom/brcm80211/brcmfmac/brcmfmac.ko

@@ -5,7 +5,7 @@
 # Load utility functions
 . ./functions.sh
 
-if [ "$BUILD_KERNEL" = true ] ; then
+#if [ "$BUILD_KERNEL" = true ] ; then
   if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
     # Install boot binaries from local directory
     cp "${RPI_FIRMWARE_DIR}"/boot/bootcode.bin "${BOOT_DIR}"/bootcode.bin
@@ -38,7 +38,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     chown -R root:root "${BOOT_DIR}"
     chmod -R 600 "${BOOT_DIR}"
   fi
-fi
+#fi
 
 # Setup firmware boot cmdline
 if [ "$ENABLE_UBOOTUSB" = true ] ; then
