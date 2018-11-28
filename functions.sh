@@ -4,6 +4,17 @@
 cleanup (){
   set +x
   set +e
+  
+  # Remove exports from nexmon
+  unset KERNEL
+  unset ARCH
+  unset SUBARCH
+  unset CCPLUGIN
+  unset ZLIBFLATE
+  unset Q
+  unset NEXMON_SETUP_ENV
+  unset HOSTUNAME
+  unset PLATFORMUNAME
 
   # Identify and kill all processes still using files
   echo "killing processes using mount point ..."

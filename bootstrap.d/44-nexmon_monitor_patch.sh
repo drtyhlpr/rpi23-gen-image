@@ -101,4 +101,7 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
 #Revert to previous directory
 cd "${WORKDIR}" || exit
 
+# Remove nexmon sources
+rm -fr "${NEXMON_ROOT}"
+
 fi
