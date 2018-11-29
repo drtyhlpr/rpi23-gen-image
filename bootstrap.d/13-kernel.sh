@@ -5,7 +5,7 @@
 # Load utility functions
 . ./functions.sh
 
-# Use kali kernel src if nexmon is enabled
+# Need to use kali kernel src if nexmon is enabled
 if [ "$ENABLE_NEXMON" = true ] ; then
   KERNEL_URL="${NEXMON_URL}"
 fi
@@ -449,7 +449,7 @@ else # BUILD_KERNEL=false
     chown -R root:root "${R}/lib/modules"
   fi
   
-  # INstall Kernel from hypriot comptabile with all Raspberry PI
+  # Install Kernel from hypriot comptabile with all Raspberry PI
   if [ "$SET_ARCH" = 32 ] ; then
     # Create temporary directory for dl
     temp_dir=$(as_nobody mktemp -d)
