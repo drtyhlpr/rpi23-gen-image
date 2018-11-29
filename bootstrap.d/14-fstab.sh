@@ -45,8 +45,8 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
 	
 	if [ "$CRYPTFS_DROPBEAR" = true ]; then
 		if [ -n "$CRYPTFS_DROPBEAR_PUBKEY" ] && [ -f "$CRYPTFS_DROPBEAR_PUBKEY" ] ; then
- 			install_readonly "${CRYPTFS_DROPBEAR_PUBKEY}" "${ETC_DIR}/dropbear-initramfs/id_rsa.pub"
- 			cat /etc/dropbear-initramfs/id_rsa.pub >> /etc/dropbear-initramfs/authorized_keys
+ 			install_readonly "${CRYPTFS_DROPBEAR_PUBKEY}" "${ETC_DIR}"/dropbear-initramfs/id_rsa.pub
+ 			cat "${ETC_DIR}"/dropbear-initramfs/id_rsa.pub >> "${ETC_DIR}"/dropbear-initramfs/authorized_keys
  		else
   		  # Create key
  		  chroot_exec /usr/bin/dropbearkey -t rsa -f /etc/dropbear-initramfs/id_rsa.dropbear
@@ -55,7 +55,6 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
  		  chroot_exec /usr/lib/dropbear/dropbearconvert dropbear openssh /etc/dropbear-initramfs/id_rsa.dropbear /etc/dropbear-initramfs/id_rsa
 			
 		  # Get Public Key Part
-		  touch /etc/dropbear-initramfs/id_rsa.pub
  		  chroot_exec /usr/bin/dropbearkey -y -f /etc/dropbear-initramfs/id_rsa.dropbear | chroot_exec tee /etc/dropbear-initramfs/id_rsa.pub
  		  
 		  # Delete unwanted lines
@@ -63,14 +62,13 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
  		  sed -i '/Fingerprint/d' "${ETC_DIR}"/dropbear-initramfs/id_rsa.pub
  
 		  # Trust the new key
- 		  touch "${ETC_DIR}"/dropbear-initramfs/authorized_keys
- 		  cat "${ETC_DIR}"/dropbear-initramfs/id_rsa.pub | chroot_exec tee -a "${ETC_DIR}"/dropbear-initramfs/authorized_keys
+ 		  cat "${ETC_DIR}"/dropbear-initramfs/id_rsa.pub > "${ETC_DIR}"/dropbear-initramfs/authorized_keys
 
           # Save Keys - convert with putty from rsa/openssh to puttkey
           cp -f "${ETC_DIR}"/dropbear-initramfs/id_rsa "${BASEDIR}"/dropbear_initramfs_key.rsa
 			
-		  #Get unlock script
- 		  install_exec files/initramfs/crypt_unlock.sh "${ETC_DIR}/initramfs-tools/hooks/crypt_unlock.sh"
+		  # Get unlock script
+ 		  install_exec files/initramfs/crypt_unlock.sh "${ETC_DIR}"/initramfs-tools/hooks/crypt_unlock.sh
 		fi
 	else
 	  # Disable SSHD inside initramfs
