@@ -12,6 +12,7 @@ fi
 
 # Fetch and build latest raspberry kernel
 if [ "$BUILD_KERNEL" = true ] ; then
+  echo "WARNING: if ENABLE_NEXMON is used remember to put the CORRECT KERNELSRC IN KERNELSRC_DIR!!!!!1!"
   # Setup source directory
   mkdir -p "${KERNEL_DIR}"
 
