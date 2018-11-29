@@ -74,7 +74,7 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
 	      printf "#\n# DROPBEAR: [ y | n ]\n#\n\nDROPBEAR=y\n" >> "${ETC_DIR}/initramfs-tools/initramfs.conf"
 		  
 	      # Enable Dropbear inside initramfs
-	      sed -i "54 i sleep 5" "${R}"/ust/share/initramfs-tools/scripts/init-premount/dropbear	  
+	      sed -i "54 i sleep 5" "${R}"/usr/share/initramfs-tools/scripts/init-premount/dropbear	  
 		fi
 	else
 	  # Disable SSHD inside initramfs
