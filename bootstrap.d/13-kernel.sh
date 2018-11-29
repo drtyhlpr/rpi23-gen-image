@@ -424,7 +424,7 @@ else # BUILD_KERNEL=false
     
 	# Use Sakakis modified kernel if ZSWAP is active
     if [ "$KERNEL_ZSWAP" = true ] || [ "$KERNEL_VIRT" = true ] || [ "$KERNEL_NF" = true ] || [ "$KERNEL_BPF" = true ] ; then
-	  RPI3_64_KERNEL_URL=RPI3_64_BIS_KERNEL_URL
+	  RPI3_64_KERNEL_URL="${RPI3_64_BIS_KERNEL_URL}"
 	fi
 	
     # Create temporary directory for dl
