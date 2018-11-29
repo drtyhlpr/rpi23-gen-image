@@ -27,6 +27,9 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
   chroot_exec systemctl enable iptables.service
 
   if [ "$ENABLE_IPV6" = true ] ; then
+    # make sure ip6tables-legacy is the used alternatives 
+    chroot_exec update-alternatives --verbose --set ip6tables /usr/sbin/ip6tables-legacy
+	
     # Install ip6tables systemd service
     install_readonly files/iptables/ip6tables.service "${ETC_DIR}/systemd/system/ip6tables.service"
 
