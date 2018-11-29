@@ -116,6 +116,8 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     # Install tools
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/btuart" "${R}/usr/bin/btuart"
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/bthelper" "${R}/usr/bin/bthelper"
+	
+	# make scripts executable
 	chmod +x "${R}/usr/bin/bthelper"
 	chmod +x "${R}/usr/bin/btuart"
 

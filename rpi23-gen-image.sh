@@ -340,7 +340,7 @@ esac
 # Raspberry PI 0,3,3P with Bluetooth and Wifi onboard
 if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
   # Include bluetooth packages on supported boards
-  if [ "$ENABLE_BLUETOOTH" = true ] && [ "$ENABLE_CONSOLE" = false ]; then
+  if [ "$ENABLE_BLUETOOTH" = true ] ; then
     APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
   fi
 else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
@@ -423,14 +423,6 @@ else
   if [ "$ENABLE_UBOOTUSB" = true ] ; then  
     echo "error: Enabling UBOOTUSB requires u-boot to be enabled"
 	exit 1
-  fi
-fi
-
-if [ "$ENABLE_BLUETOOTH" = true ] ; then
-  if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-    if [ "$ENABLE_CONSOLE" = false ] ; then
-	  APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
-	fi
   fi
 fi
 
