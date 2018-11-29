@@ -69,6 +69,12 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
 			
 		  # Get unlock script
  		  install_exec files/initramfs/crypt_unlock.sh "${ETC_DIR}"/initramfs-tools/hooks/crypt_unlock.sh
+		  
+		  # Enable Dropbear inside initramfs
+	      printf "#\n# DROPBEAR: [ y | n ]\n#\n\nDROPBEAR=y\n" >> "${ETC_DIR}/initramfs-tools/initramfs.conf"
+		  
+	      # Enable Dropbear inside initramfs
+	      sed -i "54 i sleep 5" "${R}"/ust/share/initramfs-tools/scripts/init-premount/dropbear	  
 		fi
 	else
 	  # Disable SSHD inside initramfs
