@@ -442,6 +442,11 @@ if [ -n "$SSH_USER_PUB_KEY" ] ; then
   fi
 fi
 
+if [ "$ENABLE_NEXMON" = true ] && [ -n "$KERNEL_BRANCH" ] ; then
+  echo "error: Please unset KERNEL_BRANCH if using ENABLE_NEXMON"
+  exit 1
+fi
+
 # Check if all required packages are installed on the build system
 for package in $REQUIRED_PACKAGES ; do
   if [ "$(dpkg-query -W -f='${Status}' "$package")" != "install ok installed" ] ; then
