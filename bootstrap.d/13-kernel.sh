@@ -7,7 +7,7 @@
 
 # Need to use kali kernel src if nexmon is enabled
 if [ "$ENABLE_NEXMON" = true ] ; then
-  KERNEL_URL="${NEXMON_URL}"
+  KERNEL_URL="${KALI_KERNEL_URL}"
 fi
 
 # Fetch and build latest raspberry kernel

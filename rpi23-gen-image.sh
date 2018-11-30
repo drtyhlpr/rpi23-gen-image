@@ -69,6 +69,8 @@ RPI3_64_BIS_KERNEL_URL=${RPI3_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcmr
 RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel/releases/download/4.14.80.20181113/bcmrpi3-kernel-4.14.80.20181113.tar.xz}
 # Generic 
 RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_DEF_KERNEL_URL}
+# Kali kernel src - used if ENABLE_NEXMON=true (they patch the wlan kernel modul)
+KALI_KERNEL_URL=${KALI_KERNEL_URL:=https://github.com/Re4son/re4son-raspberrypi-linux.git}
 
 # Build directories
 WORKDIR=$(pwd)
