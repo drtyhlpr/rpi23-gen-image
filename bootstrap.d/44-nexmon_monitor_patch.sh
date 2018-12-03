@@ -72,8 +72,6 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
 	mv "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.org.bin
     cp "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.nexmon.bin
     cp -f "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.bin
-	
-	cp "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac_4.14.y-nexmon/brcmfmac.ko "${brcmfmac_path}"
   fi
   
   if [ "$RPI_MODEL" = 3P ] ; then
