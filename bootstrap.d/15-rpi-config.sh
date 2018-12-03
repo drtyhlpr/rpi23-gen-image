@@ -64,6 +64,7 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   fi
 fi
 
+# Enable Kernel messages on standard output
 if [ "$ENABLE_PRINTK" = true ] ; then
   install_readonly files/sysctl.d/83-rpi-printk.conf "${ETC_DIR}/sysctl.d/83-rpi-printk.conf"
 fi
@@ -86,7 +87,7 @@ fi
 # Install firmware config
 install_readonly files/boot/config.txt "${BOOT_DIR}/config.txt"
 
-#locks cpu at max frequency
+# Locks CPU frequency at maximum
 if [ "$ENABLE_TURBO" = true ] ; then
   echo "force_turbo=1" >> "${BOOT_DIR}/config.txt"
   # helps to avoid sdcard corruption when force_turbo is enabled.
@@ -149,7 +150,6 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
 		  
 	# Activate services
 	chroot_exec systemctl enable pi-bluetooth.hciuart.service
-	chroot_exec systemctl enable pi-bluetooth.bthelper@serial1.service
 	
   else # if ENABLE_BLUETOOTH = false
   	# set overlay to disable bluetooth
@@ -167,13 +167,6 @@ if [ "$ENABLE_CONSOLE" = true ] ; then
   chroot_exec systemctl enable serial-getty@serial0.service
 else
   echo "enable_uart=0"  >> "${BOOT_DIR}/config.txt"
-  # disable serial console systemd style
-  #chroot_exec systemctl disable serial-getty@serial0.service
-fi
-
-# Remove cmdline.txt entry of starting zswap
-if [ "$KERNEL_ZSWAP" = true ] ; then
-  CMDLINE="${CMDLINE} zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=lz4" 
 fi
 
 if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
@@ -211,6 +204,11 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   
   # Change back into script root dir
   cd "${WORKDIR}" || exit
+else
+  # Enable ZSWAP in cmdline if systemd-swap is not used
+  if [ "$KERNEL_ZSWAP" = true ] ; then
+    CMDLINE="${CMDLINE} zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=lz4" 
+  fi
 fi
 
 # Install firmware boot cmdline

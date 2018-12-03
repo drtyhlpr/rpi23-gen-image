@@ -7,12 +7,13 @@
 
 # Need to use kali kernel src if nexmon is enabled
 if [ "$ENABLE_NEXMON" = true ] ; then
+  echo "WARNING: if ENABLE_NEXMON is used remember to put the CORRECT KERNELSRC IN KERNELSRC_DIR!!!!!1!"
   KERNEL_URL="${KALI_KERNEL_URL}"
+  KERNEL_BRANCH=""
 fi
 
 # Fetch and build latest raspberry kernel
 if [ "$BUILD_KERNEL" = true ] ; then
-  echo "WARNING: if ENABLE_NEXMON is used remember to put the CORRECT KERNELSRC IN KERNELSRC_DIR!!!!!1!"
   # Setup source directory
   mkdir -p "${KERNEL_DIR}"
 
@@ -230,24 +231,22 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  fi
 	  
 	  # KERNEL_DEFAULT_GOV was set by user 
-	  if ! [ "$KERNEL_DEFAULT_GOV" = POWERSAVE ] && [ -n "$KERNEL_DEFAULT_GOV" ]; then
-	    # unset default governor
-	    unset_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
+	  if [ "$KERNEL_DEFAULT_GOV" != powersave ] && [ -n "$KERNEL_DEFAULT_GOV" ]; then
 		
 	    case "$KERNEL_DEFAULT_GOV" in
-          "performance")
+          performance)
 	        set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE y
             ;;
-          "userspace")
+          userspace)
             set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE y
             ;;
-          "ondemand")
+          ondemand)
 		    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND y
             ;;
-          "conservative")
+          conservative)
 		    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE y
 		    ;;
-          "shedutil")
+          shedutil)
 		    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL y
             ;;
           *)
@@ -255,6 +254,9 @@ if [ "$BUILD_KERNEL" = true ] ; then
             exit 1
             ;;
         esac
+		
+		# unset previous default governor
+	    unset_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
 	  fi
 	  
 

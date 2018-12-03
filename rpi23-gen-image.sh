@@ -183,7 +183,7 @@ KERNEL_CCACHE=${KERNEL_CCACHE:=false}
 KERNEL_ZSWAP=${KERNEL_ZSWAP:=false}
 KERNEL_VIRT=${KERNEL_VIRT:=false}
 KERNEL_BPF=${KERNEL_BPF:=false}
-KERNEL_DEFAULT_GOV=${KERNEL_DEFAULT_GOV:=POWERSAVE}
+KERNEL_DEFAULT_GOV=${KERNEL_DEFAULT_GOV:=powersave}
 
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}
@@ -229,13 +229,13 @@ MISSING_PACKAGES=""
 # Packages installed for c/c++ build environment in chroot (keep empty)
 COMPILER_PACKAGES=""
 
-#Check if apt-cacher-ng has port 3142 open and set APT_PROXY
+# Check if apt-cacher-ng has port 3142 open and set APT_PROXY
 APT_CACHER_RUNNING=$(lsof -i :3142 | cut -d ' ' -f3 | uniq | sed '/^\s*$/d')
 if [ "${APT_CACHER_RUNNING}" = "apt-cacher-ng" ] ; then
   APT_PROXY=http://127.0.0.1:3142/
 fi
 
-#netselect-apt does not know buster yet
+# netselect-apt does not know buster yet
 if  [ "$RELEASE" = "buster" ] ; then
   RLS=testing
 else
@@ -252,10 +252,10 @@ else
   netselect-apt --arch "$RELEASE_ARCH" -t 3 --sources --outfile "$(pwd)/files/apt/sources.list" -d "$RLS"
 fi
 
-#sed and cut the result string so we can use it as APT_SERVER
+# sed and cut the result string so we can use it as APT_SERVER
 APT_SERVER=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3 | sed 's|/$|''|')
 
-#make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
+# make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
 if [ -n "$SET_ARCH" ] ; then
   # 64-bit configuration
   if [ "$SET_ARCH" = 64 ] ; then
@@ -302,7 +302,7 @@ if [ -n "$SET_ARCH" ] ; then
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
     fi
   fi
-#SET_ARCH not set
+# SET_ARCH not set
 else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
@@ -344,6 +344,9 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
   # Include bluetooth packages on supported boards
   if [ "$ENABLE_BLUETOOTH" = true ] ; then
     APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
+  fi
+  if [ "$ENABLE_WIRELESS" = true ] ; then
+    APT_INCLUDES="${APT_INCLUDES},wireless-tools,crda,wireless-regdb"
   fi
 else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
   # Check if the internal wireless interface is not supported by the RPi model
@@ -401,7 +404,7 @@ if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
   APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup"
 
-  #If cryptfs,dropbear and initramfs are enabled include dropbear-initramfs package
+  # If cryptfs,dropbear and initramfs are enabled include dropbear-initramfs package
   if [ "$CRYPTFS_DROPBEAR" = true ] && [ "$ENABLE_INITRAMFS" = true ]; then
     APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
   fi

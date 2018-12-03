@@ -42,7 +42,7 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
       install_exec files/initramfs/expand-premount "${ETC_DIR}/initramfs-tools/scripts/local-premount/expand-premount"
       install_exec files/initramfs/expand-tools "${ETC_DIR}/initramfs-tools/hooks/expand-tools"
     fi
-	
+
 	if [ "$CRYPTFS_DROPBEAR" = true ]; then
 		if [ -n "$CRYPTFS_DROPBEAR_PUBKEY" ] && [ -f "$CRYPTFS_DROPBEAR_PUBKEY" ] ; then
  			install_readonly "${CRYPTFS_DROPBEAR_PUBKEY}" "${ETC_DIR}"/dropbear-initramfs/id_rsa.pub
@@ -50,29 +50,29 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
  		else
   		  # Create key
  		  chroot_exec /usr/bin/dropbearkey -t rsa -f /etc/dropbear-initramfs/id_rsa.dropbear
-			
+
  		  # Convert dropbear key to openssh key
  		  chroot_exec /usr/lib/dropbear/dropbearconvert dropbear openssh /etc/dropbear-initramfs/id_rsa.dropbear /etc/dropbear-initramfs/id_rsa
-			
+
 		  # Get Public Key Part
  		  chroot_exec /usr/bin/dropbearkey -y -f /etc/dropbear-initramfs/id_rsa.dropbear | chroot_exec tee /etc/dropbear-initramfs/id_rsa.pub
- 		  
+
 		  # Delete unwanted lines
  		  sed -i '/Public/d' "${ETC_DIR}"/dropbear-initramfs/id_rsa.pub
  		  sed -i '/Fingerprint/d' "${ETC_DIR}"/dropbear-initramfs/id_rsa.pub
- 
+
 		  # Trust the new key
  		  cat "${ETC_DIR}"/dropbear-initramfs/id_rsa.pub > "${ETC_DIR}"/dropbear-initramfs/authorized_keys
 
           # Save Keys - convert with putty from rsa/openssh to puttkey
           cp -f "${ETC_DIR}"/dropbear-initramfs/id_rsa "${BASEDIR}"/dropbear_initramfs_key.rsa
-			
+
 		  # Get unlock script
  		  install_exec files/initramfs/crypt_unlock.sh "${ETC_DIR}"/initramfs-tools/hooks/crypt_unlock.sh
-		  
+
 		  # Enable Dropbear inside initramfs
 	      printf "#\n# DROPBEAR: [ y | n ]\n#\n\nDROPBEAR=y\n" >> "${ETC_DIR}/initramfs-tools/initramfs.conf"
-		  
+
 	      # Enable Dropbear inside initramfs
 	      sed -i "54 i sleep 5" "${R}"/usr/share/initramfs-tools/scripts/init-premount/dropbear	  
 		fi
