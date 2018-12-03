@@ -235,19 +235,19 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	    unset_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
 		
 	    case "$KERNEL_DEFAULT_GOV" in
-          "PERFORMANCE")
+          "performance")
 	        set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE y
             ;;
-          "USERSPACE")
+          "userspace")
             set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE y
             ;;
-          "ONDEMAND")
+          "ondemand")
 		    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND y
             ;;
-          "CONSERVATIVE")
+          "conservative")
 		    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE y
 		    ;;
-          "CONSERVATIVE")
+          "shedutil")
 		    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL y
             ;;
           *)
