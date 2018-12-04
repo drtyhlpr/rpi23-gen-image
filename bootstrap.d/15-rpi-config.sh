@@ -194,7 +194,7 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   cd "${R}/tmp/systemd-swap" || exit
   
   # Build package
-  . ./systemd-swap/package.sh debian
+  . ./package.sh debian
   
   # Install package
   chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap-*any.deb
