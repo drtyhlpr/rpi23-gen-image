@@ -566,6 +566,10 @@ fi
 if [ "$ENABLE_IPTABLES" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},iptables,iptables-persistent"
 fi
+# Add apparmor for KERNEL_SECURITY
+if [ "$KERNEL_SECURITY" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},apparmor,apparmor-utils,apparmor-profiles,apparmor-profiles-extra,libapparmor-perl"
+fi
 
 # Add openssh server package
 if [ "$ENABLE_SSHD" = true ] ; then
