@@ -184,6 +184,7 @@ KERNEL_ZSWAP=${KERNEL_ZSWAP:=false}
 KERNEL_VIRT=${KERNEL_VIRT:=false}
 KERNEL_BPF=${KERNEL_BPF:=false}
 KERNEL_DEFAULT_GOV=${KERNEL_DEFAULT_GOV:=powersave}
+KERNEL_SECURITY=${KERNEL_SECURITY:=false}
 
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}

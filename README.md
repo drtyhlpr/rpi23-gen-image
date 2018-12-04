@@ -369,6 +369,8 @@ Enable Kernel Zswap support. Best use on high RAM load and mediocre CPU load use
 ##### `KERNEL_BPF`=true
 Allow attaching eBPF programs to a cgroup using the bpf syscall (CONFIG_BPF_SYSCALL CONFIG_CGROUP_BPF) [systemd compilations about it - File /lib/systemd/system/systemd-journald.server:36 configures an IP firewall (IPAddressDeny=all), but the local system does not support BPF/cgroup based firewalls]
 
+##### `KERNEL_SECURITY`=false
+Enables Apparmor, integrity subsystem, auditing 
 ---
 
 #### Reduce disk usage:

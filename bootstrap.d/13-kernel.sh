@@ -115,6 +115,48 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_VHOST_CROSS_ENDIAN_LEGACY y
 	  fi
 	  
+      # enable apparmor,integrity audit,
+	  if [ "$KERNEL_SECURITY" = true ] ; then
+
+        # security filesystem, security models and audit
+		set_kernel_config CONFIG_SECURITYFS y
+	    set_kernel_config CONFIG_SECURITY y
+        set_kernel_config CONFIG_AUDIT y
+
+		# harden strcpy and memcpy
+        set_kernel_config CONFIG_HARDENED_USERCOPY=y
+        set_kernel_config CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR=y
+		set_kernel_config CONFIG_FORTIFY_SOURCE=y
+		
+		# integrity sub-system
+        set_kernel_config CONFIG_INTEGRITY=y
+        set_kernel_config CONFIG_INTEGRITY_ASYMMETRIC_KEYS=y
+        set_kernel_config CONFIG_INTEGRITY_AUDIT=y
+        set_kernel_config CONFIG_INTEGRITY_SIGNATURE=y
+        set_kernel_config CONFIG_INTEGRITY_TRUSTED_KEYRING=y
+		
+		# This option provides support for retaining authentication tokens and access keys in the kernel.
+        set_kernel_config CONFIG_KEYS=y
+        set_kernel_config CONFIG_KEYS_COMPAT=y
+		
+		# Apparmor
+        set_kernel_config CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE 1
+        set_kernel_config CONFIG_SECURITY_APPARMOR_HASH_DEFAULT y
+		set_kernel_config CONFIG_DEFAULT_SECURITY_APPARMOR y
+		set_kernel_config CONFIG_SECURITY_APPARMOR y
+		set_kernel_config CONFIG_SECURITY_APPARMOR_HASH y
+		set_kernel_config CONFIG_DEFAULT_SECURITY "apparmor"
+		
+		# restrictions on unprivileged users reading the kernel
+        set_kernel_config CONFIG_SECURITY_DMESG_RESTRICT=y
+		
+		# network security hooks
+        set_kernel_config CONFIG_SECURITY_NETWORK y
+        set_kernel_config CONFIG_SECURITY_NETWORK_XFRM=y
+        set_kernel_config CONFIG_SECURITY_PATH=y
+        set_kernel_config CONFIG_SECURITY_YAMA=y
+	  fi
+	  
       # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
 	  if [ "$KERNEL_NF" = true ] ; then
 		set_kernel_config CONFIG_IP_NF_TARGET_SYNPROXY m
