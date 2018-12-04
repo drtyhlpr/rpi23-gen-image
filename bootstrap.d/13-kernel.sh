@@ -178,6 +178,22 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  	set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE y
 	  	set_kernel_config CONFIG_SECONDARY_TRUSTED_KEYRING y
 	  	set_kernel_config CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY n
+		
+		set_kernel_config CONFIG_ARM64_CRYPTO y
+		set_kernel_config CONFIG_CRYPTO_SHA256_ARM64 m
+        set_kernel_config CONFIG_CRYPTO_SHA512_ARM64 m
+		set_kernel_config CONFIG_CRYPTO_SHA1_ARM64_CE m
+		set_kernel_config CRYPTO_GHASH_ARM64_CE m
+		set_kernel_config CRYPTO_SHA2_ARM64_CE m
+		set_kernel_config CONFIG_CRYPTO_CRCT10DIF_ARM64_CE m
+		set_kernel_config CONFIG_CRYPTO_CRC32_ARM64_CE m
+		set_kernel_config CONFIG_CRYPTO_AES_ARM64 m
+		set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE m
+		set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE_CCM y
+		set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE_BLK y
+		set_kernel_config CONFIG_CRYPTO_AES_ARM64_NEON_BLK m
+		set_kernel_config CONFIG_CRYPTO_CHACHA20_NEON m
+		set_kernel_config CONFIG_CRYPTO_AES_ARM64_BS m
 	  fi
 		
       # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
