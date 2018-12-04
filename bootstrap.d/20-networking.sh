@@ -57,6 +57,20 @@ else # ENABLE_DHCP=false
   -e "0,/NTP=\$/ s|NTP=\$|NTP=${NET_NTP_1}|"\
   -e "0,/NTP=\$/ s|NTP=\$|NTP=${NET_NTP_2}|"\
   "${ETC_DIR}/systemd/network/eth.network"
+  
+  if [ "$CRYPTFS_DROPBEAR" = true ] ; then
+    # Get cdir from NET_ADDRESS e.g. 24
+    cdir=$(${NET_ADDRESS} | cut -d '/' -f2)
+
+    # Convert cdir ro netmask e.g. 24 to 255.255.255.0
+    NET_MASK=$(cdr2mask "$cdir")
+	
+	# Write static ip settings to "${ETC_DIR}"/initramfs-tools/initramfs.conf
+    sed -i "\$aIP=${NET_ADDRESS}::${NET_GATEWAY}:${NET_MASK}:${HOSTNAME}:" "${ETC_DIR}"/initramfs-tools/initramfs.conf
+
+	# Regenerate initramfs
+	chroot_exec mkinitramfs -o "/boot/firmware/initramfs-${KERNEL_VERSION}" "${KERNEL_VERSION}"
+  fi
 fi
 
 # Remove empty settings from network configuration
