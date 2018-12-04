@@ -170,11 +170,6 @@ else
 fi
 
 if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
-
-  # Remove cmdline.txt entry of starting zswap
-  if [ "$KERNEL_ZSWAP" = true ] ; then
-    sed -i 's|zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=lz4||g'
-  fi
   # Create temporary directory for systemd-swap sources
   temp_dir=$(as_nobody mktemp -d)
 
