@@ -179,7 +179,7 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   temp_dir=$(as_nobody mktemp -d)
 
   # Fetch systemd-swap sources
-  as_nobody git -C "${temp_dir}" clone "${ZSWAP_URL}"
+  as_nobody git -C "${temp_dir}" clone "${SYSTEMDSWAP_URL}"
 
   # Copy downloaded systemd-swap sources
   mv "${temp_dir}/systemd-swap" "${R}/tmp/"
