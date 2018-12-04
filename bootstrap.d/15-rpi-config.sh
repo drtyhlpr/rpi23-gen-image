@@ -205,6 +205,9 @@ else
     CMDLINE="${CMDLINE} zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=lz4" 
   fi
 fi
+  if [ "$KERNEL_SECURITY" = true ] ; then
+    CMDLINE="${CMDLINE} apparmor=1 security=apparmor" 
+  fi
 
 # Install firmware boot cmdline
 echo "${CMDLINE}" > "${BOOT_DIR}/cmdline.txt"

@@ -140,7 +140,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_KEYS_COMPAT=y
 		
 		# Apparmor
-        set_kernel_config CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE 1
+        set_kernel_config CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE 0
         set_kernel_config CONFIG_SECURITY_APPARMOR_HASH_DEFAULT y
 		set_kernel_config CONFIG_DEFAULT_SECURITY_APPARMOR y
 		set_kernel_config CONFIG_SECURITY_APPARMOR y
@@ -155,11 +155,35 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_SECURITY_NETWORK_XFRM=y
         set_kernel_config CONFIG_SECURITY_PATH=y
         set_kernel_config CONFIG_SECURITY_YAMA=y
+		
+		# New Options
+		if [ "$KERNEL_NF" = true ]
+		  set_kernel_config CONFIG_IP_NF_SECURITY m
+	  	  set_kernel_config CONFIG_NETLABEL m
+	  	  set_kernel_config CONFIG_IP6_NF_SECURITY m
+		fi
+		set_kernel_config CONFIG_SECURITY_SELINUX n
+	  	set_kernel_config CONFIG_SECURITY_SMACK n
+	  	set_kernel_config CONFIG_SECURITY_TOMOYO n
+	  	set_kernel_config CONFIG_SECURITY_APPARMOR_DEBUG n
+	  	set_kernel_config CONFIG_SECURITY_LOADPIN n
+		set_kernel_config CONFIG_HARDENED_USERCOPY_PAGESPAN n
+	  	set_kernel_config CONFIG_IMA n
+	  	set_kernel_config CONFIG_EVM n
+	  	set_kernel_config CONFIG_FANOTIFY_ACCESS_PERMISSIONS y
+	  	set_kernel_config CONFIG_NFSD_V4_SECURITY_LABEL y
+	  	set_kernel_config CONFIG_PKCS7_MESSAGE_PARSER y
+	  	set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYRING y
+	  	set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS y
+	  	set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE y
+	  	set_kernel_config CONFIG_SECONDARY_TRUSTED_KEYRING y
+	  	set_kernel_config CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY n
 	  fi
-	  
+		
       # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
 	  if [ "$KERNEL_NF" = true ] ; then
 		set_kernel_config CONFIG_IP_NF_TARGET_SYNPROXY m
+		set_kernel_config CONFIG_NETFILTER_XT_TARGET_AUDIT m
 		set_kernel_config CONFIG_NETFILTER_XT_MATCH_CGROUP m
 		set_kernel_config CONFIG_NETFILTER_XT_MATCH_IPCOMP m
 		set_kernel_config CONFIG_NETFILTER_XT_MATCH_SOCKET m
@@ -183,6 +207,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_IP6_NF_NAT m
         set_kernel_config CONFIG_IP6_NF_TARGET_MASQUERADE m
         set_kernel_config CONFIG_IP6_NF_TARGET_NPT m
+		set_kernel_config CONFIG_IP_NF_SECURITY m
         set_kernel_config CONFIG_IP_SET_BITMAP_IPMAC m
         set_kernel_config CONFIG_IP_SET_BITMAP_PORT m
         set_kernel_config CONFIG_IP_SET_HASH_IP m
