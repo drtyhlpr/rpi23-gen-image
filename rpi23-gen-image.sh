@@ -57,6 +57,20 @@ FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
 VIDEOCORE_URL=${VIDEOCORE_URL:=https://github.com/raspberrypi/userland}
 BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
+NEXMON_URL=${NEXMON_URL:=https://github.com/seemoo-lab/nexmon.git}
+SYSTEMDSWAP_URL=${SYSTEMDSWAP_URL:=https://github.com/Nefelim4ag/systemd-swap.git}
+
+# Kernel deb packages for 32bit kernel
+RPI_32_KERNEL_URL=${RPI_32_KERNEL_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel_20180422-141901_armhf.deb}
+RPI_32_KERNELHEADER_URL=${RPI_32_KERNELHEADER_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel-headers_20180422-141901_armhf.deb}
+# Kernel has KVM and zswap enabled - use if KERNEL_* parameters and precompiled kernel are used 
+RPI3_64_BIS_KERNEL_URL=${RPI3_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel-bis/releases/download/4.14.80.20181113/bcmrpi3-kernel-bis-4.14.80.20181113.tar.xz}
+# Default precompiled 64bit kernel
+RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel/releases/download/4.14.80.20181113/bcmrpi3-kernel-4.14.80.20181113.tar.xz}
+# Generic 
+RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_DEF_KERNEL_URL}
+# Kali kernel src - used if ENABLE_NEXMON=true (they patch the wlan kernel modul)
+KALI_KERNEL_URL=${KALI_KERNEL_URL:=https://github.com/Re4son/re4son-raspberrypi-linux.git}
 
 # Build directories
 WORKDIR=$(pwd)
@@ -138,14 +152,17 @@ SSH_ROOT_PUB_KEY=${SSH_ROOT_PUB_KEY:=""}
 SSH_USER_PUB_KEY=${SSH_USER_PUB_KEY:=""}
 
 # Advanced settings
+ENABLE_SYSTEMDSWAP=${ENABLE_SYSTEMDSWAP:=false}
 ENABLE_MINBASE=${ENABLE_MINBASE:=false}
 ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
 ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=false}
+ENABLE_NEXMON=${ENABLE_NEXMON:=false}
 VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
 FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
+NEXMONSRC_DIR=${NEXMONSRC_DIR:=""}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
@@ -162,6 +179,12 @@ KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
 KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
 KERNEL_OLDDEFCONFIG=${KERNEL_OLDDEFCONFIG:=false}
 KERNEL_CCACHE=${KERNEL_CCACHE:=false}
+KERNEL_ZSWAP=${KERNEL_ZSWAP:=false}
+KERNEL_VIRT=${KERNEL_VIRT:=false}
+KERNEL_BPF=${KERNEL_BPF:=false}
+KERNEL_DEFAULT_GOV=${KERNEL_DEFAULT_GOV:=powersave}
+KERNEL_SECURITY=${KERNEL_SECURITY:=false}
+KERNEL_NF=${KERNEL_NF:=false}
 
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}
@@ -258,7 +281,7 @@ if [ -n "$SET_ARCH" ] ; then
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
     fi
   fi
-#SET_ARCH not set
+# SET_ARCH not set
 else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
@@ -298,8 +321,11 @@ esac
 # Raspberry PI 0,3,3P with Bluetooth and Wifi onboard
 if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
   # Include bluetooth packages on supported boards
-  if [ "$ENABLE_BLUETOOTH" = true ] && [ "$ENABLE_CONSOLE" = false ]; then
+  if [ "$ENABLE_BLUETOOTH" = true ] ; then
     APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
+  fi
+  if [ "$ENABLE_WIRELESS" = true ] ; then
+    APT_INCLUDES="${APT_INCLUDES},wireless-tools,crda,wireless-regdb"
   fi
 else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
   # Check if the internal wireless interface is not supported by the RPi model
@@ -307,6 +333,11 @@ else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
     echo "error: The selected Raspberry Pi model has no integrated interface for wireless or bluetooth"
     exit 1
   fi
+fi
+
+if [ "$BUILD_KERNEL" = false ] && [ "$ENABLE_NEXMON" = true ]; then
+  echo "error: You have to compile kernel sources, if you want to enable nexmon"
+  exit 1
 fi
 
 # Prepare date string for default image file name
@@ -328,6 +359,11 @@ fi
 # Add cmake to compile videocore sources
 if [ "$ENABLE_VIDEOCORE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cmake"
+fi
+
+# Add deps for nexmon
+if [ "$ENABLE_NEXMON" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libgmp3-dev gawk qpdf bison flex make autoconf automake build-essential libtool"
 fi
 
 # Add libncurses5 to enable kernel menuconfig
@@ -386,6 +422,11 @@ if [ -n "$SSH_USER_PUB_KEY" ] ; then
   fi
 fi
 
+if [ "$ENABLE_NEXMON" = true ] && [ -n "$KERNEL_BRANCH" ] ; then
+  echo "error: Please unset KERNEL_BRANCH if using ENABLE_NEXMON"
+  exit 1
+fi
+
 # Check if all required packages are installed on the build system
 for package in $REQUIRED_PACKAGES ; do
   if [ "$(dpkg-query -W -f='${Status}' "$package")" != "install ok installed" ] ; then
@@ -442,6 +483,12 @@ if [ -n "$FBTURBOSRC_DIR" ] && [ ! -d "$FBTURBOSRC_DIR" ] ; then
   exit 1
 fi
 
+# Check if specified NEXMONSRC_DIR directory exists
+if [ -n "$NEXMONSRC_DIR" ] && [ ! -d "$NEXMONSRC_DIR" ] ; then
+  echo "error: '${NEXMONSRC_DIR}' specified directory not found (NEXMONSRC_DIR)!"
+  exit 1
+fi
+
 # Check if specified CHROOT_SCRIPTS directory exists
 if [ -n "$CHROOT_SCRIPTS" ] && [ ! -d "$CHROOT_SCRIPTS" ] ; then
    echo "error: ${CHROOT_SCRIPTS} specified directory not found (CHROOT_SCRIPTS)!"
@@ -492,6 +539,10 @@ fi
 # Add iptables IPv4/IPv6 package
 if [ "$ENABLE_IPTABLES" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},iptables,iptables-persistent"
+fi
+# Add apparmor for KERNEL_SECURITY
+if [ "$KERNEL_SECURITY" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},apparmor,apparmor-utils,apparmor-profiles,apparmor-profiles-extra,libapparmor-perl"
 fi
 
 # Add openssh server package
@@ -544,16 +595,6 @@ fi
 # Configure systemd-sysv exclude to make halt/reboot/shutdown scripts available
 if [ "$ENABLE_SYSVINIT" = false ] ; then
   APT_EXCLUDES="--exclude=${APT_EXCLUDES},init,systemd-sysv"
-fi
-
-# Check if kernel is getting compiled
-if [ "$BUILD_KERNEL" = false ] ; then
-  echo "Downloading precompiled kernel"
-  echo "error: not configured"
-  exit 1;
-# BUILD_KERNEL=true
-else
-  echo "No precompiled kernel repositories were added"
 fi
 
 # Configure kernel sources if no KERNELSRC_DIR

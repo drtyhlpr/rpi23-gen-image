@@ -5,39 +5,37 @@
 # Load utility functions
 . ./functions.sh
 
-if [ "$BUILD_KERNEL" = true ] ; then
-  if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
-    # Install boot binaries from local directory
-    cp "${RPI_FIRMWARE_DIR}"/boot/bootcode.bin "${BOOT_DIR}"/bootcode.bin
-    cp "${RPI_FIRMWARE_DIR}"/boot/fixup.dat "${BOOT_DIR}"/fixup.dat
-    cp "${RPI_FIRMWARE_DIR}"/boot/fixup_cd.dat "${BOOT_DIR}"/fixup_cd.dat
-    cp "${RPI_FIRMWARE_DIR}"/boot/fixup_x.dat "${BOOT_DIR}"/fixup_x.dat
-    cp "${RPI_FIRMWARE_DIR}"/boot/start.elf "${BOOT_DIR}"/start.elf
-    cp "${RPI_FIRMWARE_DIR}"/boot/start_cd.elf "${BOOT_DIR}"/start_cd.elf
-    cp "${RPI_FIRMWARE_DIR}"/boot/start_x.elf "${BOOT_DIR}"/start_x.elf
-  else
-    # Create temporary directory for boot binaries
-    temp_dir=$(as_nobody mktemp -d)
+if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
+  # Install boot binaries from local directory
+  cp "${RPI_FIRMWARE_DIR}"/boot/bootcode.bin "${BOOT_DIR}"/bootcode.bin
+  cp "${RPI_FIRMWARE_DIR}"/boot/fixup.dat "${BOOT_DIR}"/fixup.dat
+  cp "${RPI_FIRMWARE_DIR}"/boot/fixup_cd.dat "${BOOT_DIR}"/fixup_cd.dat
+  cp "${RPI_FIRMWARE_DIR}"/boot/fixup_x.dat "${BOOT_DIR}"/fixup_x.dat
+  cp "${RPI_FIRMWARE_DIR}"/boot/start.elf "${BOOT_DIR}"/start.elf
+  cp "${RPI_FIRMWARE_DIR}"/boot/start_cd.elf "${BOOT_DIR}"/start_cd.elf
+  cp "${RPI_FIRMWARE_DIR}"/boot/start_x.elf "${BOOT_DIR}"/start_x.elf
+else
+  # Create temporary directory for boot binaries
+  temp_dir=$(as_nobody mktemp -d)
 
-    # Install latest boot binaries from raspberry/firmware github
-    as_nobody wget -q -O "${temp_dir}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
-    as_nobody wget -q -O "${temp_dir}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
-    as_nobody wget -q -O "${temp_dir}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
-    as_nobody wget -q -O "${temp_dir}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
-    as_nobody wget -q -O "${temp_dir}/start.elf" "${FIRMWARE_URL}/start.elf"
-    as_nobody wget -q -O "${temp_dir}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
-    as_nobody wget -q -O "${temp_dir}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
+  # Install latest boot binaries from raspberry/firmware github
+  as_nobody wget -q -O "${temp_dir}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
+  as_nobody wget -q -O "${temp_dir}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
+  as_nobody wget -q -O "${temp_dir}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
+  as_nobody wget -q -O "${temp_dir}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
+  as_nobody wget -q -O "${temp_dir}/start.elf" "${FIRMWARE_URL}/start.elf"
+  as_nobody wget -q -O "${temp_dir}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
+  as_nobody wget -q -O "${temp_dir}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
 
-    # Move downloaded boot binaries
-    mv "${temp_dir}/"* "${BOOT_DIR}/"
+  # Move downloaded boot binaries
+  mv "${temp_dir}/"* "${BOOT_DIR}/"
 
-    # Remove temporary directory for boot binaries
-    rm -fr "${temp_dir}"
+  # Remove temporary directory for boot binaries
+  rm -fr "${temp_dir}"
 
-    # Set permissions of the boot binaries
-    chown -R root:root "${BOOT_DIR}"
-    chmod -R 600 "${BOOT_DIR}"
-  fi
+  # Set permissions of the boot binaries
+  chown -R root:root "${BOOT_DIR}"
+  chmod -R 600 "${BOOT_DIR}"
 fi
 
 # Setup firmware boot cmdline
@@ -56,17 +54,35 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   fi
 fi
 
-#locks cpu at max frequency
-if [ "$ENABLE_TURBO" = true ] ; then
-  echo "force_turbo=1" >> "${BOOT_DIR}/config.txt"
-fi
-
+# Enable Kernel messages on standard output
 if [ "$ENABLE_PRINTK" = true ] ; then
   install_readonly files/sysctl.d/83-rpi-printk.conf "${ETC_DIR}/sysctl.d/83-rpi-printk.conf"
 fi
 
-# Install udev rule for serial alias
+# Install udev rule for serial alias - serial0 = console serial1=bluetooth
 install_readonly files/etc/99-com.rules "${LIB_DIR}/udev/rules.d/99-com.rules"
+
+# Remove IPv6 networking support
+if [ "$ENABLE_IPV6" = false ] ; then
+  CMDLINE="${CMDLINE} ipv6.disable=1"
+fi
+
+# Automatically assign predictable network interface names
+if [ "$ENABLE_IFNAMES" = false ] ; then
+  CMDLINE="${CMDLINE} net.ifnames=0"
+else
+  CMDLINE="${CMDLINE} net.ifnames=1"
+fi
+
+# Install firmware config
+install_readonly files/boot/config.txt "${BOOT_DIR}/config.txt"
+
+# Locks CPU frequency at maximum
+if [ "$ENABLE_TURBO" = true ] ; then
+  echo "force_turbo=1" >> "${BOOT_DIR}/config.txt"
+  # helps to avoid sdcard corruption when force_turbo is enabled.
+  echo "boot_delay=1" >> "${BOOT_DIR}/config.txt"
+fi
 
 if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
   
@@ -152,23 +168,48 @@ else
   chroot_exec systemctl disable serial-getty\@"$SET_SERIAL".service
 fi
 
-# Remove IPv6 networking support
-if [ "$ENABLE_IPV6" = false ] ; then
-  CMDLINE="${CMDLINE} ipv6.disable=1"
-fi
+if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
+  # Create temporary directory for systemd-swap sources
+  temp_dir=$(as_nobody mktemp -d)
 
-# Automatically assign predictable network interface names
-if [ "$ENABLE_IFNAMES" = false ] ; then
-  CMDLINE="${CMDLINE} net.ifnames=0"
+  # Fetch systemd-swap sources
+  as_nobody git -C "${temp_dir}" clone "${SYSTEMDSWAP_URL}"
+
+  # Copy downloaded systemd-swap sources
+  mv "${temp_dir}/systemd-swap" "${R}/tmp/"
+
+  # Set permissions of the systemd-swap sources
+  chown -R root:root "${R}/tmp/systemd-swap"
+
+  # Remove temporary directory for systemd-swap sources
+  rm -fr "${temp_dir}"
+  
+  # Change into downloaded src dir
+  cd "${R}/tmp/systemd-swap" || exit
+  
+  # Build package
+  . ./package.sh debian
+  
+  # Install package
+  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap-*any.deb
+  
+  # Enable service
+  chroot_exec systemctl enable systemd-swap
+  
+  # Change back into script root dir
+  cd "${WORKDIR}" || exit
 else
-  CMDLINE="${CMDLINE} net.ifnames=1"
+  # Enable ZSWAP in cmdline if systemd-swap is not used
+  if [ "$KERNEL_ZSWAP" = true ] ; then
+    CMDLINE="${CMDLINE} zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=lz4" 
+  fi
 fi
+  if [ "$KERNEL_SECURITY" = true ] ; then
+    CMDLINE="${CMDLINE} apparmor=1 security=apparmor" 
+  fi
 
 # Install firmware boot cmdline
 echo "${CMDLINE}" > "${BOOT_DIR}/cmdline.txt"
-
-# Install firmware config
-install_readonly files/boot/config.txt "${BOOT_DIR}/config.txt"
 
 # Setup minimal GPU memory allocation size: 16MB (no X)
 if [ "$ENABLE_MINGPU" = true ] ; then
