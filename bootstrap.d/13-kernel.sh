@@ -7,7 +7,6 @@
 
 # Need to use kali kernel src if nexmon is enabled
 if [ "$ENABLE_NEXMON" = true ] ; then
-  echo "WARNING: if ENABLE_NEXMON is used remember to put the CORRECT KERNELSRC IN KERNELSRC_DIR!!!!!1!"
   KERNEL_URL="${KALI_KERNEL_URL}"
   KERNEL_BRANCH=""
 fi
