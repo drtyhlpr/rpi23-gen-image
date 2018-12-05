@@ -9,6 +9,7 @@
 if [ "$ENABLE_NEXMON" = true ] ; then
   KERNEL_URL="${KALI_KERNEL_URL}"
   KERNEL_BRANCH=""
+  KERNELSRC_DIR=""
 fi
 
 # Fetch and build latest raspberry kernel
