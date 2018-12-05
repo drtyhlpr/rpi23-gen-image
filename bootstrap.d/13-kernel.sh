@@ -119,81 +119,81 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  if [ "$KERNEL_SECURITY" = true ] ; then
 
         # security filesystem, security models and audit
-	set_kernel_config CONFIG_SECURITYFS y
+        set_kernel_config CONFIG_SECURITYFS y
         set_kernel_config CONFIG_SECURITY y
         set_kernel_config CONFIG_AUDIT y
 
-	# harden strcpy and memcpy
+        # harden strcpy and memcpy
         set_kernel_config CONFIG_HARDENED_USERCOPY=y
         set_kernel_config CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR=y
-	set_kernel_config CONFIG_FORTIFY_SOURCE=y
+        set_kernel_config CONFIG_FORTIFY_SOURCE=y
 
-	# integrity sub-system
+        # integrity sub-system
         set_kernel_config CONFIG_INTEGRITY=y
         set_kernel_config CONFIG_INTEGRITY_ASYMMETRIC_KEYS=y
         set_kernel_config CONFIG_INTEGRITY_AUDIT=y
         set_kernel_config CONFIG_INTEGRITY_SIGNATURE=y
         set_kernel_config CONFIG_INTEGRITY_TRUSTED_KEYRING=y
 
-	# This option provides support for retaining authentication tokens and access keys in the kernel.
+        # This option provides support for retaining authentication tokens and access keys in the kernel.
         set_kernel_config CONFIG_KEYS=y
         set_kernel_config CONFIG_KEYS_COMPAT=y
 
-	# Apparmor
+        # Apparmor
         set_kernel_config CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE 0
         set_kernel_config CONFIG_SECURITY_APPARMOR_HASH_DEFAULT y
-	set_kernel_config CONFIG_DEFAULT_SECURITY_APPARMOR y
-	set_kernel_config CONFIG_SECURITY_APPARMOR y
-	set_kernel_config CONFIG_SECURITY_APPARMOR_HASH y
-	set_kernel_config CONFIG_DEFAULT_SECURITY "apparmor"
+        set_kernel_config CONFIG_DEFAULT_SECURITY_APPARMOR y
+        set_kernel_config CONFIG_SECURITY_APPARMOR y
+        set_kernel_config CONFIG_SECURITY_APPARMOR_HASH y
+        set_kernel_config CONFIG_DEFAULT_SECURITY "apparmor"
 
-	# restrictions on unprivileged users reading the kernel
+        # restrictions on unprivileged users reading the kernel
         set_kernel_config CONFIG_SECURITY_DMESG_RESTRICT=y
 
-	# network security hooks
+        # network security hooks
         set_kernel_config CONFIG_SECURITY_NETWORK y
         set_kernel_config CONFIG_SECURITY_NETWORK_XFRM=y
         set_kernel_config CONFIG_SECURITY_PATH=y
         set_kernel_config CONFIG_SECURITY_YAMA=y
 
-	# New Options
-	if [ "$KERNEL_NF" = true ] ; then
-	  set_kernel_config CONFIG_IP_NF_SECURITY m
-  	  set_kernel_config CONFIG_NETLABEL m
-  	  set_kernel_config CONFIG_IP6_NF_SECURITY m
-	fi
-	set_kernel_config CONFIG_SECURITY_SELINUX n
-  	set_kernel_config CONFIG_SECURITY_SMACK n
-  	set_kernel_config CONFIG_SECURITY_TOMOYO n
-  	set_kernel_config CONFIG_SECURITY_APPARMOR_DEBUG n
-  	set_kernel_config CONFIG_SECURITY_LOADPIN n
-	set_kernel_config CONFIG_HARDENED_USERCOPY_PAGESPAN n
-  	set_kernel_config CONFIG_IMA n
-  	set_kernel_config CONFIG_EVM n
-  	set_kernel_config CONFIG_FANOTIFY_ACCESS_PERMISSIONS y
-  	set_kernel_config CONFIG_NFSD_V4_SECURITY_LABEL y
-  	set_kernel_config CONFIG_PKCS7_MESSAGE_PARSER y
-  	set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYRING y
-  	set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS y
-  	set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE y
-  	set_kernel_config CONFIG_SECONDARY_TRUSTED_KEYRING y
-  	set_kernel_config CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY n
+        # New Options
+        if [ "$KERNEL_NF" = true ] ; then
+          set_kernel_config CONFIG_IP_NF_SECURITY m
+          set_kernel_config CONFIG_NETLABEL m
+          set_kernel_config CONFIG_IP6_NF_SECURITY m
+        fi
+        set_kernel_config CONFIG_SECURITY_SELINUX n
+        set_kernel_config CONFIG_SECURITY_SMACK n
+        set_kernel_config CONFIG_SECURITY_TOMOYO n
+        set_kernel_config CONFIG_SECURITY_APPARMOR_DEBUG n
+        set_kernel_config CONFIG_SECURITY_LOADPIN n
+        set_kernel_config CONFIG_HARDENED_USERCOPY_PAGESPAN n
+        set_kernel_config CONFIG_IMA n
+        set_kernel_config CONFIG_EVM n
+        set_kernel_config CONFIG_FANOTIFY_ACCESS_PERMISSIONS y
+        set_kernel_config CONFIG_NFSD_V4_SECURITY_LABEL y
+        set_kernel_config CONFIG_PKCS7_MESSAGE_PARSER y
+        set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYRING y
+        set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS y
+        set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE y
+        set_kernel_config CONFIG_SECONDARY_TRUSTED_KEYRING y
+        set_kernel_config CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY n
 
-	set_kernel_config CONFIG_ARM64_CRYPTO y
-	set_kernel_config CONFIG_CRYPTO_SHA256_ARM64 m
+        set_kernel_config CONFIG_ARM64_CRYPTO y
+        set_kernel_config CONFIG_CRYPTO_SHA256_ARM64 m
         set_kernel_config CONFIG_CRYPTO_SHA512_ARM64 m
-	set_kernel_config CONFIG_CRYPTO_SHA1_ARM64_CE m
-	set_kernel_config CRYPTO_GHASH_ARM64_CE m
-	set_kernel_config CRYPTO_SHA2_ARM64_CE m
-	set_kernel_config CONFIG_CRYPTO_CRCT10DIF_ARM64_CE m
-	set_kernel_config CONFIG_CRYPTO_CRC32_ARM64_CE m
-	set_kernel_config CONFIG_CRYPTO_AES_ARM64 m
-	set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE m
-	set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE_CCM y
-	set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE_BLK y
-	set_kernel_config CONFIG_CRYPTO_AES_ARM64_NEON_BLK m
-	set_kernel_config CONFIG_CRYPTO_CHACHA20_NEON m
-	set_kernel_config CONFIG_CRYPTO_AES_ARM64_BS m
+        set_kernel_config CONFIG_CRYPTO_SHA1_ARM64_CE m
+        set_kernel_config CRYPTO_GHASH_ARM64_CE m
+        set_kernel_config CRYPTO_SHA2_ARM64_CE m
+        set_kernel_config CONFIG_CRYPTO_CRCT10DIF_ARM64_CE m
+        set_kernel_config CONFIG_CRYPTO_CRC32_ARM64_CE m
+        set_kernel_config CONFIG_CRYPTO_AES_ARM64 m
+        set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE m
+        set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE_CCM y
+        set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE_BLK y
+        set_kernel_config CONFIG_CRYPTO_AES_ARM64_NEON_BLK m
+        set_kernel_config CONFIG_CRYPTO_CHACHA20_NEON m
+        set_kernel_config CONFIG_CRYPTO_AES_ARM64_BS m
       fi
 
       # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
@@ -314,7 +314,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  fi
 
 	  # KERNEL_DEFAULT_GOV was set by user 
-	  if [ "$KERNEL_DEFAULT_GOV" != powersave ] && [ -n "$KERNEL_DEFAULT_GOV" ]; then
+	  if [ "$KERNEL_DEFAULT_GOV" != powersave ] && [ -n "$KERNEL_DEFAULT_GOV" ] ; then
 
 	    case "$KERNEL_DEFAULT_GOV" in
           performance)
