@@ -192,7 +192,7 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   bash ./package.sh debian
 
   # Install package
-  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap-*any.deb
+  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap_*_any.deb
 
   # Enable service
   chroot_exec systemctl enable systemd-swap
