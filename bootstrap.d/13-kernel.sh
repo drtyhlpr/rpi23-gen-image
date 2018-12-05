@@ -196,6 +196,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_CRYPTO_AES_ARM64_NEON_BLK m
         set_kernel_config CONFIG_CRYPTO_CHACHA20_NEON m
         set_kernel_config CONFIG_CRYPTO_AES_ARM64_BS m
+		set_kernel_config SYSTEM_TRUSTED_KEYS
       fi
 
       # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
