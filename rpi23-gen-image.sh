@@ -60,6 +60,7 @@ BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
 NEXMON_URL=${NEXMON_URL:=https://github.com/seemoo-lab/nexmon.git}
 SYSTEMDSWAP_URL=${SYSTEMDSWAP_URL:=https://github.com/Nefelim4ag/systemd-swap.git}
 
+
 # Kernel deb packages for 32bit kernel
 RPI_32_KERNEL_URL=${RPI_32_KERNEL_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel_20180422-141901_armhf.deb}
 RPI_32_KERNELHEADER_URL=${RPI_32_KERNELHEADER_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel-headers_20180422-141901_armhf.deb}
@@ -347,7 +348,7 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
   fi
   if [ "$ENABLE_WIRELESS" = true ] ; then
-    APT_INCLUDES="${APT_INCLUDES},wireless-tools,crda,wireless-regdb"
+    APT_INCLUDES="${APT_INCLUDES},wireless-tools,crda,wireless-regdb,firmware-brcm80211"
   fi
 else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
   # Check if the internal wireless interface is not supported by the RPi model

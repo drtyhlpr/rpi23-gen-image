@@ -192,7 +192,7 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   chown -R root:root "${R}/tmp/systemd-swap"
 
   # Install package
-  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap_*_any.deb
+  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap*.deb
 
   # Enable service
   chroot_exec systemctl enable systemd-swap
