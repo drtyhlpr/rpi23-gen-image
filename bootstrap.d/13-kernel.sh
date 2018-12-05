@@ -159,7 +159,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         # New Options
         if [ "$KERNEL_NF" = true ] ; then
           set_kernel_config CONFIG_IP_NF_SECURITY m
-          set_kernel_config CONFIG_NETLABEL m
+          set_kernel_config CONFIG_NETLABEL y
           set_kernel_config CONFIG_IP6_NF_SECURITY m
         fi
         set_kernel_config CONFIG_SECURITY_SELINUX n
@@ -178,6 +178,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE y
         set_kernel_config CONFIG_SECONDARY_TRUSTED_KEYRING y
         set_kernel_config CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY n
+		set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS m
+		set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE 4096
 
         set_kernel_config CONFIG_ARM64_CRYPTO y
         set_kernel_config CONFIG_CRYPTO_SHA256_ARM64 m
