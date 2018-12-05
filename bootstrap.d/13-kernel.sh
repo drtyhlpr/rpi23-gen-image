@@ -29,7 +29,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
   else # KERNELSRC_DIR=""
     # Create temporary directory for kernel sources
     temp_dir=$(as_nobody mktemp -d)
-	
+
     # Fetch current RPi2/3 kernel sources
     if [ -z "${KERNEL_BRANCH}" ] ; then
       as_nobody -H git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}" linux
@@ -93,7 +93,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     if [ "$KERNELSRC_CONFIG" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
-	  
+  
       #Switch to KERNELSRC_DIR so we can use set_kernel_config
       cd "${KERNEL_DIR}" || exit
 
@@ -106,7 +106,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_ZSMALLOC y
         set_kernel_config CONFIG_PGTABLE_MAPPING y
 	  fi
-	  
+
       # enable basic KVM support; see https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
 	  if [ "$KERNEL_VIRT" = true ] && { [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
         set_kernel_config CONFIG_VIRTUALIZATION y
@@ -114,106 +114,106 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_VHOST_NET m
         set_kernel_config CONFIG_VHOST_CROSS_ENDIAN_LEGACY y
 	  fi
-	  
+
       # enable apparmor,integrity audit,
 	  if [ "$KERNEL_SECURITY" = true ] ; then
 
         # security filesystem, security models and audit
-		set_kernel_config CONFIG_SECURITYFS y
-	    set_kernel_config CONFIG_SECURITY y
+	set_kernel_config CONFIG_SECURITYFS y
+        set_kernel_config CONFIG_SECURITY y
         set_kernel_config CONFIG_AUDIT y
 
-		# harden strcpy and memcpy
+	# harden strcpy and memcpy
         set_kernel_config CONFIG_HARDENED_USERCOPY=y
         set_kernel_config CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR=y
-		set_kernel_config CONFIG_FORTIFY_SOURCE=y
-		
-		# integrity sub-system
+	set_kernel_config CONFIG_FORTIFY_SOURCE=y
+
+	# integrity sub-system
         set_kernel_config CONFIG_INTEGRITY=y
         set_kernel_config CONFIG_INTEGRITY_ASYMMETRIC_KEYS=y
         set_kernel_config CONFIG_INTEGRITY_AUDIT=y
         set_kernel_config CONFIG_INTEGRITY_SIGNATURE=y
         set_kernel_config CONFIG_INTEGRITY_TRUSTED_KEYRING=y
-		
-		# This option provides support for retaining authentication tokens and access keys in the kernel.
+
+	# This option provides support for retaining authentication tokens and access keys in the kernel.
         set_kernel_config CONFIG_KEYS=y
         set_kernel_config CONFIG_KEYS_COMPAT=y
-		
-		# Apparmor
+
+	# Apparmor
         set_kernel_config CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE 0
         set_kernel_config CONFIG_SECURITY_APPARMOR_HASH_DEFAULT y
-		set_kernel_config CONFIG_DEFAULT_SECURITY_APPARMOR y
-		set_kernel_config CONFIG_SECURITY_APPARMOR y
-		set_kernel_config CONFIG_SECURITY_APPARMOR_HASH y
-		set_kernel_config CONFIG_DEFAULT_SECURITY "apparmor"
-		
-		# restrictions on unprivileged users reading the kernel
+	set_kernel_config CONFIG_DEFAULT_SECURITY_APPARMOR y
+	set_kernel_config CONFIG_SECURITY_APPARMOR y
+	set_kernel_config CONFIG_SECURITY_APPARMOR_HASH y
+	set_kernel_config CONFIG_DEFAULT_SECURITY "apparmor"
+
+	# restrictions on unprivileged users reading the kernel
         set_kernel_config CONFIG_SECURITY_DMESG_RESTRICT=y
-		
-		# network security hooks
+
+	# network security hooks
         set_kernel_config CONFIG_SECURITY_NETWORK y
         set_kernel_config CONFIG_SECURITY_NETWORK_XFRM=y
         set_kernel_config CONFIG_SECURITY_PATH=y
         set_kernel_config CONFIG_SECURITY_YAMA=y
-		
-		# New Options
-		if [ "$KERNEL_NF" = true ] ; then
-		  set_kernel_config CONFIG_IP_NF_SECURITY m
-	  	  set_kernel_config CONFIG_NETLABEL m
-	  	  set_kernel_config CONFIG_IP6_NF_SECURITY m
-		fi
-		set_kernel_config CONFIG_SECURITY_SELINUX n
-	  	set_kernel_config CONFIG_SECURITY_SMACK n
-	  	set_kernel_config CONFIG_SECURITY_TOMOYO n
-	  	set_kernel_config CONFIG_SECURITY_APPARMOR_DEBUG n
-	  	set_kernel_config CONFIG_SECURITY_LOADPIN n
-		set_kernel_config CONFIG_HARDENED_USERCOPY_PAGESPAN n
-	  	set_kernel_config CONFIG_IMA n
-	  	set_kernel_config CONFIG_EVM n
-	  	set_kernel_config CONFIG_FANOTIFY_ACCESS_PERMISSIONS y
-	  	set_kernel_config CONFIG_NFSD_V4_SECURITY_LABEL y
-	  	set_kernel_config CONFIG_PKCS7_MESSAGE_PARSER y
-	  	set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYRING y
-	  	set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS y
-	  	set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE y
-	  	set_kernel_config CONFIG_SECONDARY_TRUSTED_KEYRING y
-	  	set_kernel_config CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY n
-		
-		set_kernel_config CONFIG_ARM64_CRYPTO y
-		set_kernel_config CONFIG_CRYPTO_SHA256_ARM64 m
+
+	# New Options
+	if [ "$KERNEL_NF" = true ] ; then
+	  set_kernel_config CONFIG_IP_NF_SECURITY m
+  	  set_kernel_config CONFIG_NETLABEL m
+  	  set_kernel_config CONFIG_IP6_NF_SECURITY m
+	fi
+	set_kernel_config CONFIG_SECURITY_SELINUX n
+  	set_kernel_config CONFIG_SECURITY_SMACK n
+  	set_kernel_config CONFIG_SECURITY_TOMOYO n
+  	set_kernel_config CONFIG_SECURITY_APPARMOR_DEBUG n
+  	set_kernel_config CONFIG_SECURITY_LOADPIN n
+	set_kernel_config CONFIG_HARDENED_USERCOPY_PAGESPAN n
+  	set_kernel_config CONFIG_IMA n
+  	set_kernel_config CONFIG_EVM n
+  	set_kernel_config CONFIG_FANOTIFY_ACCESS_PERMISSIONS y
+  	set_kernel_config CONFIG_NFSD_V4_SECURITY_LABEL y
+  	set_kernel_config CONFIG_PKCS7_MESSAGE_PARSER y
+  	set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYRING y
+  	set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS y
+  	set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE y
+  	set_kernel_config CONFIG_SECONDARY_TRUSTED_KEYRING y
+  	set_kernel_config CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY n
+
+	set_kernel_config CONFIG_ARM64_CRYPTO y
+	set_kernel_config CONFIG_CRYPTO_SHA256_ARM64 m
         set_kernel_config CONFIG_CRYPTO_SHA512_ARM64 m
-		set_kernel_config CONFIG_CRYPTO_SHA1_ARM64_CE m
-		set_kernel_config CRYPTO_GHASH_ARM64_CE m
-		set_kernel_config CRYPTO_SHA2_ARM64_CE m
-		set_kernel_config CONFIG_CRYPTO_CRCT10DIF_ARM64_CE m
-		set_kernel_config CONFIG_CRYPTO_CRC32_ARM64_CE m
-		set_kernel_config CONFIG_CRYPTO_AES_ARM64 m
-		set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE m
-		set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE_CCM y
-		set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE_BLK y
-		set_kernel_config CONFIG_CRYPTO_AES_ARM64_NEON_BLK m
-		set_kernel_config CONFIG_CRYPTO_CHACHA20_NEON m
-		set_kernel_config CONFIG_CRYPTO_AES_ARM64_BS m
-	  fi
-		
+	set_kernel_config CONFIG_CRYPTO_SHA1_ARM64_CE m
+	set_kernel_config CRYPTO_GHASH_ARM64_CE m
+	set_kernel_config CRYPTO_SHA2_ARM64_CE m
+	set_kernel_config CONFIG_CRYPTO_CRCT10DIF_ARM64_CE m
+	set_kernel_config CONFIG_CRYPTO_CRC32_ARM64_CE m
+	set_kernel_config CONFIG_CRYPTO_AES_ARM64 m
+	set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE m
+	set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE_CCM y
+	set_kernel_config CONFIG_CRYPTO_AES_ARM64_CE_BLK y
+	set_kernel_config CONFIG_CRYPTO_AES_ARM64_NEON_BLK m
+	set_kernel_config CONFIG_CRYPTO_CHACHA20_NEON m
+	set_kernel_config CONFIG_CRYPTO_AES_ARM64_BS m
+      fi
+
       # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
-	  if [ "$KERNEL_NF" = true ] ; then
-		set_kernel_config CONFIG_IP_NF_TARGET_SYNPROXY m
-		set_kernel_config CONFIG_NETFILTER_XT_TARGET_AUDIT m
-		set_kernel_config CONFIG_NETFILTER_XT_MATCH_CGROUP m
-		set_kernel_config CONFIG_NETFILTER_XT_MATCH_IPCOMP m
-		set_kernel_config CONFIG_NETFILTER_XT_MATCH_SOCKET m
-		set_kernel_config CONFIG_NFT_FIB_INET m
-		set_kernel_config CONFIG_NFT_FIB_IPV4 m
-		set_kernel_config CONFIG_NFT_FIB_IPV6 m
-		set_kernel_config CONFIG_NFT_FIB_NETDEV m
-		set_kernel_config CONFIG_NFT_OBJREF m
-		set_kernel_config CONFIG_NFT_RT m
-		set_kernel_config CONFIG_NFT_SET_BITMAP m
-		set_kernel_config CONFIG_NF_CONNTRACK_TIMEOUT y
-		set_kernel_config CONFIG_NF_LOG_ARP m
-		set_kernel_config CONFIG_NF_SOCKET_IPV4 m
-		set_kernel_config CONFIG_NF_SOCKET_IPV6 m
+      if [ "$KERNEL_NF" = true ] ; then
+        set_kernel_config CONFIG_IP_NF_TARGET_SYNPROXY m
+        set_kernel_config CONFIG_NETFILTER_XT_TARGET_AUDIT m
+        set_kernel_config CONFIG_NETFILTER_XT_MATCH_CGROUP m
+        set_kernel_config CONFIG_NETFILTER_XT_MATCH_IPCOMP m
+        set_kernel_config CONFIG_NETFILTER_XT_MATCH_SOCKET m
+        set_kernel_config CONFIG_NFT_FIB_INET m
+        set_kernel_config CONFIG_NFT_FIB_IPV4 m
+        set_kernel_config CONFIG_NFT_FIB_IPV6 m
+        set_kernel_config CONFIG_NFT_FIB_NETDEV m
+        set_kernel_config CONFIG_NFT_OBJREF m
+        set_kernel_config CONFIG_NFT_RT m
+        set_kernel_config CONFIG_NFT_SET_BITMAP m
+        set_kernel_config CONFIG_NF_CONNTRACK_TIMEOUT y
+        set_kernel_config CONFIG_NF_LOG_ARP m
+        set_kernel_config CONFIG_NF_SOCKET_IPV4 m
+        set_kernel_config CONFIG_NF_SOCKET_IPV6 m
         set_kernel_config CONFIG_BRIDGE_EBT_BROUTE m
         set_kernel_config CONFIG_BRIDGE_EBT_T_FILTER m
         set_kernel_config CONFIG_BRIDGE_NF_EBTABLES m
@@ -223,7 +223,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_IP6_NF_NAT m
         set_kernel_config CONFIG_IP6_NF_TARGET_MASQUERADE m
         set_kernel_config CONFIG_IP6_NF_TARGET_NPT m
-		set_kernel_config CONFIG_IP_NF_SECURITY m
+        set_kernel_config CONFIG_IP_NF_SECURITY m
         set_kernel_config CONFIG_IP_SET_BITMAP_IPMAC m
         set_kernel_config CONFIG_IP_SET_BITMAP_PORT m
         set_kernel_config CONFIG_IP_SET_HASH_IP m
@@ -312,10 +312,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
 		set_kernel_config CONFIG_BPF_STREAM_PARSER y
 	    set_kernel_config CONFIG_CGROUP_BPF y
 	  fi
-	  
+
 	  # KERNEL_DEFAULT_GOV was set by user 
 	  if [ "$KERNEL_DEFAULT_GOV" != powersave ] && [ -n "$KERNEL_DEFAULT_GOV" ]; then
-		
+
 	    case "$KERNEL_DEFAULT_GOV" in
           performance)
 	        set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE y
@@ -337,11 +337,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
             exit 1
             ;;
         esac
-		
-		# unset previous default governor
+
+            # unset previous default governor
 	    unset_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
 	  fi
-	  
 
 
 	  #Revert to previous directory
@@ -507,18 +506,18 @@ else # BUILD_KERNEL=false
   #  echo Install precompiled kernel...
   #  echo error: not implemented
   if [ "$SET_ARCH" = 64 ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-    
+
 	# Use Sakakis modified kernel if ZSWAP is active
     if [ "$KERNEL_ZSWAP" = true ] || [ "$KERNEL_VIRT" = true ] || [ "$KERNEL_NF" = true ] || [ "$KERNEL_BPF" = true ] ; then
 	  RPI3_64_KERNEL_URL="${RPI3_64_BIS_KERNEL_URL}"
 	fi
-	
+
     # Create temporary directory for dl
     temp_dir=$(as_nobody mktemp -d)
 
     # Fetch kernel dl
     as_nobody wget -O "${temp_dir}"/kernel.tar.xz -c "$RPI3_64_KERNEL_URL" 
-	
+
     #extract download
     tar -xJf "${temp_dir}"/kernel.tar.xz -C "${temp_dir}"
 
@@ -529,12 +528,12 @@ else # BUILD_KERNEL=false
 
     # Remove temporary directory for kernel sources
     rm -fr "${temp_dir}"
-	
+
     # Set permissions of the kernel sources
     chown -R root:root "${R}/boot/firmware"
     chown -R root:root "${R}/lib/modules"
   fi
-  
+
   # Install Kernel from hypriot comptabile with all Raspberry PI
   if [ "$SET_ARCH" = 32 ] ; then
     # Create temporary directory for dl
@@ -548,7 +547,7 @@ else # BUILD_KERNEL=false
 
     # Set permissions
     chown -R root:root "${R}"/tmp/kernel.deb
-	
+
 	# Install kernel
 	chroot_exec dpkg -i /tmp/kernel.deb
 
@@ -557,7 +556,7 @@ else # BUILD_KERNEL=false
 	mkdir "${temp_dir}"/firmware
 	mv  "${R}"/boot/* "${temp_dir}"/firmware/
 	mv "${temp_dir}"/firmware "${R}"/boot/
-	
+
 	#same for kernel headers
 	if [ "$KERNEL_HEADERS" = true ] ; then
 	  # Fetch kernel header
@@ -568,7 +567,7 @@ else # BUILD_KERNEL=false
 	  chroot_exec dpkg -i /tmp/kernel-header.deb
 	  rm -f "${R}"/tmp/kernel-header.deb
 	fi
-	
+
     # Remove temporary directory and files
     rm -fr "${temp_dir}"
 	rm -f "${R}"/tmp/kernel.deb
