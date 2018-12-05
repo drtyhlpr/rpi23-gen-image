@@ -179,26 +179,26 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   # Copy downloaded systemd-swap sources
   mv "${temp_dir}/systemd-swap" "${R}/tmp/"
 
-  # Set permissions of the systemd-swap sources
-  chown -R root:root "${R}/tmp/systemd-swap"
-
-  # Remove temporary directory for systemd-swap sources
-  rm -fr "${temp_dir}"
-
   # Change into downloaded src dir
   cd "${R}/tmp/systemd-swap" || exit
 
   # Build package
   bash ./package.sh debian
+  
+  # Change back into script root dir
+  cd "${WORKDIR}" || exit
+  
+  # Set permissions of the systemd-swap sources
+  chown -R root:root "${R}/tmp/systemd-swap"
 
   # Install package
   chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap_*_any.deb
 
   # Enable service
   chroot_exec systemctl enable systemd-swap
-
-  # Change back into script root dir
-  cd "${WORKDIR}" || exit
+  
+  # Remove temporary directory for systemd-swap sources
+  rm -fr "${temp_dir}"
 else
   # Enable ZSWAP in cmdline if systemd-swap is not used
   if [ "$KERNEL_ZSWAP" = true ] ; then
