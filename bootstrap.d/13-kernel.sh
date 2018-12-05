@@ -157,7 +157,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_SECURITY_YAMA=y
 		
 		# New Options
-		if [ "$KERNEL_NF" = true ]
+		if [ "$KERNEL_NF" = true ] ; then
 		  set_kernel_config CONFIG_IP_NF_SECURITY m
 	  	  set_kernel_config CONFIG_NETLABEL m
 	  	  set_kernel_config CONFIG_IP6_NF_SECURITY m
