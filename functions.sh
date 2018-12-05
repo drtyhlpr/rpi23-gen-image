@@ -76,7 +76,7 @@ chroot_install_cc() {
   if [ -z "${COMPILER_PACKAGES}" ] ; then
     COMPILER_PACKAGES=$(chroot_exec apt-get -s install g++ make bc | grep "^Inst " | awk -v ORS=" " '{ print $2 }')
 	# Install COMPILER_PACKAGES in chroot
-    chroot_exec apt-get -q -y --allow-unauthenticated --no-install-recommends install "${COMPILER_PACKAGES}"
+    chroot_exec apt-get -q -y --allow-unauthenticated --no-install-recommends install ${COMPILER_PACKAGES}
   fi
 }
 
