@@ -93,6 +93,9 @@ Set default system timezone. All available timezones can be found in the `/usr/s
 ##### `EXPANDROOT`=true
 Expand the root partition and filesystem automatically on first boot.
 
+##### `ENABLE_SWAP`=true
+Enable swap. The size of the swapfile is chosen relative to the size of the root partition. It'll use the `dphys-swapfile` package for that.
+
 ##### `ENABLE_QEMU`=false
 Generate kernel (`vexpress_defconfig`), file system image (`qcow2`) and DTB files that can be used for QEMU full system emulation (`vexpress-A15`). The output files are stored in the `$(pwd)/images/qemu` directory. You can find more information about running the generated image in the QEMU section of this readme file.
 

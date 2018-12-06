@@ -83,6 +83,7 @@ USER_PASSWORD=${USER_PASSWORD:=raspberry}
 DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
 TIMEZONE=${TIMEZONE:="Europe/Berlin"}
 EXPANDROOT=${EXPANDROOT:=true}
+ENABLE_SWAP=${ENABLE_SWAP:=true}
 
 # Keyboard settings
 XKB_MODEL=${XKB_MODEL:=""}
@@ -482,6 +483,11 @@ fi
 # Add parted package, required to get partprobe utility
 if [ "$EXPANDROOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},parted"
+fi
+
+# Add dphys-swapfile package, required to enable swap
+if [ "$ENABLE_SWAP" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},dphys-swapfile"
 fi
 
 # Add dbus package, recommended if using systemd
