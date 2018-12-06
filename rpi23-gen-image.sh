@@ -157,6 +157,7 @@ ENABLE_MINBASE=${ENABLE_MINBASE:=false}
 ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
+ENABLE_UBOOTUSB=${ENABLE_UBOOTUSB=false}
 ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=false}
 ENABLE_NEXMON=${ENABLE_NEXMON:=false}
@@ -318,6 +319,17 @@ case "$RPI_MODEL" in
     ;;
 esac
 
+if [ "$ENABLE_UBOOTUSB" = true ] ; then
+  if [ "$ENABLE_UBOOT" = false ] ; then
+    echo "error: Enabling UBOOTUSB requires u-boot to be enabled"
+	exit 1
+  fi
+  if [ "$RPI_MODEL" != 3 ] || [ "$RPI_MODEL" != 3P ] ; then
+    echo "error: Enabling UBOOTUSB requires Raspberry 3"
+	exit 1
+  fi
+fi
+
 # Raspberry PI 0,3,3P with Bluetooth and Wifi onboard
 if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
   # Include bluetooth packages on supported boards
@@ -396,14 +408,6 @@ fi
 # Add device-tree-compiler required for building the U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex,bc"
-fi
-
-if [ "$ENABLE_BLUETOOTH" = true ] ; then
-  if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-    if [ "$ENABLE_CONSOLE" = false ] ; then
-	  APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
-	fi
-  fi
 fi
 
 # Check if root SSH (v2) public key file exists
