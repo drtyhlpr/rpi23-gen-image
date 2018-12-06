@@ -191,7 +191,7 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   # Set permissions of the systemd-swap sources
   chown -R root:root "${R}/tmp/systemd-swap"
 
-  # Install package
+  # Install package - IMPROVE AND MAKE IT POSSIBLE WITHOUT VERSION NR.
   chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap_4.0.1_any.deb
 
   # Enable service

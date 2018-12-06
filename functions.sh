@@ -75,7 +75,7 @@ chroot_install_cc() {
   # Install c/c++ build environment inside the chroot
   if [ -z "${COMPILER_PACKAGES}" ] ; then
     COMPILER_PACKAGES=$(chroot_exec apt-get -s install g++ make bc | grep "^Inst " | awk -v ORS=" " '{ print $2 }')
-	# Install COMPILER_PACKAGES in chroot
+	# Install COMPILER_PACKAGES in chroot - NEVER do "${COMPILER_PACKAGES}" -> breaks uboot
     chroot_exec apt-get -q -y --allow-unauthenticated --no-install-recommends install ${COMPILER_PACKAGES}
   fi
 }
@@ -83,7 +83,7 @@ chroot_install_cc() {
 chroot_remove_cc() {
   # Remove c/c++ build environment from the chroot
   if [ -n "${COMPILER_PACKAGES}" ] ; then
-    chroot_exec apt-get -qq -y --auto-remove purge "${COMPILER_PACKAGES}"
+    chroot_exec apt-get -qq -y --auto-remove purge ${COMPILER_PACKAGES}
     COMPILER_PACKAGES=""
   fi
 }
