@@ -87,7 +87,7 @@ if [ "$ENABLE_TURBO" = true ] ; then
 fi
 
 if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-  
+
   # Bluetooth enabled
   if [ "$ENABLE_BLUETOOTH" = true ] ; then
     # Create temporary directory for Bluetooth sources
@@ -109,7 +109,7 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     # Install tools
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/btuart" "${R}/usr/bin/btuart"
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/bthelper" "${R}/usr/bin/bthelper"
-	
+
 	# make scripts executable
 	chmod +x "${R}/usr/bin/bthelper"
 	chmod +x "${R}/usr/bin/btuart"
@@ -123,11 +123,11 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     install_readonly "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" "${BLUETOOTH_FIRMWARE_DIR}/LICENCE.broadcom_bcm43xx"
     install_readonly "${R}/tmp/pi-bluetooth/debian/pi-bluetooth.bthelper@.service" "${ETC_DIR}/systemd/system/pi-bluetooth.bthelper@.service"
     install_readonly "${R}/tmp/pi-bluetooth/debian/pi-bluetooth.hciuart.service" "${ETC_DIR}/systemd/system/pi-bluetooth.hciuart.service"
-	
+
     # Remove temporary directories
     rm -fr "${temp_dir}"
 	rm -fr "${R}"/tmp/pi-bluetooth
-	
+
     # Switch Pi3 Bluetooth function to use the mini-UART (ttyS0) and restore UART0/ttyAMA0 over GPIOs 14 & 15. Slow Bluetooth and slow cpu. Use /dev/ttyS0 instead of /dev/ttyAMA0
     if [ "$ENABLE_MINIUART_OVERLAY" = true ] ; then
 
@@ -139,10 +139,10 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
 	    echo "core_freq=250" >> "${BOOT_DIR}/config.txt"
 	  fi
 	fi
-		  
+
 	# Activate services
 	chroot_exec systemctl enable pi-bluetooth.hciuart.service
-	
+
   else # if ENABLE_BLUETOOTH = false
   	# set overlay to disable bluetooth
     echo "dtoverlay=pi3-disable-bt" >> "${BOOT_DIR}/config.txt"
@@ -154,7 +154,7 @@ if [ "$ENABLE_CONSOLE" = true ] ; then
   echo "enable_uart=1"  >> "${BOOT_DIR}/config.txt" 
   # add string to cmdline
   CMDLINE="${CMDLINE} console=serial0,115200"
-	  
+
   # Enable serial console systemd style
   chroot_exec systemctl enable serial-getty\@serial0.service
 else
