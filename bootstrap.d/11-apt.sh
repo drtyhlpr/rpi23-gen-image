@@ -6,7 +6,7 @@
 . ./functions.sh
 
 # Install and setup APT proxy configuration
-if [ -z "$APT_PROXY" ] ; then
+if [ -n "$APT_PROXY" ] && [ "$APT_PROXY" != "http://127.0.0.1:3142/" ] ; then
   install_readonly files/apt/10proxy "${ETC_DIR}/apt/apt.conf.d/10proxy"
   sed -i "s/\"\"/\"${APT_PROXY}\"/" "${ETC_DIR}/apt/apt.conf.d/10proxy"
 fi
