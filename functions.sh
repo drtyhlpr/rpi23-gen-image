@@ -3,6 +3,17 @@
 cleanup (){
   set +x
   set +e
+  
+  # Remove exports from nexmon
+  unset KERNEL
+  unset ARCH
+  unset SUBARCH
+  unset CCPLUGIN
+  unset ZLIBFLATE
+  unset Q
+  unset NEXMON_SETUP_ENV
+  unset HOSTUNAME
+  unset PLATFORMUNAME
 
   # Identify and kill all processes still using files
   echo "killing processes using mount point ..."
@@ -74,4 +85,21 @@ chroot_remove_cc() {
     chroot_exec apt-get -qq -y --auto-remove purge "${COMPILER_PACKAGES}"
     COMPILER_PACKAGES=""
   fi
+}
+# GPL v2.0 - #https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
+set_kernel_config() {
+  # flag as $1, value to set as $2, config must exist at "./.config"
+  TGT="CONFIG_${1#CONFIG_}"
+  REP="${2}"
+  if grep -q "^${TGT}[^_]" .config; then
+    sed -i "s/^\(${TGT}=.*\|# ${TGT} is not set\)/${TGT}=${REP}/" .config
+  else
+    echo "${TGT}"="${2}" >> .config
+  fi
+}
+# unset kernel config parameter
+unset_kernel_config() {
+  # unsets flag with the value of $1, config must exist at "./.config"
+  TGT="CONFIG_${1#CONFIG_}"
+  sed -i "s/^${TGT}=.*/# ${TGT} is not set/" .config
 }
