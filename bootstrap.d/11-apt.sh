@@ -7,8 +7,15 @@
 
 # Install and setup APT proxy configuration
 if [ -n "$APT_PROXY" ] && [ "$APT_PROXY" != "http://127.0.0.1:3142/" ] ; then
-  install_readonly files/apt/10proxy "${ETC_DIR}/apt/apt.conf.d/10proxy"
-  sed -i "s/\"\"/\"${APT_PROXY}\"/" "${ETC_DIR}/apt/apt.conf.d/10proxy"
+  # If the proxy is localhost, it won't be available on the raspi
+  case "$APT_PROXY" in
+    http*://localhost*) ;;
+    http*://127.0.0.1*) ;;
+    *)
+      install_readonly files/apt/10proxy "${ETC_DIR}/apt/apt.conf.d/10proxy"
+      sed -i "s/\"\"/\"${APT_PROXY}\"/" "${ETC_DIR}/apt/apt.conf.d/10proxy"
+      ;;
+  esac
 fi
 
 # Upgrade package index and update all installed packages and changed dependencies
