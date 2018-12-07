@@ -5,40 +5,38 @@
 # Load utility functions
 . ./functions.sh
 
-#if [ "$BUILD_KERNEL" = true ] ; then
-  if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
-    # Install boot binaries from local directory
-    cp "${RPI_FIRMWARE_DIR}"/boot/bootcode.bin "${BOOT_DIR}"/bootcode.bin
-    cp "${RPI_FIRMWARE_DIR}"/boot/fixup.dat "${BOOT_DIR}"/fixup.dat
-    cp "${RPI_FIRMWARE_DIR}"/boot/fixup_cd.dat "${BOOT_DIR}"/fixup_cd.dat
-    cp "${RPI_FIRMWARE_DIR}"/boot/fixup_x.dat "${BOOT_DIR}"/fixup_x.dat
-    cp "${RPI_FIRMWARE_DIR}"/boot/start.elf "${BOOT_DIR}"/start.elf
-    cp "${RPI_FIRMWARE_DIR}"/boot/start_cd.elf "${BOOT_DIR}"/start_cd.elf
-    cp "${RPI_FIRMWARE_DIR}"/boot/start_x.elf "${BOOT_DIR}"/start_x.elf
-  else
-    # Create temporary directory for boot binaries
-    temp_dir=$(as_nobody mktemp -d)
+if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
+  # Install boot binaries from local directory
+  cp "${RPI_FIRMWARE_DIR}"/boot/bootcode.bin "${BOOT_DIR}"/bootcode.bin
+  cp "${RPI_FIRMWARE_DIR}"/boot/fixup.dat "${BOOT_DIR}"/fixup.dat
+  cp "${RPI_FIRMWARE_DIR}"/boot/fixup_cd.dat "${BOOT_DIR}"/fixup_cd.dat
+  cp "${RPI_FIRMWARE_DIR}"/boot/fixup_x.dat "${BOOT_DIR}"/fixup_x.dat
+  cp "${RPI_FIRMWARE_DIR}"/boot/start.elf "${BOOT_DIR}"/start.elf
+  cp "${RPI_FIRMWARE_DIR}"/boot/start_cd.elf "${BOOT_DIR}"/start_cd.elf
+  cp "${RPI_FIRMWARE_DIR}"/boot/start_x.elf "${BOOT_DIR}"/start_x.elf
+else
+  # Create temporary directory for boot binaries
+  temp_dir=$(as_nobody mktemp -d)
 
-    # Install latest boot binaries from raspberry/firmware github
-    as_nobody wget -q -O "${temp_dir}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
-    as_nobody wget -q -O "${temp_dir}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
-    as_nobody wget -q -O "${temp_dir}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
-    as_nobody wget -q -O "${temp_dir}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
-    as_nobody wget -q -O "${temp_dir}/start.elf" "${FIRMWARE_URL}/start.elf"
-    as_nobody wget -q -O "${temp_dir}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
-    as_nobody wget -q -O "${temp_dir}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
+  # Install latest boot binaries from raspberry/firmware github
+  as_nobody wget -q -O "${temp_dir}/bootcode.bin" "${FIRMWARE_URL}/bootcode.bin"
+  as_nobody wget -q -O "${temp_dir}/fixup.dat" "${FIRMWARE_URL}/fixup.dat"
+  as_nobody wget -q -O "${temp_dir}/fixup_cd.dat" "${FIRMWARE_URL}/fixup_cd.dat"
+  as_nobody wget -q -O "${temp_dir}/fixup_x.dat" "${FIRMWARE_URL}/fixup_x.dat"
+  as_nobody wget -q -O "${temp_dir}/start.elf" "${FIRMWARE_URL}/start.elf"
+  as_nobody wget -q -O "${temp_dir}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
+  as_nobody wget -q -O "${temp_dir}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
 
-    # Move downloaded boot binaries
-    mv "${temp_dir}/"* "${BOOT_DIR}/"
+  # Move downloaded boot binaries
+  mv "${temp_dir}/"* "${BOOT_DIR}/"
 
-    # Remove temporary directory for boot binaries
-    rm -fr "${temp_dir}"
+  # Remove temporary directory for boot binaries
+  rm -fr "${temp_dir}"
 
-    # Set permissions of the boot binaries
-    chown -R root:root "${BOOT_DIR}"
-    chmod -R 600 "${BOOT_DIR}"
-  fi
-#fi
+  # Set permissions of the boot binaries
+  chown -R root:root "${BOOT_DIR}"
+  chmod -R 600 "${BOOT_DIR}"
+fi
 
 # Setup firmware boot cmdline
 if [ "$ENABLE_UBOOTUSB" = true ] ; then
@@ -164,7 +162,7 @@ if [ "$ENABLE_CONSOLE" = true ] ; then
   CMDLINE="${CMDLINE} console=serial0,115200"
 
   # Enable serial console systemd style
-  chroot_exec systemctl enable serial-getty@serial0.service
+  chroot_exec systemctl enable serial-getty\@serial0.service
 else
   echo "enable_uart=0"  >> "${BOOT_DIR}/config.txt"
 fi

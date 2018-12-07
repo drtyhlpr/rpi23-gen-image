@@ -8,6 +8,7 @@
 # Need to use kali kernel src if nexmon is enabled
 if [ "$ENABLE_NEXMON" = true ] ; then
   KERNEL_URL="${KALI_KERNEL_URL}"
+  # Clear Branch and KernelSRC_DIR if using nexmon. Everyone will forget to clone kali kernel instead of nomrla kernel
   KERNEL_BRANCH=""
   KERNELSRC_DIR=""
 fi
@@ -93,7 +94,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     if [ "$KERNELSRC_CONFIG" = true ] ; then
       # Load default raspberry kernel configuration
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
-  
+
       #Switch to KERNELSRC_DIR so we can use set_kernel_config
       cd "${KERNEL_DIR}" || exit
 
@@ -345,7 +346,6 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	    unset_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
 	  fi
 
-
 	  #Revert to previous directory
 	  cd "${WORKDIR}" || exit
 
@@ -435,11 +435,6 @@ if [ "$BUILD_KERNEL" = true ] ; then
   if [ "$KERNEL_HEADERS" = true ] && [ "$KERNEL_REDUCE" = false ] ; then
     make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_HDR_PATH=../.. headers_install
   fi
-# make tar.gz kernel package - missing os bzw. modules
-#** ** **  WARNING  ** ** **
-#Your architecture did not define any architecture-dependent files
-#to be placed into the tarball. Please add those to ./scripts/package/buildtar .
-#  make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" CC="${cc}" targz-pkg
 
   # Prepare boot (firmware) directory
   mkdir "${BOOT_DIR}"
@@ -506,8 +501,6 @@ if [ "$BUILD_KERNEL" = true ] ; then
   fi
 
 else # BUILD_KERNEL=false
-  #  echo Install precompiled kernel...
-  #  echo error: not implemented
   if [ "$SET_ARCH" = 64 ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
 
 	# Use Sakakis modified kernel if ZSWAP is active

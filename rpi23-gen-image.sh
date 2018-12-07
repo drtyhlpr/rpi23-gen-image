@@ -186,6 +186,7 @@ KERNEL_VIRT=${KERNEL_VIRT:=false}
 KERNEL_BPF=${KERNEL_BPF:=false}
 KERNEL_DEFAULT_GOV=${KERNEL_DEFAULT_GOV:=powersave}
 KERNEL_SECURITY=${KERNEL_SECURITY:=false}
+KERNEL_NF=${KERNEL_NF:=false}
 
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}
@@ -221,7 +222,7 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 APT_INCLUDES=${APT_INCLUDES:=""}
 APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup,libnss-systemd"
 
-#Packages to exclude from chroot build environment
+# Packages to exclude from chroot build environment
 APT_EXCLUDES=${APT_EXCLUDES:=""}
 
 # Packages required for bootstrapping
