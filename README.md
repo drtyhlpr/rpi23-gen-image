@@ -210,6 +210,9 @@ Support for halt,init,poweroff,reboot,runlevel,shutdown,telinit commands
 ---
 
 #### Advanced system features:
+##### `ENABLE_SYSTEMDSWAP`=false
+Enables [Systemd-swap service](https://github.com/Nefelim4ag/systemd-swap). Usefull if `KERNEL_ZSWAP` is enabled.
+
 ##### `ENABLE_MINBASE`=false
 Use debootstrap script variant `minbase` which only includes essential packages and apt. This will reduce the disk usage by about 65 MB.
 
@@ -233,6 +236,12 @@ Install and enable the [ARM side libraries for interfacing to Raspberry Pi GPU](
 
 ##### `VIDEOCORESRC_DIR`=""
 Path to a directory (`userland`) of [ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) that will be copied, configured, build and installed inside the chroot.
+
+##### `ENABLE_NEXMON`=false
+Install and enable the [Source code for a C-based firmware patching framework for Broadcom/Cypress WiFi chips that enables you to write your own firmware patches, for example, to enable monitor mode with radiotap headers and frame injection](https://github.com/seemoo-lab/nexmon.git).
+
+##### `NEXMONSRC_DIR`=""
+Path to a directory (`nexmon`) of [Source code for ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) that will be copied, configured, build and installed inside the chroot.
 
 ##### `ENABLE_IPTABLES`=false
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
@@ -345,6 +354,23 @@ With this parameter set to true the script expects the existing kernel sources d
 ##### `RPI_FIRMWARE_DIR`=""
 The directory (`firmware`) containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.
 
+##### `KERNEL_DEFAULT_GOV`="ONDEMAND"
+Set the default cpu governor at kernel compilation. Supported values are: PERFORMANCE POWERSAVE USERSPACE ONDEMAND CONSERVATIVE SCHEDUTIL
+
+##### `KERNEL_NF`=false
+Enable Netfilter modules as kernel modules
+
+##### `KERNEL_VIRT`=false
+Enable Kernel KVM support (/dev/kvm)
+
+##### `KERNEL_ZSWAP`=false
+Enable Kernel Zswap support. Best use on high RAM load and mediocre CPU load usecases
+
+##### `KERNEL_BPF`=true
+Allow attaching eBPF programs to a cgroup using the bpf syscall (CONFIG_BPF_SYSCALL CONFIG_CGROUP_BPF) [systemd compilations about it - File /lib/systemd/system/systemd-journald.server:36 configures an IP firewall (IPAddressDeny=all), but the local system does not support BPF/cgroup based firewalls]
+
+##### `KERNEL_SECURITY`=false
+Enables Apparmor, integrity subsystem, auditing 
 ---
 
 #### Reduce disk usage:

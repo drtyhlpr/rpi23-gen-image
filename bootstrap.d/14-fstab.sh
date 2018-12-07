@@ -8,6 +8,11 @@
 # Install and setup fstab
 install_readonly files/mount/fstab "${ETC_DIR}/fstab"
 
+if [ "$ENABLE_UBOOTUSB" = true ] ; then
+  sed -i "s/mmcblk0p1/sda1/" "${ETC_DIR}/fstab"
+  sed -i "s/mmcblk0p2/sda2/" "${ETC_DIR}/fstab"
+fi
+
 # Add usb/sda disk root partition to fstab
 if [ "$ENABLE_SPLITFS" = true ] && [ "$ENABLE_CRYPTFS" = false ] ; then
   sed -i "s/mmcblk0p2/sda1/" "${ETC_DIR}/fstab"
