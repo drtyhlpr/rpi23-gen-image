@@ -25,7 +25,7 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
 
   # Add encrypted partition to crypttab and fstab
   install_readonly files/mount/crypttab "${ETC_DIR}/crypttab"
-  echo "${CRYPTFS_MAPPING} /dev/mmcblk0p2 none luks,initramfs" >> "${ETC_DIR}/crypttab"
+  echo "${CRYPTFS_MAPPING} /dev/mmcblk0p2 none luks" >> "${ETC_DIR}/crypttab"
 
   if [ "$ENABLE_SPLITFS" = true ] ; then
     # Add usb/sda disk to crypttab

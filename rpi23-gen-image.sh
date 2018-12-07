@@ -428,10 +428,10 @@ fi
 if [ "$ENABLE_UBOOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex,bc"
 else
-  if [ "$ENABLE_UBOOTUSB" = true ] ; then  
-    echo "error: Enabling UBOOTUSB requires u-boot to be enabled"
-	exit 1
-  fi
+#  if [ "$ENABLE_UBOOTUSB" = true ] ; then  
+#    echo "error: Enabling UBOOTUSB requires u-boot to be enabled"
+#	exit 1
+#  fi
 fi
 
 # Check if root SSH (v2) public key file exists
