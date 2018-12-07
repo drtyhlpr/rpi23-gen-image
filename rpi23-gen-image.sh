@@ -427,7 +427,7 @@ fi
 # Add device-tree-compiler required for building the U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex,bc"
-else
+#else
 #  if [ "$ENABLE_UBOOTUSB" = true ] ; then  
 #    echo "error: Enabling UBOOTUSB requires u-boot to be enabled"
 #	exit 1
