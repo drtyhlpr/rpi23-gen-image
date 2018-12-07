@@ -11,6 +11,7 @@ if [ -n "$APT_PROXY" ] && [ "$APT_PROXY" != "http://127.0.0.1:3142/" ] ; then
   case "$APT_PROXY" in
     http*://localhost*) ;;
     http*://127.0.0.1*) ;;
+    http*://[::]*) ;;
     *)
       install_readonly files/apt/10proxy "${ETC_DIR}/apt/apt.conf.d/10proxy"
       sed -i "s/\"\"/\"${APT_PROXY}\"/" "${ETC_DIR}/apt/apt.conf.d/10proxy"
