@@ -209,6 +209,10 @@ CRYPTFS_PASSWORD=${CRYPTFS_PASSWORD:=""}
 CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
 CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
+#Dropbear-initramfs supports unlocking encrypted filesystem via SSH on bootup
+CRYPTFS_DROPBEAR=${CRYPTFS_DROPBEAR:=false}
+#Provide your own Dropbear Public RSA-OpenSSH Key otherwise it will be generated
+CRYPTFS_DROPBEAR_PUBKEY=${CRYPTFS_DROPBEAR_PUBKEY:=""}
 
 # Chroot scripts directory
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
@@ -227,11 +231,9 @@ MISSING_PACKAGES=""
 # Packages installed for c/c++ build environment in chroot (keep empty)
 COMPILER_PACKAGES=""
 
-set +x
-
-#Check if apt-cacher-ng has port 3142 open and set APT_PROXY
-APT_CACHER_RUNNING=$(lsof -i :3142 | grep apt-cacher-ng |  cut -d ' ' -f3 | uniq)
-if [ -n "${APT_CACHER_RUNNING}" ] ; then
+# Check if apt-cacher-ng has port 3142 open and set APT_PROXY
+APT_CACHER_RUNNING=$(lsof -i :3142 | cut -d ' ' -f3 | uniq | sed '/^\s*$/d')
+if [ "${APT_CACHER_RUNNING}" = "apt-cacher-ng" ] ; then
   APT_PROXY=http://127.0.0.1:3142/
 fi
 
@@ -393,6 +395,11 @@ if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
   APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup"
 
+  # If cryptfs,dropbear and initramfs are enabled include dropbear-initramfs package
+  if [ "$CRYPTFS_DROPBEAR" = true ] && [ "$ENABLE_INITRAMFS" = true ]; then
+    APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
+  fi
+  
   if [ -z "$CRYPTFS_PASSWORD" ] ; then
     echo "error: no password defined (CRYPTFS_PASSWORD)!"
     exit 1

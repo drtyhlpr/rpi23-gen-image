@@ -74,18 +74,28 @@ chroot_install_cc() {
   # Install c/c++ build environment inside the chroot
   if [ -z "${COMPILER_PACKAGES}" ] ; then
     COMPILER_PACKAGES=$(chroot_exec apt-get -s install g++ make bc | grep "^Inst " | awk -v ORS=" " '{ print $2 }')
-	# Install COMPILER_PACKAGES in chroot
-    chroot_exec apt-get -q -y --allow-unauthenticated --no-install-recommends install "${COMPILER_PACKAGES}"
+	# Install COMPILER_PACKAGES in chroot - NEVER do "${COMPILER_PACKAGES}" -> breaks uboot
+    chroot_exec apt-get -q -y --allow-unauthenticated --no-install-recommends install ${COMPILER_PACKAGES}
   fi
 }
 
 chroot_remove_cc() {
   # Remove c/c++ build environment from the chroot
   if [ -n "${COMPILER_PACKAGES}" ] ; then
-    chroot_exec apt-get -qq -y --auto-remove purge "${COMPILER_PACKAGES}"
+    chroot_exec apt-get -qq -y --auto-remove purge ${COMPILER_PACKAGES}
     COMPILER_PACKAGES=""
   fi
 }
+
+# https://serverfault.com/a/682849 - converts e.g. /24 to 255.255.255.0
+cdr2mask ()
+{
+   # Number of args to shift, 255..255, first non-255 byte, zeroes
+   set -- $(( 5 - ($1 / 8) )) 255 255 255 255 $(( (255 << (8 - ($1 % 8))) & 255 )) 0 0 0
+   [ $1 -gt 1 ] && shift $1 || shift
+   echo ${1-0}.${2-0}.${3-0}.${4-0}
+}
+
 # GPL v2.0 - #https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
 set_kernel_config() {
   # flag as $1, value to set as $2, config must exist at "./.config"
@@ -97,6 +107,7 @@ set_kernel_config() {
     echo "${TGT}"="${2}" >> .config
   fi
 }
+
 # unset kernel config parameter
 unset_kernel_config() {
   # unsets flag with the value of $1, config must exist at "./.config"

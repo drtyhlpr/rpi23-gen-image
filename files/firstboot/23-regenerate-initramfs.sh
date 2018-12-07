@@ -8,6 +8,7 @@ INITRAMFS_UBOOT="${INITRAMFS}.uboot"
 # Extract kernel arch
 case "${KERNEL_ARCH}" in
   arm*) KERNEL_ARCH=arm ;;
+  aarch64) KERNEL_ARCH=arm64 ;;
 esac
 
 # Regenerate initramfs

@@ -50,4 +50,7 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
 
   #back to root of scriptdir
   cd "${WORKDIR}"
+  
+  # Remove videocore sources
+  rm -fr "${R}"/tmp/userland/
 fi

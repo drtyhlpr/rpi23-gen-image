@@ -418,6 +418,12 @@ Set cipher specification string. `aes-xts*` ciphers are strongly recommended.
 ##### `CRYPTFS_XTSKEYSIZE`=512
 Sets key size in bits. The argument has to be a multiple of 8.
 
+##### `CRYPTFS_DROPBEAR`=false
+Enable Dropbear Initramfs support
+
+##### `CRYPTFS_DROPBEAR_PUBKEY`=""
+Provide path to dropbear Public RSA-OpenSSH Key
+
 ---
 
 #### Build settings:
