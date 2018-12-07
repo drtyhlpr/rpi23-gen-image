@@ -106,6 +106,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_Z3FOLD y
         set_kernel_config CONFIG_ZSMALLOC y
         set_kernel_config CONFIG_PGTABLE_MAPPING y
+		set_kernel_config CONFIG_LZO_COMPRESS y
 	  fi
 
       # enable basic KVM support; see https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
@@ -128,6 +129,14 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_VHOST_CROSS_ENDIAN_LEGACY y
         set_kernel_config CONFIG_VHOST_NET m
         set_kernel_config CONFIG_VIRTUALIZATION y
+		
+		set_kernel_config CONFIG_MMU_NOTIFIER y
+		
+		# erratum
+		set_kernel_config ARM64_ERRATUM_834220 y
+		
+		# https://sourceforge.net/p/kvm/mailman/message/18440797/
+		set_kernel_config CONFIG_PREEMPT_NOTIFIERS y
 	  fi
 
       # enable apparmor,integrity audit,
@@ -211,7 +220,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_CRYPTO_AES_ARM64_NEON_BLK m
         set_kernel_config CONFIG_CRYPTO_CHACHA20_NEON m
         set_kernel_config CONFIG_CRYPTO_AES_ARM64_BS m
-		set_kernel_config SYSTEM_TRUSTED_KEYS
+		echo SYSTEM_TRUSTED_KEYS >> .config
       fi
 
       # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
