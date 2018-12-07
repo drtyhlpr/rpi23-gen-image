@@ -19,7 +19,7 @@ if [ "$EXPANDROOT" = true ] ; then
     cat files/firstboot/30-expandroot.sh >> "${ETC_DIR}/rc.firstboot"
 
     # Restart dphys-swapfile so the size of the swap file is relative to the resized root partition
-    if [ "$ENABLE_SWAP" = true ] ; then
+    if [ "$ENABLE_DPHYSSWAP" = true ] ; then
       cat files/firstboot/31-restart-dphys-swapfile.sh >> "${ETC_DIR}/rc.firstboot"
     fi
   else

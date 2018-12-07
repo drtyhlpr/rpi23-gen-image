@@ -83,7 +83,7 @@ USER_PASSWORD=${USER_PASSWORD:=raspberry}
 DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
 TIMEZONE=${TIMEZONE:="Europe/Berlin"}
 EXPANDROOT=${EXPANDROOT:=true}
-ENABLE_SWAP=${ENABLE_SWAP:=true}
+ENABLE_DPHYSSWAP=${ENABLE_DPHYSSWAP:=true}
 
 # Keyboard settings
 XKB_MODEL=${XKB_MODEL:=""}
@@ -486,7 +486,7 @@ if [ "$EXPANDROOT" = true ] ; then
 fi
 
 # Add dphys-swapfile package, required to enable swap
-if [ "$ENABLE_SWAP" = true ] ; then
+if [ "$ENABLE_DPHYSSWAP" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},dphys-swapfile"
 fi
 

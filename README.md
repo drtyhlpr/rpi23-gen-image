@@ -93,7 +93,7 @@ Set default system timezone. All available timezones can be found in the `/usr/s
 ##### `EXPANDROOT`=true
 Expand the root partition and filesystem automatically on first boot.
 
-##### `ENABLE_SWAP`=true
+##### `ENABLE_DPHYSSWAP`=true
 Enable swap. The size of the swapfile is chosen relative to the size of the root partition. It'll use the `dphys-swapfile` package for that.
 
 ##### `ENABLE_QEMU`=false
