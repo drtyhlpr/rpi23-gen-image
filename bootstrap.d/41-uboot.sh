@@ -79,9 +79,9 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   fi
   
   # instead of sd, boot from usb device
-  if [ "$ENABLE_UBOOTUSB" = true ] ; then
-    sed -i "s|mmc|usb|g" "${BOOT_DIR}/uboot.mkimage"
-  fi
+#  if [ "$ENABLE_UBOOTUSB" = true ] ; then
+#    sed -i "s|mmc|usb|g" "${BOOT_DIR}/uboot.mkimage"
+#  fi
 
   # Set mkfile to use the correct dtb file
   sed -i "s|bcm2709-rpi-2-b.dtb|${DTB_FILE}|" "${BOOT_DIR}/uboot.mkimage"
