@@ -144,6 +144,7 @@ USER_NAME=${USER_NAME:="pi"}
 ENABLE_ROOT=${ENABLE_ROOT:=false}
 ENABLE_QEMU=${ENABLE_QEMU:=false}
 ENABLE_SYSVINIT=${ENABLE_SYSVINIT:=false}
+ENABLE_KEYGEN=${ENABLE_KEYGEN:=true}
 
 # SSH settings
 SSH_ENABLE_ROOT=${SSH_ENABLE_ROOT:=false}
@@ -381,6 +382,11 @@ if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
 fi
 
 set +x
+
+# Add cmake to compile videocore sources
+if [ "$ENABLE_KEYGEN" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} perl"
+fi
 
 # Add cmake to compile videocore sources
 if [ "$ENABLE_VIDEOCORE" = true ] ; then

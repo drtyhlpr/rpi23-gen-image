@@ -38,6 +38,21 @@ else
   chmod -R 600 "${BOOT_DIR}"
 fi
 
+if [ "$ENABLE_KEYGEN" = true] ; then
+    
+	# go to chroot/boot/
+	cd "${BOOT_DIR}/" || exit
+	
+	# Make a copy of start.elf
+	cp start.elf start.elf_backup
+	
+	# Remove codec licence checks - thx go to https://github.com/nucular/raspi-keygen - if ENABLE_VIDEOCORE is true, you can check codec status https://elinux.org/RPI_vcgencmd_usage
+	perl -pne 's/\x47\xE9362H\x3C\x18/\x47\xE9362H\x3C\x1F/g' < start.elf_backup > start.elf
+	
+	# Back to base dir
+	cd "${WORKDIR}" || exit
+fi
+
 # Setup firmware boot cmdline
 if [ "$ENABLE_UBOOTUSB" = true ] ; then
   CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait init=/bin/systemd"
