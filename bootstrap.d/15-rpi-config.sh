@@ -82,6 +82,11 @@ if [ "$ENABLE_PRINTK" = true ] ; then
   install_readonly files/sysctl.d/83-rpi-printk.conf "${ETC_DIR}/sysctl.d/83-rpi-printk.conf"
 fi
 
+# Enable Kernel messages on standard output
+if [ "$KERNEL_SECURITY" = true ] ; then
+  install_readonly files/sysctl.d/84-rpi-ASLR.conf "${ETC_DIR}/sysctl.d/84-rpi-ASLR.conf"
+fi
+
 # Install udev rule for serial alias - serial0 = console serial1=bluetooth
 install_readonly files/etc/99-com.rules "${LIB_DIR}/udev/rules.d/99-com.rules"
 
