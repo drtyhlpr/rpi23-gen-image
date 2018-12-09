@@ -119,6 +119,7 @@ NET_NTP_2=${NET_NTP_2:=""}
 # APT settings
 APT_PROXY=${APT_PROXY:=""}
 APT_SERVER=${APT_SERVER:="ftp.debian.org"}
+KEEP_APT_PROXY=${KEEP_APT_PROXY:=false}
 
 # Feature settings
 ENABLE_PRINTK=${ENABLE_PRINTK:=false}
@@ -675,13 +676,17 @@ umount -l "${R}/sys"
 rm -rf "${R}/run/*"
 rm -rf "${R}/tmp/*"
 
+# Clean up APT proxy settings
+if [ "$KEEP_APT_PROXY" = false ] ; then
+  rm -f "${ETC_DIR}/apt/apt.conf.d/10proxy"
+fi
+
 # Clean up files
 rm -f "${ETC_DIR}/ssh/ssh_host_*"
 rm -f "${ETC_DIR}/dropbear/dropbear_*"
 rm -f "${ETC_DIR}/apt/sources.list.save"
 rm -f "${ETC_DIR}/resolvconf/resolv.conf.d/original"
 rm -f "${ETC_DIR}/*-"
-rm -f "${ETC_DIR}/apt/apt.conf.d/10proxy"
 rm -f "${ETC_DIR}/resolv.conf"
 rm -f "${R}/root/.bash_history"
 rm -f "${R}/var/lib/urandom/random-seed"
