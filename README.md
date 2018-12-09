@@ -273,6 +273,15 @@ Create an initramfs that that will be loaded during the Linux startup process. `
 ##### `ENABLE_IFNAMES`=true
 Enable automatic assignment of predictable, stable network interface names for all local Ethernet, WLAN interfaces. This might create complex and long interface names.
 
+##### `ENABLE_SPLASH`=true
+Enable default Raspberry Pi boot up rainbow splash screen.
+
+##### `ENABLE_LOGO`=true
+Enable default Raspberry Pi console logo (image of four raspberries in the top left corner).
+
+##### `ENABLE_SILENT_BOOT`=false
+Set the verbosity of console messages shown during boot up to a strict minimum.
+
 ##### `DISABLE_UNDERVOLT_WARNINGS`=
 Disable RPi2/3 under-voltage warnings and overlays. Setting the parameter to `1` will disable the warning overlay. Setting it to `2` will additionally allow RPi2/3 turbo mode when low-voltage is present.
 
