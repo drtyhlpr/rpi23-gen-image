@@ -43,7 +43,7 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
       install_exec files/initramfs/expand-tools "${ETC_DIR}/initramfs-tools/hooks/expand-tools"
     fi
 	
-	if [ "$CRYPTFS_DROPBEAR" = true ] ; then
+	if [ "$ENABLE_DHCP" = false ] ; then
       # Get cdir from NET_ADDRESS e.g. 24
       cdir=$(${NET_ADDRESS} | cut -d '/' -f2)
 
