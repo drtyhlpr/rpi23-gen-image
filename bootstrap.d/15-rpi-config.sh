@@ -38,7 +38,7 @@ else
   chmod -R 600 "${BOOT_DIR}"
 fi
 
-if [ "$ENABLE_KEYGEN" = true] ; then
+if [ "$ENABLE_KEYGEN" = true ] ; then
     
 	# go to chroot/boot/
 	cd "${BOOT_DIR}/" || exit
