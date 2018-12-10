@@ -8,11 +8,6 @@
 # Install and setup fstab
 install_readonly files/mount/fstab "${ETC_DIR}/fstab"
 
-if [ "$ENABLE_USBBOOT" = true ] ; then
-  sed -i "s/mmcblk0p1/sda1/" "${ETC_DIR}/fstab"
-  sed -i "s/mmcblk0p2/sda2/" "${ETC_DIR}/fstab"
-fi
-
 # Add usb/sda disk root partition to fstab
 if [ "$ENABLE_SPLITFS" = true ] && [ "$ENABLE_CRYPTFS" = false ] ; then
   sed -i "s/mmcblk0p2/sda1/" "${ETC_DIR}/fstab"
@@ -36,6 +31,11 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
     # Add usb/sda1 disk to crypttab
     sed -i "s/mmcblk0p2/sda1/" "${ETC_DIR}/crypttab"
   fi
+fi
+
+if [ "$ENABLE_USBBOOT" = true ] ; then
+  sed -i "s/mmcblk0p1/sda1/" "${ETC_DIR}/fstab"
+  sed -i "s/mmcblk0p2/sda2/" "${ETC_DIR}/fstab"
 fi
 
 # Generate initramfs file
