@@ -240,24 +240,24 @@ if [ "${APT_CACHER_RUNNING}" = "apt-cacher-ng" ] ; then
 fi
 
 # netselect-apt does not know buster yet
-if  [ "$RELEASE" = "buster" ] ; then
-  RLS=testing
-else
-  RLS="$RELEASE"
-fi
+#if  [ "$RELEASE" = "buster" ] ; then
+#  RLS=testing
+#else
+#  RLS="$RELEASE"
+#fi
 
-if [ -f "$(pwd)/files/apt/sources.list" ] ; then
-rm "$(pwd)/files/apt/sources.list"
-fi
+#if [ -f "$(pwd)/files/apt/sources.list" ] ; then
+#rm "$(pwd)/files/apt/sources.list"
+#fi
 
-if [ "$ENABLE_NONFREE" = true ] ; then
-  netselect-apt --arch "$RELEASE_ARCH" -t 3 --sources --nonfree  --outfile "$(pwd)/files/apt/sources.list"  -d "$RLS"
-else
-  netselect-apt --arch "$RELEASE_ARCH" -t 3 --sources --outfile "$(pwd)/files/apt/sources.list" -d "$RLS"
-fi
+#if [ "$ENABLE_NONFREE" = true ] ; then
+#  netselect-apt --arch "$RELEASE_ARCH" -t 3 --sources --nonfree  --outfile "$(pwd)/files/apt/sources.list"  -d "$RLS"
+#else
+#  netselect-apt --arch "$RELEASE_ARCH" -t 3 --sources --outfile "$(pwd)/files/apt/sources.list" -d "$RLS"
+#fi
 
 # sed and cut the result string so we can use it as APT_SERVER
-APT_SERVER=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3 | sed 's|/$|''|')
+#APT_SERVER=$(grep -m 1 http files/apt/sources.list | sed "s|http://| |g" | cut -d ' ' -f 3 | sed 's|/$|''|')
 
 # make script easier and more stable to use with convenient setup switch. Just setup SET_ARCH and RPI_MODEL and your good to go!
 if [ -n "$SET_ARCH" ] ; then
