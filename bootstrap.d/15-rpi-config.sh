@@ -182,7 +182,7 @@ if [ "$ENABLE_CONSOLE" = true ] ; then
   CMDLINE="${CMDLINE} console=serial0,115200"
 
   # Enable serial console systemd style
-  chroot_exec systemctl enable serial-getty\@serial0.service
+  chroot_exec systemctl enable serial-getty@serial0.service
 else
   echo "enable_uart=0"  >> "${BOOT_DIR}/config.txt"
 fi
