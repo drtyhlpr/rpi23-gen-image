@@ -107,6 +107,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_ZSMALLOC y
         set_kernel_config CONFIG_PGTABLE_MAPPING y
 		set_kernel_config CONFIG_LZO_COMPRESS y
+	set_kernel_config CONFIG_MMC_SDHCI_IPROC n
+	set_kernel_config CONFIG_USB_DWC2 n
 	  fi
 
       # enable basic KVM support; see https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
