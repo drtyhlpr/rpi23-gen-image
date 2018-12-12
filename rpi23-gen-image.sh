@@ -436,7 +436,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
 fi
 
 if [ "$ENABLE_USBBOOT" = true ] ; then 
-  if ! ["$RPI_MODEL" = 3 ] || ! ["$RPI_MODEL" = 3P ] ; then
+  if ! [ "$RPI_MODEL" = 3 ] || ! [ "$RPI_MODEL" = 3P ] ; then
     echo "error: Booting from USB alone is only supported by Raspberry Pi 3 and 3P"
     exit 1
   fi
