@@ -175,7 +175,7 @@ if [ "$ENABLE_CONSOLE" = true ] ; then
   # add string to cmdline
   CMDLINE="${CMDLINE} console=serial0,115200"
   
-  if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]; then
+  if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]|| [ "$RPI_MODEL" = 0 ]; then
     # if force_turbo didn't lock cpu at high speed, lock it at low speed (XOR logic) or miniuart will be broken
     if [ "$ENABLE_TURBO" = false ] ; then 
       echo "core_freq=250" >> "${BOOT_DIR}/config.txt"
