@@ -148,16 +148,17 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_AUDIT y
 
         # harden strcpy and memcpy
-        set_kernel_config CONFIG_HARDENED_USERCOPY=y
-        set_kernel_config CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR=y
-        set_kernel_config CONFIG_FORTIFY_SOURCE=y
+        set_kernel_config CONFIG_HARDENED_USERCOPY y
+        set_kernel_config CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR y
+        set_kernel_config CONFIG_FORTIFY_SOURCE y
 
         # integrity sub-system
-        set_kernel_config CONFIG_INTEGRITY=y
-        set_kernel_config CONFIG_INTEGRITY_ASYMMETRIC_KEYS=y
-        set_kernel_config CONFIG_INTEGRITY_AUDIT=y
-        set_kernel_config CONFIG_INTEGRITY_SIGNATURE=y
-        set_kernel_config CONFIG_INTEGRITY_TRUSTED_KEYRING=y
+        set_kernel_config CONFIG_INTEGRITY y
+        set_kernel_config CONFIG_INTEGRITY_ASYMMETRIC_KEYS y
+        set_kernel_config CONFIG_INTEGRITY_AUDIT y
+        set_kernel_config CONFIG_INTEGRITY_SIGNATURE y
+        set_kernel_config CONFIG_INTEGRITY_TRUSTED_KEYRING y
+		set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS ""
 
         # This option provides support for retaining authentication tokens and access keys in the kernel.
         set_kernel_config CONFIG_KEYS=y
