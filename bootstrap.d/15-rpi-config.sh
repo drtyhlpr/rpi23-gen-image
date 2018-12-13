@@ -158,6 +158,11 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     if [ "$ENABLE_MINIUART_OVERLAY" = true ] ; then
 	  # set overlay to swap ttyAMA0 and ttyS0
       echo "dtoverlay=pi3-miniuart-bt" >> "${BOOT_DIR}/config.txt"
+	  
+	  if [ "$ENABLE_TURBO" = false ] ; then 
+        echo "core_freq=250" >> "${BOOT_DIR}/config.txt"
+      fi 
+	  
 	fi
 
 	# Activate services
