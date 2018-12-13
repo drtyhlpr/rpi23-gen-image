@@ -97,6 +97,13 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
       #Switch to KERNELSRC_DIR so we can use set_kernel_config
       cd "${KERNEL_DIR}" || exit
+	  
+	  #Fix SD_DRIVER f* up in Raspberry PI upstream kernel 
+	  # use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - variable naming is bs
+	  set_kernel_config CONFIG_MMC_BCM2835 n
+	  set_kernel_config CONFIG_MMC_SDHCI_IPROC n
+	  set_kernel_config CONFIG_USB_DWC2 n
+	  sed -i "s|depends on MMC_BCM2835_MMC && MMC_BCM2835_DMA|depends on MMC_BCM2835_MMC|" "${KERNEL_DIR}"/drivers/mmc/host/Kconfig
 
 	  # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
       if [ "$KERNEL_ZSWAP" = true ] ; then
@@ -107,9 +114,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_ZSMALLOC y
         set_kernel_config CONFIG_PGTABLE_MAPPING y
 		set_kernel_config CONFIG_LZO_COMPRESS y
-	set_kernel_config CONFIG_MMC_SDHCI_IPROC n
-	set_kernel_config CONFIG_USB_DWC2 n
-	set_kernel_config CONFIG_MMC_BCM2835 n
+
 	  fi
 
       # enable basic KVM support; see https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
