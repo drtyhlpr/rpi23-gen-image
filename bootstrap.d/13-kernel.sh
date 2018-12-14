@@ -97,14 +97,39 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
       #Switch to KERNELSRC_DIR so we can use set_kernel_config
       cd "${KERNEL_DIR}" || exit
+	  if [ "$KERNEL_ARCH" = arm64 ]  
+	    #Fix SD_DRIVER mess in 64bit config
+	    # use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - variable naming is bs
+	    set_kernel_config CONFIG_MMC_BCM2835 n
+	    set_kernel_config CONFIG_MMC_SDHCI_IPROC n
+	    set_kernel_config CONFIG_USB_DWC2 n
+	    sed -i "s|depends on MMC_BCM2835_MMC && MMC_BCM2835_DMA|depends on MMC_BCM2835_MMC|" "${KERNEL_DIR}"/drivers/mmc/host/Kconfig
 	  
-	  #Fix SD_DRIVER f* up in Raspberry PI upstream kernel 
-	  # use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - variable naming is bs
-	  set_kernel_config CONFIG_MMC_BCM2835 n
-	  set_kernel_config CONFIG_MMC_SDHCI_IPROC n
-	  set_kernel_config CONFIG_USB_DWC2 n
-	  sed -i "s|depends on MMC_BCM2835_MMC && MMC_BCM2835_DMA|depends on MMC_BCM2835_MMC|" "${KERNEL_DIR}"/drivers/mmc/host/Kconfig
-
+	    #VLAN got disabled without reason in arm64bit
+	    set_kernel_config CONFIG_IPVLAN m
+	  
+	    #V4L2 sub-device userspace API
+	    set_kernel_config CONFIG_VIDEO_V4L2_SUBDEV_API y
+	  
+	    # GPIO-based bitbanging SPI Master 
+	    set_kernel_config CONFIG_SPI_GPIO m
+	    #SPI Slave protocol
+	    set_kernel_config CONFIG_SPI_SLAVE y
+	  
+	    # Virtual (secure) IP: tunneling 
+	    set_kernel_config CONFIG_NET_IPVTI m
+	  
+	    #Wlan driver debug info
+	    set_kernel_config CONFIG_BRCMDBG m
+	  
+	    #GPIO WATCHDOG
+	    set_kernel_config CONFIG_GPIO_WATCHDOG m
+	  
+	    #Camera
+	    set_kernel_config VIDEO_BCM2835 m
+	    set_kernel_config VIDEO_BCM2835_UNICAM m
+	  fi
+	  
 	  # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
       if [ "$KERNEL_ZSWAP" = true ] ; then
         set_kernel_config CONFIG_ZPOOL y
@@ -169,8 +194,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
 		set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS ""
 
         # This option provides support for retaining authentication tokens and access keys in the kernel.
-        set_kernel_config CONFIG_KEYS=y
-        set_kernel_config CONFIG_KEYS_COMPAT=y
+        set_kernel_config CONFIG_KEYS y
+        set_kernel_config CONFIG_KEYS_COMPAT y
 
         # Apparmor
         set_kernel_config CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE 0
@@ -181,13 +206,13 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_DEFAULT_SECURITY "apparmor"
 
         # restrictions on unprivileged users reading the kernel
-        set_kernel_config CONFIG_SECURITY_DMESG_RESTRICT=y
+        set_kernel_config CONFIG_SECURITY_DMESG_RESTRICT y
 
         # network security hooks
         set_kernel_config CONFIG_SECURITY_NETWORK y
-        set_kernel_config CONFIG_SECURITY_NETWORK_XFRM=y
-        set_kernel_config CONFIG_SECURITY_PATH=y
-        set_kernel_config CONFIG_SECURITY_YAMA=y
+        set_kernel_config CONFIG_SECURITY_NETWORK_XFRM y
+        set_kernel_config CONFIG_SECURITY_PATH y
+        set_kernel_config CONFIG_SECURITY_YAMA n
 
         # New Options
         if [ "$KERNEL_NF" = true ] ; then
@@ -229,7 +254,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_CRYPTO_AES_ARM64_NEON_BLK m
         set_kernel_config CONFIG_CRYPTO_CHACHA20_NEON m
         set_kernel_config CONFIG_CRYPTO_AES_ARM64_BS m
-		echo SYSTEM_TRUSTED_KEYS >> .config
+		echo CONFIG_SYSTEM_TRUSTED_KEYS="" >> .config
       fi
 
       # Netfilter kernel support See https://github.com/raspberrypi/linux/issues/2177#issuecomment-354647406
