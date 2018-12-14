@@ -97,7 +97,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
       #Switch to KERNELSRC_DIR so we can use set_kernel_config
       cd "${KERNEL_DIR}" || exit
-	  if [ "$KERNEL_ARCH" = arm64 ]  
+	  
+	  if [ "$KERNEL_ARCH" = arm64 ] ; then
 	    #Fix SD_DRIVER mess in 64bit config
 	    # use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - variable naming is bs
 	    set_kernel_config CONFIG_MMC_BCM2835 n
