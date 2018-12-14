@@ -110,12 +110,18 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	    set_kernel_config CONFIG_IPVLAN m
 	  
 	    #V4L2 sub-device userspace API
-	    set_kernel_config CONFIG_VIDEO_V4L2_SUBDEV_API y
+	    #set_kernel_config CONFIG_VIDEO_V4L2_SUBDEV_API y
+		#VIDEO_MUX y
+		#VIDEO_XILINX n
+		#VIDEO_XILINX_TPG n
+		#VIDEO_ADV7180 m
 	  
 	    # GPIO-based bitbanging SPI Master 
 	    set_kernel_config CONFIG_SPI_GPIO m
 	    #SPI Slave protocol
 	    set_kernel_config CONFIG_SPI_SLAVE y
+		set_kernel_config CONFIG_SPI_SLAVE_TIME m
+		set_kernel_config CONFIG_SPI_SLAVE_SYSTEM_CONTROL m
 	  
 	    # Virtual (secure) IP: tunneling 
 	    set_kernel_config CONFIG_NET_IPVTI m
