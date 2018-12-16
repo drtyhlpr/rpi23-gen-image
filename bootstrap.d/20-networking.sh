@@ -30,6 +30,10 @@ install_readonly files/network/interfaces "${ETC_DIR}/network/interfaces"
 # Install configuration for interface eth0
 install_readonly files/network/eth.network "${ETC_DIR}/systemd/network/eth.network"
 
+if [ "$RPI_MODEL" = 3P ] ; then
+printf "\n[Link]\nGenericReceiveOffload=off\nTCPSegmentationOffload=off\nGenericSegmentationOffload=off" >> "${ETC_DIR}/systemd/network/eth.network"
+fi
+
 # Install configuration for interface wl*
 install_readonly files/network/wlan.network "${ETC_DIR}/systemd/network/wlan.network"
 
