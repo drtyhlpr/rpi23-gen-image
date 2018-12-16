@@ -156,14 +156,13 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
 
     # Switch Pi3 Bluetooth function to use the mini-UART (ttyS0) and restore UART0/ttyAMA0 over GPIOs 14 & 15. Slow Bluetooth and slow cpu. Use /dev/ttyS0 instead of /dev/ttyAMA0
     if [ "$ENABLE_MINIUART_OVERLAY" = true ] ; then
-
 	  # set overlay to swap ttyAMA0 and ttyS0
       echo "dtoverlay=pi3-miniuart-bt" >> "${BOOT_DIR}/config.txt"
 
-	  # if force_turbo didn't lock cpu at high speed, lock it at low speed (XOR logic) or miniuart will be broken
 	  if [ "$ENABLE_TURBO" = false ] ; then 
-	    echo "core_freq=250" >> "${BOOT_DIR}/config.txt"
-	  fi
+        echo "core_freq=250" >> "${BOOT_DIR}/config.txt"
+      fi 
+	  
 	fi
 
 	# Activate services
@@ -180,14 +179,18 @@ if [ "$ENABLE_CONSOLE" = true ] ; then
   echo "enable_uart=1"  >> "${BOOT_DIR}/config.txt" 
   # add string to cmdline
   CMDLINE="${CMDLINE} console=serial0,115200"
+  
+  if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ]|| [ "$RPI_MODEL" = 0 ]; then
+    # if force_turbo didn't lock cpu at high speed, lock it at low speed (XOR logic) or miniuart will be broken
+    if [ "$ENABLE_TURBO" = false ] ; then 
+      echo "core_freq=250" >> "${BOOT_DIR}/config.txt"
+    fi 
+  fi
 
   # Enable serial console systemd style
-  chroot_exec systemctl enable serial-getty\@serial0.service
+  chroot_exec systemctl enable serial-getty@serial0.service
 else
   echo "enable_uart=0"  >> "${BOOT_DIR}/config.txt"
-  
-  # disable serial console systemd style
-  chroot_exec systemctl disable serial-getty\@"$SET_SERIAL".service
 fi
 
 if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
@@ -200,36 +203,35 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   # Copy downloaded systemd-swap sources
   mv "${temp_dir}/systemd-swap" "${R}/tmp/"
 
-  # Set permissions of the systemd-swap sources
-  chown -R root:root "${R}/tmp/systemd-swap"
-
-  # Remove temporary directory for systemd-swap sources
-  rm -fr "${temp_dir}"
-  
   # Change into downloaded src dir
   cd "${R}/tmp/systemd-swap" || exit
-  
+
   # Build package
-  . ./package.sh debian
-  
-  # Install package
-  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap-*any.deb
-  
-  # Enable service
-  chroot_exec systemctl enable systemd-swap
+  bash ./package.sh debian
   
   # Change back into script root dir
   cd "${WORKDIR}" || exit
+  
+  # Set permissions of the systemd-swap sources
+  chown -R root:root "${R}/tmp/systemd-swap"
+
+  # Install package - IMPROVE AND MAKE IT POSSIBLE WITHOUT VERSION NR.
+  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap_4.0.1_any.deb
+
+  # Enable service
+  chroot_exec systemctl enable systemd-swap
+  
+  # Remove temporary directory for systemd-swap sources
+  rm -fr "${temp_dir}"
 else
   # Enable ZSWAP in cmdline if systemd-swap is not used
   if [ "$KERNEL_ZSWAP" = true ] ; then
-    CMDLINE="${CMDLINE} zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=lz4" 
+    CMDLINE="${CMDLINE} zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=lz4"
   fi
 fi
-
-if [ "$KERNEL_SECURITY" = true ] ; then
-  CMDLINE="${CMDLINE} apparmor=1 security=apparmor" 
-fi
+  if [ "$KERNEL_SECURITY" = true ] ; then
+    CMDLINE="${CMDLINE} apparmor=1 security=apparmor" 
+  fi
 
 # Install firmware boot cmdline
 echo "${CMDLINE}" > "${BOOT_DIR}/cmdline.txt"
