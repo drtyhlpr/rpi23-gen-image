@@ -1,4 +1,3 @@
-#!/bin/sh
 # This file contains utility functions used by rpi23-gen-image.sh
 
 cleanup (){
@@ -87,6 +86,16 @@ chroot_remove_cc() {
     COMPILER_PACKAGES=""
   fi
 }
+
+# https://serverfault.com/a/682849 - converts e.g. /24 to 255.255.255.0
+cdr2mask ()
+{
+   # Number of args to shift, 255..255, first non-255 byte, zeroes
+   set -- $(( 5 - ($1 / 8) )) 255 255 255 255 $(( (255 << (8 - ($1 % 8))) & 255 )) 0 0 0
+   [ $1 -gt 1 ] && shift $1 || shift
+   echo ${1-0}.${2-0}.${3-0}.${4-0}
+}
+
 # GPL v2.0 - #https://github.com/sakaki-/bcmrpi3-kernel-bis/blob/master/conform_config.sh
 set_kernel_config() {
   # flag as $1, value to set as $2, config must exist at "./.config"
@@ -98,18 +107,10 @@ set_kernel_config() {
     echo "${TGT}"="${2}" >> .config
   fi
 }
+
 # unset kernel config parameter
 unset_kernel_config() {
   # unsets flag with the value of $1, config must exist at "./.config"
   TGT="CONFIG_${1#CONFIG_}"
   sed -i "s/^${TGT}=.*/# ${TGT} is not set/" .config
-}
-
-# https://serverfault.com/a/682849 - converts e.g. /24 to 255.255.255.0
-cdr2mask ()
-{
-   # Number of args to shift, 255..255, first non-255 byte, zeroes
-   set -- $(( 5 - ($1 / 8) )) 255 255 255 255 $(( (255 << (8 - ($1 % 8))) & 255 )) 0 0 0
-   [ $1 -gt 1 ] && shift $1 || shift
-   echo ${1-0}.${2-0}.${3-0}.${4-0}
 }

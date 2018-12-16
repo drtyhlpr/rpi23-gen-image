@@ -99,8 +99,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
       cd "${KERNEL_DIR}" || exit
 	  
 	  if [ "$KERNEL_ARCH" = arm64 ] ; then
-	    #Fix SD_DRIVER mess in 64bit config
-	    # use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - variable naming is bs
+	    #Fix SD_DRIVER upstream and downstream mess in 64bit RPIdeb_config
+	    # use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - see https://www.raspberrypi.org/forums/viewtopic.php?t=210225
 	    set_kernel_config CONFIG_MMC_BCM2835 n
 	    set_kernel_config CONFIG_MMC_SDHCI_IPROC n
 	    set_kernel_config CONFIG_USB_DWC2 n
@@ -198,7 +198,6 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_INTEGRITY_AUDIT y
         set_kernel_config CONFIG_INTEGRITY_SIGNATURE y
         set_kernel_config CONFIG_INTEGRITY_TRUSTED_KEYRING y
-		set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS ""
 
         # This option provides support for retaining authentication tokens and access keys in the kernel.
         set_kernel_config CONFIG_KEYS y

@@ -42,11 +42,14 @@ CONFIG_TEMPLATE=rpi2stretch ./rpi23-gen-image.sh
 
 ## Supported parameters and settings
 #### APT settings:
-##### `APT_SERVER`="ftp.debian.org/debian"
+##### `APT_SERVER`="ftp.debian.org"
 Set Debian packages server address. Choose a server from the list of Debian worldwide [mirror sites](https://www.debian.org/mirror/list). Using a nearby server will probably speed-up all required downloads within the bootstrapping process.
 
 ##### `APT_PROXY`=""
 Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once. If `apt-cacher-ng` is running on default `http://127.0.0.1:3142` it is autodetected and you don't need to set this.
+
+##### `KEEP_APT_PROXY`=false
+Keep the APT_PROXY settings used in the bootsrapping process in the generated image.
 
 ##### `APT_INCLUDES`=""
 A comma-separated list of additional packages to be installed by debootstrap during bootstrapping.
@@ -269,6 +272,15 @@ Create an initramfs that that will be loaded during the Linux startup process. `
 
 ##### `ENABLE_IFNAMES`=true
 Enable automatic assignment of predictable, stable network interface names for all local Ethernet, WLAN interfaces. This might create complex and long interface names.
+
+##### `ENABLE_SPLASH`=true
+Enable default Raspberry Pi boot up rainbow splash screen.
+
+##### `ENABLE_LOGO`=true
+Enable default Raspberry Pi console logo (image of four raspberries in the top left corner).
+
+##### `ENABLE_SILENT_BOOT`=false
+Set the verbosity of console messages shown during boot up to a strict minimum.
 
 ##### `DISABLE_UNDERVOLT_WARNINGS`=
 Disable RPi2/3 under-voltage warnings and overlays. Setting the parameter to `1` will disable the warning overlay. Setting it to `2` will additionally allow RPi2/3 turbo mode when low-voltage is present.

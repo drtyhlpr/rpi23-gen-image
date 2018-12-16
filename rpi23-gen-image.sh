@@ -60,7 +60,6 @@ BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
 NEXMON_URL=${NEXMON_URL:=https://github.com/seemoo-lab/nexmon.git}
 SYSTEMDSWAP_URL=${SYSTEMDSWAP_URL:=https://github.com/Nefelim4ag/systemd-swap.git}
 
-
 # Kernel deb packages for 32bit kernel
 RPI_32_KERNEL_URL=${RPI_32_KERNEL_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel_20180422-141901_armhf.deb}
 RPI_32_KERNELHEADER_URL=${RPI_32_KERNELHEADER_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel-headers_20180422-141901_armhf.deb}
@@ -120,6 +119,7 @@ NET_NTP_2=${NET_NTP_2:=""}
 # APT settings
 APT_PROXY=${APT_PROXY:=""}
 APT_SERVER=${APT_SERVER:="ftp.debian.org"}
+KEEP_APT_PROXY=${KEEP_APT_PROXY:=false}
 
 # Feature settings
 ENABLE_PRINTK=${ENABLE_PRINTK:=false}
@@ -171,6 +171,9 @@ ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 ENABLE_INITRAMFS=${ENABLE_INITRAMFS:=false}
 ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
+ENABLE_SPLASH=${ENABLE_SPLASH:=true}
+ENABLE_LOGO=${ENABLE_LOGO:=true}
+ENABLE_SILENT_BOOT=${ENABLE_SILENT_BOOT=false}
 DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS:=}
 
 # Kernel compilation settings
@@ -227,7 +230,8 @@ APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debi
 APT_EXCLUDES=${APT_EXCLUDES:=""}
 
 # Packages required for bootstrapping
-REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo netselect-apt"
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
+#Requierd=netselect-apt
 MISSING_PACKAGES=""
 
 # Packages installed for c/c++ build environment in chroot (keep empty)
@@ -700,13 +704,17 @@ umount -l "${R}/sys"
 rm -rf "${R}/run/*"
 rm -rf "${R}/tmp/*"
 
+# Clean up APT proxy settings
+if [ "$KEEP_APT_PROXY" = false ] ; then
+  rm -f "${ETC_DIR}/apt/apt.conf.d/10proxy"
+fi
+
 # Clean up files
 rm -f "${ETC_DIR}/ssh/ssh_host_*"
 rm -f "${ETC_DIR}/dropbear/dropbear_*"
 rm -f "${ETC_DIR}/apt/sources.list.save"
 rm -f "${ETC_DIR}/resolvconf/resolv.conf.d/original"
 rm -f "${ETC_DIR}/*-"
-rm -f "${ETC_DIR}/apt/apt.conf.d/10proxy"
 rm -f "${ETC_DIR}/resolv.conf"
 rm -f "${R}/root/.bash_history"
 rm -f "${R}/var/lib/urandom/random-seed"

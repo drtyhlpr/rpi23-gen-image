@@ -102,8 +102,23 @@ else
   CMDLINE="${CMDLINE} net.ifnames=1"
 fi
 
+# Disable Raspberry Pi console logo
+if [ "$ENABLE_LOGO" = false ] ; then
+  CMDLINE="${CMDLINE} logo.nologo"
+fi
+
+# Strictly limit verbosity of boot up console messages
+if [ "$ENABLE_SILENT_BOOT" = true ] ; then
+  CMDLINE="${CMDLINE} quiet loglevel=0 rd.systemd.show_status=auto rd.udev.log_priority=0"
+fi
+
 # Install firmware config
 install_readonly files/boot/config.txt "${BOOT_DIR}/config.txt"
+
+# Disable Raspberry Pi console logo
+if [ "$ENABLE_SLASH" = false ] ; then
+  echo "disable_splash=1" >> "${BOOT_DIR}/config.txt"
+fi
 
 # Locks CPU frequency at maximum
 if [ "$ENABLE_TURBO" = true ] ; then
@@ -158,7 +173,7 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     if [ "$ENABLE_MINIUART_OVERLAY" = true ] ; then
 	  # set overlay to swap ttyAMA0 and ttyS0
       echo "dtoverlay=pi3-miniuart-bt" >> "${BOOT_DIR}/config.txt"
-	  
+
 	  if [ "$ENABLE_TURBO" = false ] ; then 
         echo "core_freq=250" >> "${BOOT_DIR}/config.txt"
       fi 
