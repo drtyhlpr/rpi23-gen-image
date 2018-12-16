@@ -50,7 +50,7 @@ if [ "$ENABLE_INITRAMFS" = true ] ; then
 	
 	if [ "$ENABLE_DHCP" = false ] ; then
       # Get cdir from NET_ADDRESS e.g. 24
-      cdir=$(${NET_ADDRESS} | cut -d '/' -f2)
+      cdir=$(printf ${NET_ADDRESS} | cut -d '/' -f2)
 
       # Convert cdir ro netmask e.g. 24 to 255.255.255.0
       NET_MASK=$(cdr2mask "$cdir")
