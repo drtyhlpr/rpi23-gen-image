@@ -719,7 +719,7 @@ if [ "$ENABLE_QEMU" = true ] ; then
     # Setup overlays dtbs directory
     mkdir "${BASEDIR}/qemu/overlays"
 
-    for dtb in "${BOOT_DIR}/overlays/"*.dtb ; do
+    for dtb in "${BOOT_DIR}/overlays/"*.dtbo ; do
       if [ -f "${dtb}" ] ; then
         install_readonly "${dtb}" "${BASEDIR}/qemu/overlays/"
       fi

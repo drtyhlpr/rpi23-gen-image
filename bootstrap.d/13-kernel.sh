@@ -501,7 +501,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Copy compiled dtb device tree files
   if [ -d "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays" ] ; then
-    for dtb in "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtb ; do
+    for dtb in "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtbo ; do
       if [ -f "${dtb}" ] ; then
         install_readonly "${dtb}" "${BOOT_DIR}/overlays/"
       fi
