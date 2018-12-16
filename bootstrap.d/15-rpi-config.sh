@@ -39,10 +39,14 @@ else
 fi
 
 # Setup firmware boot cmdline
-if [ "$ENABLE_SPLITFS" = true ] ; then
-  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1 init=/bin/systemd"
+if [ "$ENABLE_USBBOOT" = true ] ; then
+  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline console=tty1 rootwait init=/bin/systemd"
 else
-  CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline rootwait console=tty1 init=/bin/systemd"
+  if [ "$ENABLE_SPLITFS" = true ] ; then
+    CMDLINE="dwc_otg.lpm_enable=0 root=/dev/sda1 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline console=tty1 rootwait init=/bin/systemd"
+  else
+    CMDLINE="dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=commit=100,data=writeback elevator=deadline console=tty1 rootwait init=/bin/systemd"
+  fi
 fi
 
 # Add encrypted root partition to cmdline.txt
@@ -50,13 +54,22 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   if [ "$ENABLE_SPLITFS" = true ] ; then
     CMDLINE=$(echo "${CMDLINE}" | sed "s/sda1/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/sda1:${CRYPTFS_MAPPING}/")
   else
-    CMDLINE=$(echo "${CMDLINE}" | sed "s/mmcblk0p2/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/mmcblk0p2:${CRYPTFS_MAPPING}/")
+    if [ "$ENABLE_USBBOOT" = true ] ; then
+      CMDLINE=$(echo "${CMDLINE}" | sed "s/sda2/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/sda2:${CRYPTFS_MAPPING}/")
+    else
+      CMDLINE=$(echo "${CMDLINE}" | sed "s/mmcblk0p2/mapper\/${CRYPTFS_MAPPING} cryptdevice=\/dev\/mmcblk0p2:${CRYPTFS_MAPPING}/")
+    fi
   fi
 fi
 
 # Enable Kernel messages on standard output
 if [ "$ENABLE_PRINTK" = true ] ; then
   install_readonly files/sysctl.d/83-rpi-printk.conf "${ETC_DIR}/sysctl.d/83-rpi-printk.conf"
+fi
+
+# Enable Kernel messages on standard output
+if [ "$KERNEL_SECURITY" = true ] ; then
+  install_readonly files/sysctl.d/84-rpi-ASLR.conf "${ETC_DIR}/sysctl.d/84-rpi-ASLR.conf"
 fi
 
 # Install udev rule for serial alias - serial0 = console serial1=bluetooth

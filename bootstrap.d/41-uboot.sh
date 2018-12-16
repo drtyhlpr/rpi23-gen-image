@@ -79,7 +79,7 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   fi
   
   # instead of sd, boot from usb device
-  if [ "$ENABLE_UBOOTUSB" = true ] ; then
+  if [ "$ENABLE_USBBOOT" = true ] ; then
     sed -i "s|mmc|usb|g" "${BOOT_DIR}/uboot.mkimage"
   fi
 
