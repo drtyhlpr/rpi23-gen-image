@@ -161,20 +161,20 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_AUDIT y
 
         # harden strcpy and memcpy
-        set_kernel_config CONFIG_HARDENED_USERCOPY=y
-        set_kernel_config CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR=y
-        set_kernel_config CONFIG_FORTIFY_SOURCE=y
+        set_kernel_config CONFIG_HARDENED_USERCOPY y
+        set_kernel_config CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR y
+        set_kernel_config CONFIG_FORTIFY_SOURCE y
 
         # integrity sub-system
-        set_kernel_config CONFIG_INTEGRITY=y
-        set_kernel_config CONFIG_INTEGRITY_ASYMMETRIC_KEYS=y
-        set_kernel_config CONFIG_INTEGRITY_AUDIT=y
-        set_kernel_config CONFIG_INTEGRITY_SIGNATURE=y
-        set_kernel_config CONFIG_INTEGRITY_TRUSTED_KEYRING=y
+        set_kernel_config CONFIG_INTEGRITY y
+        set_kernel_config CONFIG_INTEGRITY_ASYMMETRIC_KEYS y
+        set_kernel_config CONFIG_INTEGRITY_AUDIT y
+        set_kernel_config CONFIG_INTEGRITY_SIGNATURE y
+        set_kernel_config CONFIG_INTEGRITY_TRUSTED_KEYRING y
 
         # This option provides support for retaining authentication tokens and access keys in the kernel.
-        set_kernel_config CONFIG_KEYS=y
-        set_kernel_config CONFIG_KEYS_COMPAT=y
+        set_kernel_config CONFIG_KEYS y
+        set_kernel_config CONFIG_KEYS_COMPAT y
 
         # Apparmor
         set_kernel_config CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE 0
@@ -185,13 +185,13 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_DEFAULT_SECURITY "apparmor"
 
         # restrictions on unprivileged users reading the kernel
-        set_kernel_config CONFIG_SECURITY_DMESG_RESTRICT=y
+        set_kernel_config CONFIG_SECURITY_DMESG_RESTRICT y
 
         # network security hooks
         set_kernel_config CONFIG_SECURITY_NETWORK y
-        set_kernel_config CONFIG_SECURITY_NETWORK_XFRM=y
-        set_kernel_config CONFIG_SECURITY_PATH=y
-        set_kernel_config CONFIG_SECURITY_YAMA=y
+        set_kernel_config CONFIG_SECURITY_NETWORK_XFRM y
+        set_kernel_config CONFIG_SECURITY_PATH y
+        set_kernel_config CONFIG_SECURITY_YAMA n
 
         # New Options
         if [ "$KERNEL_NF" = true ] ; then
