@@ -97,7 +97,19 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
       #Switch to KERNELSRC_DIR so we can use set_kernel_config
       cd "${KERNEL_DIR}" || exit
-
+	  
+	  if [ "$KERNEL_ARCH" = arm64 ] ; then
+	    #Fix SD_DRIVER upstream and downstream mess in 64bit RPIdeb_config
+	    # use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - see https://www.raspberrypi.org/forums/viewtopic.php?t=210225
+	    set_kernel_config CONFIG_MMC_BCM2835 n
+	    set_kernel_config CONFIG_MMC_SDHCI_IPROC n
+	    set_kernel_config CONFIG_USB_DWC2 n
+	    sed -i "s|depends on MMC_BCM2835_MMC && MMC_BCM2835_DMA|depends on MMC_BCM2835_MMC|" "${KERNEL_DIR}"/drivers/mmc/host/Kconfig
+	  
+	    #VLAN got disabled without reason in arm64bit
+	    set_kernel_config CONFIG_IPVLAN m
+	  fi
+	  
 	  # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
       if [ "$KERNEL_ZSWAP" = true ] ; then
         set_kernel_config CONFIG_ZPOOL y
@@ -107,6 +119,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_ZSMALLOC y
         set_kernel_config CONFIG_PGTABLE_MAPPING y
 		set_kernel_config CONFIG_LZO_COMPRESS y
+
 	  fi
 
       # enable basic KVM support; see https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
