@@ -57,6 +57,20 @@ FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
 VIDEOCORE_URL=${VIDEOCORE_URL:=https://github.com/raspberrypi/userland}
 BLUETOOTH_URL=${BLUETOOTH_URL:=https://github.com/RPi-Distro/pi-bluetooth.git}
+NEXMON_URL=${NEXMON_URL:=https://github.com/seemoo-lab/nexmon.git}
+SYSTEMDSWAP_URL=${SYSTEMDSWAP_URL:=https://github.com/Nefelim4ag/systemd-swap.git}
+
+# Kernel deb packages for 32bit kernel
+RPI_32_KERNEL_URL=${RPI_32_KERNEL_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel_20180422-141901_armhf.deb}
+RPI_32_KERNELHEADER_URL=${RPI_32_KERNELHEADER_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel-headers_20180422-141901_armhf.deb}
+# Kernel has KVM and zswap enabled - use if KERNEL_* parameters and precompiled kernel are used 
+RPI3_64_BIS_KERNEL_URL=${RPI3_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel-bis/releases/download/4.14.80.20181113/bcmrpi3-kernel-bis-4.14.80.20181113.tar.xz}
+# Default precompiled 64bit kernel
+RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel/releases/download/4.14.80.20181113/bcmrpi3-kernel-4.14.80.20181113.tar.xz}
+# Generic 
+RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_DEF_KERNEL_URL}
+# Kali kernel src - used if ENABLE_NEXMON=true (they patch the wlan kernel modul)
+KALI_KERNEL_URL=${KALI_KERNEL_URL:=https://github.com/Re4son/re4son-raspberrypi-linux.git}
 
 # Build directories
 WORKDIR=$(pwd)
@@ -106,6 +120,7 @@ NET_NTP_2=${NET_NTP_2:=""}
 # APT settings
 APT_PROXY=${APT_PROXY:=""}
 APT_SERVER=${APT_SERVER:="ftp.debian.org"}
+KEEP_APT_PROXY=${KEEP_APT_PROXY:=false}
 
 # Feature settings
 ENABLE_PRINTK=${ENABLE_PRINTK:=false}
@@ -139,19 +154,26 @@ SSH_ROOT_PUB_KEY=${SSH_ROOT_PUB_KEY:=""}
 SSH_USER_PUB_KEY=${SSH_USER_PUB_KEY:=""}
 
 # Advanced settings
+ENABLE_SYSTEMDSWAP=${ENABLE_SYSTEMDSWAP:=false}
 ENABLE_MINBASE=${ENABLE_MINBASE:=false}
 ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 ENABLE_UBOOT=${ENABLE_UBOOT:=false}
 UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
+ENABLE_UBOOTUSB=${ENABLE_UBOOTUSB=false}
 ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
 ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=false}
+ENABLE_NEXMON=${ENABLE_NEXMON:=false}
 VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
 FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
+NEXMONSRC_DIR=${NEXMONSRC_DIR:=""}
 ENABLE_HARDNET=${ENABLE_HARDNET:=false}
 ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
 ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
 ENABLE_INITRAMFS=${ENABLE_INITRAMFS:=false}
 ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
+ENABLE_SPLASH=${ENABLE_SPLASH:=true}
+ENABLE_LOGO=${ENABLE_LOGO:=true}
+ENABLE_SILENT_BOOT=${ENABLE_SILENT_BOOT=false}
 DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS:=}
 
 # Kernel compilation settings
@@ -163,6 +185,12 @@ KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
 KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
 KERNEL_OLDDEFCONFIG=${KERNEL_OLDDEFCONFIG:=false}
 KERNEL_CCACHE=${KERNEL_CCACHE:=false}
+KERNEL_ZSWAP=${KERNEL_ZSWAP:=false}
+KERNEL_VIRT=${KERNEL_VIRT:=false}
+KERNEL_BPF=${KERNEL_BPF:=false}
+KERNEL_DEFAULT_GOV=${KERNEL_DEFAULT_GOV:=powersave}
+KERNEL_SECURITY=${KERNEL_SECURITY:=false}
+KERNEL_NF=${KERNEL_NF:=false}
 
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}
@@ -186,6 +214,10 @@ CRYPTFS_PASSWORD=${CRYPTFS_PASSWORD:=""}
 CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
 CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
+#Dropbear-initramfs supports unlocking encrypted filesystem via SSH on bootup
+CRYPTFS_DROPBEAR=${CRYPTFS_DROPBEAR:=false}
+#Provide your own Dropbear Public RSA-OpenSSH Key otherwise it will be generated
+CRYPTFS_DROPBEAR_PUBKEY=${CRYPTFS_DROPBEAR_PUBKEY:=""}
 
 # Chroot scripts directory
 CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
@@ -204,11 +236,9 @@ MISSING_PACKAGES=""
 # Packages installed for c/c++ build environment in chroot (keep empty)
 COMPILER_PACKAGES=""
 
-set +x
-
-#Check if apt-cacher-ng has port 3142 open and set APT_PROXY
-APT_CACHER_RUNNING=$(lsof -i :3142 | grep apt-cacher-ng |  cut -d ' ' -f3 | uniq)
-if [ -n "${APT_CACHER_RUNNING}" ] ; then
+# Check if apt-cacher-ng has port 3142 open and set APT_PROXY
+APT_CACHER_RUNNING=$(lsof -i :3142 | cut -d ' ' -f3 | uniq | sed '/^\s*$/d')
+if [ "${APT_CACHER_RUNNING}" = "apt-cacher-ng" ] ; then
   APT_PROXY=http://127.0.0.1:3142/
 fi
 
@@ -259,7 +289,7 @@ if [ -n "$SET_ARCH" ] ; then
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
     fi
   fi
-#SET_ARCH not set
+# SET_ARCH not set
 else
   echo "error: Please set '32' or '64' as value for SET_ARCH"
   exit 1
@@ -296,11 +326,25 @@ case "$RPI_MODEL" in
     ;;
 esac
 
+if [ "$ENABLE_UBOOTUSB" = true ] ; then
+  if [ "$ENABLE_UBOOT" = false ] ; then
+    echo "error: Enabling UBOOTUSB requires u-boot to be enabled"
+	exit 1
+  fi
+  if [ "$RPI_MODEL" != 3 ] || [ "$RPI_MODEL" != 3P ] ; then
+    echo "error: Enabling UBOOTUSB requires Raspberry 3"
+	exit 1
+  fi
+fi
+
 # Raspberry PI 0,3,3P with Bluetooth and Wifi onboard
 if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
   # Include bluetooth packages on supported boards
-  if [ "$ENABLE_BLUETOOTH" = true ] && [ "$ENABLE_CONSOLE" = false ]; then
+  if [ "$ENABLE_BLUETOOTH" = true ] ; then
     APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
+  fi
+  if [ "$ENABLE_WIRELESS" = true ] ; then
+    APT_INCLUDES="${APT_INCLUDES},wireless-tools,crda,wireless-regdb"
   fi
 else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
   # Check if the internal wireless interface is not supported by the RPi model
@@ -308,6 +352,11 @@ else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
     echo "error: The selected Raspberry Pi model has no integrated interface for wireless or bluetooth"
     exit 1
   fi
+fi
+
+if [ "$BUILD_KERNEL" = false ] && [ "$ENABLE_NEXMON" = true ]; then
+  echo "error: You have to compile kernel sources, if you want to enable nexmon"
+  exit 1
 fi
 
 # Prepare date string for default image file name
@@ -331,6 +380,11 @@ if [ "$ENABLE_VIDEOCORE" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cmake"
 fi
 
+# Add deps for nexmon
+if [ "$ENABLE_NEXMON" = true ] ; then
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libgmp3-dev gawk qpdf bison flex make autoconf automake build-essential libtool"
+fi
+
 # Add libncurses5 to enable kernel menuconfig
 if [ "$KERNEL_MENUCONFIG" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libncurses-dev"
@@ -346,6 +400,11 @@ if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
   APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup"
 
+  # If cryptfs,dropbear and initramfs are enabled include dropbear-initramfs package
+  if [ "$CRYPTFS_DROPBEAR" = true ] && [ "$ENABLE_INITRAMFS" = true ]; then
+    APT_INCLUDES="${APT_INCLUDES},dropbear-initramfs"
+  fi
+  
   if [ -z "$CRYPTFS_PASSWORD" ] ; then
     echo "error: no password defined (CRYPTFS_PASSWORD)!"
     exit 1
@@ -363,14 +422,6 @@ if [ "$ENABLE_UBOOT" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex,bc"
 fi
 
-if [ "$ENABLE_BLUETOOTH" = true ] ; then
-  if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
-    if [ "$ENABLE_CONSOLE" = false ] ; then
-	  APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
-	fi
-  fi
-fi
-
 # Check if root SSH (v2) public key file exists
 if [ -n "$SSH_ROOT_PUB_KEY" ] ; then
   if [ ! -f "$SSH_ROOT_PUB_KEY" ] ; then
@@ -385,6 +436,11 @@ if [ -n "$SSH_USER_PUB_KEY" ] ; then
     echo "error: '$SSH_USER_PUB_KEY' specified SSH public key file not found (SSH_USER_PUB_KEY)!"
     exit 1
   fi
+fi
+
+if [ "$ENABLE_NEXMON" = true ] && [ -n "$KERNEL_BRANCH" ] ; then
+  echo "error: Please unset KERNEL_BRANCH if using ENABLE_NEXMON"
+  exit 1
 fi
 
 # Check if all required packages are installed on the build system
@@ -440,6 +496,12 @@ fi
 # Check if specified FBTURBOSRC_DIR directory exists
 if [ -n "$FBTURBOSRC_DIR" ] && [ ! -d "$FBTURBOSRC_DIR" ] ; then
   echo "error: '${FBTURBOSRC_DIR}' specified directory not found (FBTURBOSRC_DIR)!"
+  exit 1
+fi
+
+# Check if specified NEXMONSRC_DIR directory exists
+if [ -n "$NEXMONSRC_DIR" ] && [ ! -d "$NEXMONSRC_DIR" ] ; then
+  echo "error: '${NEXMONSRC_DIR}' specified directory not found (NEXMONSRC_DIR)!"
   exit 1
 fi
 
@@ -499,6 +561,10 @@ fi
 if [ "$ENABLE_IPTABLES" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},iptables,iptables-persistent"
 fi
+# Add apparmor for KERNEL_SECURITY
+if [ "$KERNEL_SECURITY" = true ] ; then
+  APT_INCLUDES="${APT_INCLUDES},apparmor,apparmor-utils,apparmor-profiles,apparmor-profiles-extra,libapparmor-perl"
+fi
 
 # Add openssh server package
 if [ "$ENABLE_SSHD" = true ] ; then
@@ -550,16 +616,6 @@ fi
 # Configure systemd-sysv exclude to make halt/reboot/shutdown scripts available
 if [ "$ENABLE_SYSVINIT" = false ] ; then
   APT_EXCLUDES="--exclude=${APT_EXCLUDES},init,systemd-sysv"
-fi
-
-# Check if kernel is getting compiled
-if [ "$BUILD_KERNEL" = false ] ; then
-  echo "Downloading precompiled kernel"
-  echo "error: not configured"
-  exit 1;
-# BUILD_KERNEL=true
-else
-  echo "No precompiled kernel repositories were added"
 fi
 
 # Configure kernel sources if no KERNELSRC_DIR
@@ -629,13 +685,17 @@ umount -l "${R}/sys"
 rm -rf "${R}/run/*"
 rm -rf "${R}/tmp/*"
 
+# Clean up APT proxy settings
+if [ "$KEEP_APT_PROXY" = false ] ; then
+  rm -f "${ETC_DIR}/apt/apt.conf.d/10proxy"
+fi
+
 # Clean up files
 rm -f "${ETC_DIR}/ssh/ssh_host_*"
 rm -f "${ETC_DIR}/dropbear/dropbear_*"
 rm -f "${ETC_DIR}/apt/sources.list.save"
 rm -f "${ETC_DIR}/resolvconf/resolv.conf.d/original"
 rm -f "${ETC_DIR}/*-"
-rm -f "${ETC_DIR}/apt/apt.conf.d/10proxy"
 rm -f "${ETC_DIR}/resolv.conf"
 rm -f "${R}/root/.bash_history"
 rm -f "${R}/var/lib/urandom/random-seed"

@@ -22,8 +22,3 @@ else
   # Set no root password to disable root login
   chroot_exec usermod -p \'!\' root
 fi
-
-# Enable serial console systemd style
-if [ "$ENABLE_CONSOLE" = true ] ; then
-  chroot_exec systemctl enable serial-getty\@ttyAMA0.service
-fi
