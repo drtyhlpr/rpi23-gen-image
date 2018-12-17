@@ -66,11 +66,3 @@ EOF2
 partprobe &&
   resize2fs /dev/${ROOT_PART} &&
   logger -t "rc.firstboot" "Root partition successfully resized."
-
-# Restart dphys-swapfile service if it exists
-if systemctl list-units | grep -q dphys-swapfile ; then
-  if systemctl is-enabled dphys-swapfile ; then
-    logger -t "rc.firstboot" "Restarting dphys-swapfile"
-    systemctl restart dphys-swapfile
-  fi
-fi

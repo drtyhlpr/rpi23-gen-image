@@ -8,24 +8,24 @@
 # Prepare rc.firstboot script
 cat files/firstboot/10-begin.sh > "${ETC_DIR}/rc.firstboot"
 
-# Ensure openssh server host keys are regenerated on first boot
-if [ "$ENABLE_SSHD" = true ] ; then
-  cat files/firstboot/20-generate-ssh-keys.sh >> "${ETC_DIR}/rc.firstboot"
-fi
-
 # Prepare filesystem auto expand
 if [ "$EXPANDROOT" = true ] ; then
   if [ "$ENABLE_CRYPTFS" = false ] ; then
-    cat files/firstboot/30-expandroot.sh >> "${ETC_DIR}/rc.firstboot"
-
-    # Restart dphys-swapfile so the size of the swap file is relative to the resized root partition
-    if [ "$ENABLE_DPHYSSWAP" = true ] ; then
-      cat files/firstboot/31-restart-dphys-swapfile.sh >> "${ETC_DIR}/rc.firstboot"
-    fi
+    cat files/firstboot/20-expandroot.sh >> "${ETC_DIR}/rc.firstboot"
   else
     # Regenerate initramfs to remove encrypted root partition auto expand
-    cat files/firstboot/33-regenerate-initramfs.sh >> "${ETC_DIR}/rc.firstboot"
+    cat files/firstboot/21-regenerate-initramfs.sh >> "${ETC_DIR}/rc.firstboot"
   fi
+
+  # Restart dphys-swapfile so the size of the swap file is relative to the resized root partition
+  if [ "$ENABLE_DPHYSSWAP" = true ] ; then
+    cat files/firstboot/23-restart-dphys-swapfile.sh >> "${ETC_DIR}/rc.firstboot"
+  fi
+fi
+
+# Ensure openssh server host keys are regenerated on first boot
+if [ "$ENABLE_SSHD" = true ] ; then
+  cat files/firstboot/30-generate-ssh-keys.sh >> "${ETC_DIR}/rc.firstboot"
 fi
 
 # Ensure that dbus machine-id exists
