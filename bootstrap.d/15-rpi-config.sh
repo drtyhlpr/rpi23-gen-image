@@ -177,6 +177,11 @@ else
   chroot_exec systemctl disable serial-getty\@"$SET_SERIAL".service
 fi
 
+# Disable dphys-swapfile service. Will get enabled on first boot
+if [ "$ENABLE_DPHYSSWAP" = true ] ; then
+  chroot_exec systemctl disable dphys-swapfile
+fi
+
 if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   # Create temporary directory for systemd-swap sources
   temp_dir=$(as_nobody mktemp -d)
