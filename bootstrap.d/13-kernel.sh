@@ -97,7 +97,19 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
       #Switch to KERNELSRC_DIR so we can use set_kernel_config
       cd "${KERNEL_DIR}" || exit
-
+	  
+	  if [ "$KERNEL_ARCH" = arm64 ] ; then
+	    #Fix SD_DRIVER upstream and downstream mess in 64bit RPIdeb_config
+	    # use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - see https://www.raspberrypi.org/forums/viewtopic.php?t=210225
+	    set_kernel_config CONFIG_MMC_BCM2835 n
+	    set_kernel_config CONFIG_MMC_SDHCI_IPROC n
+	    set_kernel_config CONFIG_USB_DWC2 n
+	    sed -i "s|depends on MMC_BCM2835_MMC && MMC_BCM2835_DMA|depends on MMC_BCM2835_MMC|" "${KERNEL_DIR}"/drivers/mmc/host/Kconfig
+	  
+	    #VLAN got disabled without reason in arm64bit
+	    set_kernel_config CONFIG_IPVLAN m
+	  fi
+	  
 	  # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
       if [ "$KERNEL_ZSWAP" = true ] ; then
         set_kernel_config CONFIG_ZPOOL y
@@ -107,6 +119,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_ZSMALLOC y
         set_kernel_config CONFIG_PGTABLE_MAPPING y
 		set_kernel_config CONFIG_LZO_COMPRESS y
+
 	  fi
 
       # enable basic KVM support; see https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
@@ -148,20 +161,20 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_AUDIT y
 
         # harden strcpy and memcpy
-        set_kernel_config CONFIG_HARDENED_USERCOPY=y
-        set_kernel_config CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR=y
-        set_kernel_config CONFIG_FORTIFY_SOURCE=y
+        set_kernel_config CONFIG_HARDENED_USERCOPY y
+        set_kernel_config CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR y
+        set_kernel_config CONFIG_FORTIFY_SOURCE y
 
         # integrity sub-system
-        set_kernel_config CONFIG_INTEGRITY=y
-        set_kernel_config CONFIG_INTEGRITY_ASYMMETRIC_KEYS=y
-        set_kernel_config CONFIG_INTEGRITY_AUDIT=y
-        set_kernel_config CONFIG_INTEGRITY_SIGNATURE=y
-        set_kernel_config CONFIG_INTEGRITY_TRUSTED_KEYRING=y
+        set_kernel_config CONFIG_INTEGRITY y
+        set_kernel_config CONFIG_INTEGRITY_ASYMMETRIC_KEYS y
+        set_kernel_config CONFIG_INTEGRITY_AUDIT y
+        set_kernel_config CONFIG_INTEGRITY_SIGNATURE y
+        set_kernel_config CONFIG_INTEGRITY_TRUSTED_KEYRING y
 
         # This option provides support for retaining authentication tokens and access keys in the kernel.
-        set_kernel_config CONFIG_KEYS=y
-        set_kernel_config CONFIG_KEYS_COMPAT=y
+        set_kernel_config CONFIG_KEYS y
+        set_kernel_config CONFIG_KEYS_COMPAT y
 
         # Apparmor
         set_kernel_config CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE 0
@@ -172,13 +185,13 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_DEFAULT_SECURITY "apparmor"
 
         # restrictions on unprivileged users reading the kernel
-        set_kernel_config CONFIG_SECURITY_DMESG_RESTRICT=y
+        set_kernel_config CONFIG_SECURITY_DMESG_RESTRICT y
 
         # network security hooks
         set_kernel_config CONFIG_SECURITY_NETWORK y
-        set_kernel_config CONFIG_SECURITY_NETWORK_XFRM=y
-        set_kernel_config CONFIG_SECURITY_PATH=y
-        set_kernel_config CONFIG_SECURITY_YAMA=y
+        set_kernel_config CONFIG_SECURITY_NETWORK_XFRM y
+        set_kernel_config CONFIG_SECURITY_PATH y
+        set_kernel_config CONFIG_SECURITY_YAMA n
 
         # New Options
         if [ "$KERNEL_NF" = true ] ; then
@@ -488,7 +501,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
   # Copy compiled dtb device tree files
   if [ -d "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays" ] ; then
-    for dtb in "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtb ; do
+    for dtb in "${KERNEL_DIR}/arch/${KERNEL_ARCH}/boot/dts/overlays/"*.dtbo ; do
       if [ -f "${dtb}" ] ; then
         install_readonly "${dtb}" "${BOOT_DIR}/overlays/"
       fi

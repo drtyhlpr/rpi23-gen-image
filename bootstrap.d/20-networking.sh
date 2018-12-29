@@ -30,6 +30,10 @@ install_readonly files/network/interfaces "${ETC_DIR}/network/interfaces"
 # Install configuration for interface eth0
 install_readonly files/network/eth.network "${ETC_DIR}/systemd/network/eth.network"
 
+if [ "$RPI_MODEL" = 3P ] ; then
+printf "\n[Link]\nGenericReceiveOffload=off\nTCPSegmentationOffload=off\nGenericSegmentationOffload=off" >> "${ETC_DIR}/systemd/network/eth.network"
+fi
+
 # Install configuration for interface wl*
 install_readonly files/network/wlan.network "${ETC_DIR}/systemd/network/wlan.network"
 
@@ -57,20 +61,6 @@ else # ENABLE_DHCP=false
   -e "0,/NTP=\$/ s|NTP=\$|NTP=${NET_NTP_1}|"\
   -e "0,/NTP=\$/ s|NTP=\$|NTP=${NET_NTP_2}|"\
   "${ETC_DIR}/systemd/network/eth.network"
-  
-  if [ "$CRYPTFS_DROPBEAR" = true ] ; then
-    # Get cdir from NET_ADDRESS e.g. 24
-    cdir=$(${NET_ADDRESS} | cut -d '/' -f2)
-
-    # Convert cdir ro netmask e.g. 24 to 255.255.255.0
-    NET_MASK=$(cdr2mask "$cdir")
-	
-	# Write static ip settings to "${ETC_DIR}"/initramfs-tools/initramfs.conf
-    sed -i "\$aIP=${NET_ADDRESS}::${NET_GATEWAY}:${NET_MASK}:${HOSTNAME}:" "${ETC_DIR}"/initramfs-tools/initramfs.conf
-
-	# Regenerate initramfs
-	chroot_exec mkinitramfs -o "/boot/firmware/initramfs-${KERNEL_VERSION}" "${KERNEL_VERSION}"
-  fi
 fi
 
 # Remove empty settings from network configuration

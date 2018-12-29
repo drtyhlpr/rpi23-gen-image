@@ -10,7 +10,7 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
   mkdir -p "${ETC_DIR}/iptables"
   
   if [ "$KERNEL_NF" = false ] ; then
-    #iptables-save and -restore are slaves of iptables and thus are set accordingly
+    # iptables-save and -restore are slaves of iptables and thus are set accordingly
     chroot_exec update-alternatives --verbose --set iptables /usr/sbin/iptables-legacy    
   fi
   
@@ -29,10 +29,10 @@ if [ "$ENABLE_IPTABLES" = true ] ; then
 
   if [ "$ENABLE_IPV6" = true ] ; then
     if [ "$KERNEL_NF" = false ] ; then
-      #iptables-save and -restore are slaves of iptables and thus are set accordingly
+      # iptables-save and -restore are slaves of iptables and thus are set accordingly
       chroot_exec update-alternatives --verbose --set ip6tables /usr/sbin/ip6tables-legacy 
-	  fi
-    
+	fi
+
     # Install ip6tables systemd service
     install_readonly files/iptables/ip6tables.service "${ETC_DIR}/systemd/system/ip6tables.service"
 
