@@ -77,6 +77,11 @@ if [ "$ENABLE_UBOOT" = true ] ; then
     #in 64bit uboot booti is used instead of bootz [like in KERNEL_BIN_IMAGE=zImage (armv7)|| Image(armv8)]
     sed -i "s|bootz|booti|g" "${BOOT_DIR}/uboot.mkimage"
   fi
+  
+  # instead of sd, boot from usb device
+  if [ "$ENABLE_USBBOOT" = true ] ; then
+    sed -i "s|mmc|usb|g" "${BOOT_DIR}/uboot.mkimage"
+  fi
 
   # Set mkfile to use the correct dtb file
   sed -i "s|bcm2709-rpi-2-b.dtb|${DTB_FILE}|" "${BOOT_DIR}/uboot.mkimage"

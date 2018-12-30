@@ -48,6 +48,9 @@ Set Debian packages server address. Choose a server from the list of Debian worl
 ##### `APT_PROXY`=""
 Set Proxy server address. Using a local Proxy-Cache like `apt-cacher-ng` will speed-up the bootstrapping process because all required Debian packages will only be downloaded from the Debian mirror site once. If `apt-cacher-ng` is running on default `http://127.0.0.1:3142` it is autodetected and you don't need to set this.
 
+##### `KEEP_APT_PROXY`=false
+Keep the APT_PROXY settings used in the bootsrapping process in the generated image.
+
 ##### `APT_INCLUDES`=""
 A comma-separated list of additional packages to be installed by debootstrap during bootstrapping.
 
@@ -92,6 +95,9 @@ Set default system timezone. All available timezones can be found in the `/usr/s
 
 ##### `EXPANDROOT`=true
 Expand the root partition and filesystem automatically on first boot.
+
+##### `ENABLE_DPHYSSWAP`=true
+Enable swap. The size of the swapfile is chosen relative to the size of the root partition. It'll use the `dphys-swapfile` package for that.
 
 ##### `ENABLE_QEMU`=false
 Generate kernel (`vexpress_defconfig`), file system image (`qcow2`) and DTB files that can be used for QEMU full system emulation (`vexpress-A15`). The output files are stored in the `$(pwd)/images/qemu` directory. You can find more information about running the generated image in the QEMU section of this readme file.
@@ -210,6 +216,9 @@ Support for halt,init,poweroff,reboot,runlevel,shutdown,telinit commands
 ---
 
 #### Advanced system features:
+##### `ENABLE_SYSTEMDSWAP`=false
+Enables [Systemd-swap service](https://github.com/Nefelim4ag/systemd-swap). Usefull if `KERNEL_ZSWAP` is enabled.
+
 ##### `ENABLE_MINBASE`=false
 Use debootstrap script variant `minbase` which only includes essential packages and apt. This will reduce the disk usage by about 65 MB.
 
@@ -233,6 +242,12 @@ Install and enable the [ARM side libraries for interfacing to Raspberry Pi GPU](
 
 ##### `VIDEOCORESRC_DIR`=""
 Path to a directory (`userland`) of [ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) that will be copied, configured, build and installed inside the chroot.
+
+##### `ENABLE_NEXMON`=false
+Install and enable the [Source code for a C-based firmware patching framework for Broadcom/Cypress WiFi chips that enables you to write your own firmware patches, for example, to enable monitor mode with radiotap headers and frame injection](https://github.com/seemoo-lab/nexmon.git).
+
+##### `NEXMONSRC_DIR`=""
+Path to a directory (`nexmon`) of [Source code for ARM side libraries for interfacing to Raspberry Pi GPU](https://github.com/raspberrypi/userland) that will be copied, configured, build and installed inside the chroot.
 
 ##### `ENABLE_IPTABLES`=false
 Enable iptables IPv4/IPv6 firewall. Simplified ruleset: Allow all outgoing connections. Block all incoming connections except to OpenSSH service.
@@ -260,6 +275,15 @@ Create an initramfs that that will be loaded during the Linux startup process. `
 
 ##### `ENABLE_IFNAMES`=true
 Enable automatic assignment of predictable, stable network interface names for all local Ethernet, WLAN interfaces. This might create complex and long interface names.
+
+##### `ENABLE_SPLASH`=true
+Enable default Raspberry Pi boot up rainbow splash screen.
+
+##### `ENABLE_LOGO`=true
+Enable default Raspberry Pi console logo (image of four raspberries in the top left corner).
+
+##### `ENABLE_SILENT_BOOT`=false
+Set the verbosity of console messages shown during boot up to a strict minimum.
 
 ##### `DISABLE_UNDERVOLT_WARNINGS`=
 Disable RPi2/3 under-voltage warnings and overlays. Setting the parameter to `1` will disable the warning overlay. Setting it to `2` will additionally allow RPi2/3 turbo mode when low-voltage is present.
@@ -345,6 +369,23 @@ With this parameter set to true the script expects the existing kernel sources d
 ##### `RPI_FIRMWARE_DIR`=""
 The directory (`firmware`) containing a local copy of the firmware from the [RaspberryPi firmware project](https://github.com/raspberrypi/firmware). Default is to download the latest firmware directly from the project.
 
+##### `KERNEL_DEFAULT_GOV`="ONDEMAND"
+Set the default cpu governor at kernel compilation. Supported values are: PERFORMANCE POWERSAVE USERSPACE ONDEMAND CONSERVATIVE SCHEDUTIL
+
+##### `KERNEL_NF`=false
+Enable Netfilter modules as kernel modules
+
+##### `KERNEL_VIRT`=false
+Enable Kernel KVM support (/dev/kvm)
+
+##### `KERNEL_ZSWAP`=false
+Enable Kernel Zswap support. Best use on high RAM load and mediocre CPU load usecases
+
+##### `KERNEL_BPF`=true
+Allow attaching eBPF programs to a cgroup using the bpf syscall (CONFIG_BPF_SYSCALL CONFIG_CGROUP_BPF) [systemd compilations about it - File /lib/systemd/system/systemd-journald.server:36 configures an IP firewall (IPAddressDeny=all), but the local system does not support BPF/cgroup based firewalls]
+
+##### `KERNEL_SECURITY`=false
+Enables Apparmor, integrity subsystem, auditing 
 ---
 
 #### Reduce disk usage:
@@ -391,6 +432,12 @@ Set cipher specification string. `aes-xts*` ciphers are strongly recommended.
 
 ##### `CRYPTFS_XTSKEYSIZE`=512
 Sets key size in bits. The argument has to be a multiple of 8.
+
+##### `CRYPTFS_DROPBEAR`=false
+Enable Dropbear Initramfs support
+
+##### `CRYPTFS_DROPBEAR_PUBKEY`=""
+Provide path to dropbear Public RSA-OpenSSH Key
 
 ---
 
