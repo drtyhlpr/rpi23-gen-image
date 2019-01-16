@@ -127,7 +127,7 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
 
     # Bluetooth firmware from arch aur https://aur.archlinux.org/packages/pi-bluetooth/
     as_nobody wget -q -O "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" https://aur.archlinux.org/cgit/aur.git/plain/LICENCE.broadcom_bcm43xx?h=pi-bluetooth
-    as_nobody wget -q -O "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" https://aur.archlinux.org/cgit/aur.git/plain/BCM43430A1.hcd?h=pi-bluetooth
+    as_nobody wget -q -O "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" https://raw.githubusercontent.com/RPi-Distro/bluez-firmware/master/broadcom/BCM43430A1.hcd
 
     # Set permissions
     chown -R root:root "${R}/tmp/pi-bluetooth"
@@ -146,7 +146,7 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     # Install Firmware Flash file and apropiate licence
     mkdir -p "$BLUETOOTH_FIRMWARE_DIR"
     install_readonly "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" "${BLUETOOTH_FIRMWARE_DIR}/LICENCE.broadcom_bcm43xx"
-    install_readonly "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" "${BLUETOOTH_FIRMWARE_DIR}/LICENCE.broadcom_bcm43xx"
+    install_readonly "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" "${BLUETOOTH_FIRMWARE_DIR}/BCM43430A1.hcd"
     install_readonly "${R}/tmp/pi-bluetooth/debian/pi-bluetooth.bthelper@.service" "${ETC_DIR}/systemd/system/pi-bluetooth.bthelper@.service"
     install_readonly "${R}/tmp/pi-bluetooth/debian/pi-bluetooth.hciuart.service" "${ETC_DIR}/systemd/system/pi-bluetooth.hciuart.service"
 
