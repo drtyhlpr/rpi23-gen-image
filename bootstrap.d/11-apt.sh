@@ -24,7 +24,7 @@ chroot_exec apt-get -qq -y -u dist-upgrade
 
 # Install additional packages
 if [ "$APT_INCLUDES_LATE" ] ; then
-  chroot_exec apt-get -qq -y install "$(echo "$APT_INCLUDES_LATE" |tr , ' ')"
+  chroot_exec apt-get -qq -y install $(echo "$APT_INCLUDES_LATE" |tr , ' ')
 fi
 
 # Install Debian custom packages
