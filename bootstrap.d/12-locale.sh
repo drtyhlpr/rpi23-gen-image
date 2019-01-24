@@ -7,6 +7,14 @@
 
 # Install and setup timezone
 echo "${TIMEZONE}" > "${ETC_DIR}/timezone"
+if [ -f "${ETC_DIR}/localtime" ]; then
+    # 1. If 11-apt.sh upgrades the package 'tzdata', '/etc/localtime' was created
+    #    because 'dpkg-reconfigure -f noninteractive tzdata' was executed by apt-get.
+    # 2. If '/etc/localtime' exists, our execution of 'dpkg-reconfigure -f noninteractive tzdata' 
+    #    will ignore the our timezone set in '/etc/timezone'.
+    # 3. Removing /etc/localtime will solve this.
+    rm -f "${ETC_DIR}/localtime"
+fi
 chroot_exec dpkg-reconfigure -f noninteractive tzdata
 
 # Install and setup default locale and keyboard configuration
