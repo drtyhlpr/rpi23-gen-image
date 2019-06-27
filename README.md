@@ -540,5 +540,5 @@ qemu-system-arm -m 2048M -M vexpress-a15 -cpu cortex-a15 -kernel kernel7.img -no
 * [Official Raspberry Pi Kernel on github](https://github.com/raspberrypi/linux)
 * [U-BOOT git repository](https://git.denx.de/?p=u-boot.git;a=summary)
 * [Xorg DDX driver fbturbo](https://github.com/ssvb/xf86-video-fbturbo)
-* [RPi3 Wireless interface firmware](https://github.com/RPi-Distro/firmware-nonfree/tree/master/brcm80211/brcm)
+* [RPi3 Wireless interface firmware](https://github.com/RPi-Distro/firmware-nonfree/tree/master/brcm)
 * [Collabora RPi2 Kernel precompiled](https://repositories.collabora.co.uk/debian/)
