@@ -252,14 +252,19 @@ if [ -n "$SET_ARCH" ] ; then
     KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="Image"}
 
     # Raspberry Pi model specific settings
-    if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+    if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ] ; then
+      if [ "$RPI_MODEL" != 4 ] ; then
+        KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
+      else
+        KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2711_defconfig}
+      fi
+      
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-arm64"
-      KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
       RELEASE_ARCH=${RELEASE_ARCH:=arm64}
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
       CROSS_COMPILE=${CROSS_COMPILE:=aarch64-linux-gnu-}
     else
-      echo "error: Only Raspberry PI 3 and 3B+ support 64-bit"
+      echo "error: Only Raspberry PI 3, 3B+ and 4 support 64-bit"
       exit 1
     fi
   fi
@@ -281,9 +286,14 @@ if [ -n "$SET_ARCH" ] ; then
     fi
 
     # Raspberry Pi model specific settings
-    if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+    if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ] ; then
+      if [ "$RPI_MODEL" != 4 ] ; then
+        KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
+      else
+        KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2711_defconfig}
+      fi
+      
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
-      KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
       RELEASE_ARCH=${RELEASE_ARCH:=armhf}
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
@@ -320,6 +330,10 @@ case "$RPI_MODEL" in
     DTB_FILE=${DTB_FILE:=bcm2710-rpi-3-b.dtb}
     UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_3_defconfig}
     ;;
+  4)
+    DTB_FILE=${DTB_FILE:=bcm2711-rpi-4-b.dtb}
+    UBOOT_CONFIG=${UBOOT_CONFIG:=rpi_4_defconfig}
+    ;;
   *)
     echo "error: Raspberry Pi model $RPI_MODEL is not supported!"
     exit 1
@@ -327,7 +341,7 @@ case "$RPI_MODEL" in
 esac
 
 # Raspberry PI 0,3,3P with Bluetooth and Wifi onboard
-if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ] ; then
   # Include bluetooth packages on supported boards
   if [ "$ENABLE_BLUETOOTH" = true ] ; then
     APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
