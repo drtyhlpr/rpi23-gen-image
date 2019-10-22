@@ -112,7 +112,7 @@ if [ "$ENABLE_TURBO" = true ] ; then
   echo "boot_delay=1" >> "${BOOT_DIR}/config.txt"
 fi
 
-if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ]; then
 
   # Bluetooth enabled
   if [ "$ENABLE_BLUETOOTH" = true ] ; then
