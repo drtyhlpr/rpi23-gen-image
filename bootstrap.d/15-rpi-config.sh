@@ -120,7 +120,7 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     temp_dir=$(as_nobody mktemp -d)
 
     # Fetch Bluetooth sources
-    git -C "${temp_dir}" clone "${BLUETOOTH_URL}"
+    as_nobody git -C "${temp_dir}" clone "${BLUETOOTH_URL}"
 
     # Copy downloaded sources
     mv "${temp_dir}/pi-bluetooth" "${R}/tmp/"
