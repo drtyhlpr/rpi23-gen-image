@@ -16,7 +16,11 @@ install_readonly files/apt/sources.list "${ETC_DIR}/apt/sources.list"
 
 # Use specified APT server and release
 sed -i "s/\/ftp.debian.org\//\/${APT_SERVER}\//" "${ETC_DIR}/apt/sources.list"
+if [ "$RELEASE" = "bullseye" ] || [ "$RELEASE" = "testing" ] ; then
+sed -i "s,stretch\\/updates,testing-security," "${ETC_DIR}/apt/sources.list"
+else
 sed -i "s/ stretch/ ${RELEASE}/" "${ETC_DIR}/apt/sources.list"
+fi
 
 # Upgrade package index and update all installed packages and changed dependencies
 chroot_exec apt-get -qq -y update
