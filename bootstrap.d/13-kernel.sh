@@ -52,6 +52,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
   if [ "$KERNEL_THREADS" = "1" ] && [ -r /proc/cpuinfo ] ; then
     KERNEL_THREADS=$(grep -c processor /proc/cpuinfo)
   fi
+  
+  if [ "$ENABLE_QEMU" = true ] && [ "$KERNEL_ARCH" = arm64 ]; then
+  cp "${KERNEL_DIR}"/arch/arm/configs/vexpress_defconfig "${KERNEL_DIR}"/arch/arm64/configs/
+  fi
 
   # Configure and build kernel
   if [ "$KERNELSRC_PREBUILT" = false ] ; then
@@ -98,7 +102,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
       #Switch to KERNELSRC_DIR so we can use set_kernel_config
       cd "${KERNEL_DIR}" || exit
 	  
-	  if [ "$KERNEL_ARCH" = arm64 ] ; then
+	  if [ "$KERNEL_ARCH" = arm64 ] && [ "$ENABLE_QEMU" = false ]; then
 	    #Fix SD_DRIVER upstream and downstream mess in 64bit RPIdeb_config
 	    # use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - see https://www.raspberrypi.org/forums/viewtopic.php?t=210225
 	    set_kernel_config CONFIG_MMC_BCM2835 n
@@ -110,7 +114,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	    set_kernel_config CONFIG_IPVLAN m
 	  fi
 	  
-	  # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
+      # enable ZSWAP see https://askubuntu.com/a/472227 or https://wiki.archlinux.org/index.php/zswap
       if [ "$KERNEL_ZSWAP" = true ] ; then
         set_kernel_config CONFIG_ZPOOL y
         set_kernel_config CONFIG_ZSWAP y
@@ -118,13 +122,15 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_Z3FOLD y
         set_kernel_config CONFIG_ZSMALLOC y
         set_kernel_config CONFIG_PGTABLE_MAPPING y
-		set_kernel_config CONFIG_LZO_COMPRESS y
+	set_kernel_config CONFIG_LZO_COMPRESS y
 
 	  fi
 
       # enable basic KVM support; see https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
-	  if [ "$KERNEL_VIRT" = true ] && { [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
-		set_kernel_config CONFIG_HAVE_KVM_IRQCHIP y
+      if [ "$KERNEL_VIRT" = true ] && { [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
+      	set_kernel_config CONFIG_SLAB_FREELIST_RANDOM=y
+	set_kernel_config CONFIG_SLAB_FREELIST_HARDENED=y
+	set_kernel_config CONFIG_HAVE_KVM_IRQCHIP y
         set_kernel_config CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL y
         set_kernel_config CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT y
         set_kernel_config CONFIG_HAVE_KVM_EVENTFD y
@@ -142,18 +148,17 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_VHOST_CROSS_ENDIAN_LEGACY y
         set_kernel_config CONFIG_VHOST_NET m
         set_kernel_config CONFIG_VIRTUALIZATION y
-		
-		set_kernel_config CONFIG_MMU_NOTIFIER y
-		
-		# erratum
-		set_kernel_config ARM64_ERRATUM_834220 y
-		
-		# https://sourceforge.net/p/kvm/mailman/message/18440797/
-		set_kernel_config CONFIG_PREEMPT_NOTIFIERS y
-	  fi
+	set_kernel_config CONFIG_MMU_NOTIFIER y
+
+	# erratum
+	set_kernel_config ARM64_ERRATUM_834220 y
+	
+	# https://sourceforge.net/p/kvm/mailman/message/18440797/
+	set_kernel_config CONFIG_PREEMPT_NOTIFIERS y
+      fi
 
       # enable apparmor,integrity audit,
-	  if [ "$KERNEL_SECURITY" = true ] ; then
+      if [ "$KERNEL_SECURITY" = true ] ; then
 
         # security filesystem, security models and audit
         set_kernel_config CONFIG_SECURITYFS y
@@ -211,12 +216,11 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_NFSD_V4_SECURITY_LABEL y
         set_kernel_config CONFIG_PKCS7_MESSAGE_PARSER y
         set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYRING y
-        set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS y
         set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE y
         set_kernel_config CONFIG_SECONDARY_TRUSTED_KEYRING y
         set_kernel_config CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY n
-		set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS m
-		set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE 4096
+	set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS m
+	set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE 4096
 
         set_kernel_config CONFIG_ARM64_CRYPTO y
         set_kernel_config CONFIG_CRYPTO_SHA256_ARM64 m
@@ -326,11 +330,11 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_NF_LOG_IPV6 m
         set_kernel_config CONFIG_NF_NAT_IPV4 m
         set_kernel_config CONFIG_NF_NAT_IPV6 m
-        set_kernel_config CONFIG_NF_NAT_MASQUERADE_IPV4 m
-        set_kernel_config CONFIG_NF_NAT_MASQUERADE_IPV6 m
+        set_kernel_config CONFIG_NF_NAT_MASQUERADE_IPV4 y
+        set_kernel_config CONFIG_NF_NAT_MASQUERADE_IPV6 y
         set_kernel_config CONFIG_NF_NAT_PPTP m
         set_kernel_config CONFIG_NF_NAT_PROTO_GRE m
-        set_kernel_config CONFIG_NF_NAT_REDIRECT m
+        set_kernel_config CONFIG_NF_NAT_REDIRECT y
         set_kernel_config CONFIG_NF_NAT_SIP m
         set_kernel_config CONFIG_NF_NAT_SNMP_BASIC m
         set_kernel_config CONFIG_NF_NAT_TFTP m
@@ -340,16 +344,32 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_NF_TABLES_ARP m
         set_kernel_config CONFIG_NF_TABLES_BRIDGE m
         set_kernel_config CONFIG_NF_TABLES_INET m
-        set_kernel_config CONFIG_NF_TABLES_IPV4 m
-        set_kernel_config CONFIG_NF_TABLES_IPV6 m
+        set_kernel_config CONFIG_NF_TABLES_IPV4 y
+        set_kernel_config CONFIG_NF_TABLES_IPV6 y
         set_kernel_config CONFIG_NF_TABLES_NETDEV m
+	set_kernel_config CONFIG_NF_TABLES_SET m
+	set_kernel_config CONFIG_NF_TABLES_INET y
+	set_kernel_config CONFIG_NF_TABLES_NETDEV y
+	set_kernel_config CONFIG_NFT_CONNLIMIT m
+	set_kernel_config CONFIG_NFT_TUNNEL m
+	set_kernel_config CONFIG_NFT_SOCKET m
+	set_kernel_config CONFIG_NFT_TPROXY m
+	set_kernel_config CONFIG_NF_FLOW_TABLE m
+	set_kernel_config CONFIG_NFT_FLOW_OFFLOAD m
+	set_kernel_config CONFIG_NF_FLOW_TABLE_INET m
+	set_kernel_config CONFIG_NF_TABLES_ARP y
+	set_kernel_config CONFIG_NF_FLOW_TABLE_IPV4 y
+	set_kernel_config CONFIG_NF_FLOW_TABLE_IPV6 y
+	set_kernel_config CONFIG_NF_TABLES_BRIDGE y
+	set_kernel_config CONFIG_NF_CT_NETLINK_TIMEOUT m
+	set_kernel_config CONFIG_NFT_OSF m
       fi
 
 	  # Enables BPF syscall for systemd-journald see https://github.com/torvalds/linux/blob/master/init/Kconfig#L848 or https://groups.google.com/forum/#!topic/linux.gentoo.user/_2aSc_ztGpA
 	  if [ "$KERNEL_BPF" = true ] ; then
-        set_kernel_config CONFIG_BPF_SYSCALL y
-		set_kernel_config CONFIG_BPF_EVENTS y
-		set_kernel_config CONFIG_BPF_STREAM_PARSER y
+            set_kernel_config CONFIG_BPF_SYSCALL y
+	    set_kernel_config CONFIG_BPF_EVENTS y
+	    set_kernel_config CONFIG_BPF_STREAM_PARSER y
 	    set_kernel_config CONFIG_CGROUP_BPF y
 	  fi
 
@@ -537,19 +557,27 @@ if [ "$BUILD_KERNEL" = true ] ; then
   fi
 
 else # BUILD_KERNEL=false
-  if [ "$SET_ARCH" = 64 ] && { [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; } ; then
+  if [ "$SET_ARCH" = 64 ] ; then
+    if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+	  # Use Sakakis modified kernel if ZSWAP is active
+      if [ "$KERNEL_ZSWAP" = true ] || [ "$KERNEL_VIRT" = true ] || [ "$KERNEL_NF" = true ] || [ "$KERNEL_BPF" = true ] ; then
+	    RPI3_64_KERNEL_URL="${RPI3_64_BIS_KERNEL_URL}"
+	  fi
 
-	# Use Sakakis modified kernel if ZSWAP is active
-    if [ "$KERNEL_ZSWAP" = true ] || [ "$KERNEL_VIRT" = true ] || [ "$KERNEL_NF" = true ] || [ "$KERNEL_BPF" = true ] ; then
-	  RPI3_64_KERNEL_URL="${RPI3_64_BIS_KERNEL_URL}"
-	fi
+      # Create temporary directory for dl
+      temp_dir=$(as_nobody mktemp -d)
 
-    # Create temporary directory for dl
-    temp_dir=$(as_nobody mktemp -d)
+      # Fetch kernel dl
+      as_nobody wget -O "${temp_dir}"/kernel.tar.xz -c "$RPI3_64_KERNEL_URL" 
+    fi
+    if [ "$SET_ARCH" = 64 ] && [ "$RPI_MODEL" = 4 ] ; then
+      # Create temporary directory for dl
+      temp_dir=$(as_nobody mktemp -d)
 
-    # Fetch kernel dl
-    as_nobody wget -O "${temp_dir}"/kernel.tar.xz -c "$RPI3_64_KERNEL_URL" 
-
+      # Fetch kernel dl
+      as_nobody wget -O "${temp_dir}"/kernel.tar.xz -c "$RPI4_64_KERNEL_URL" 
+    fi
+    
     #extract download
     tar -xJf "${temp_dir}"/kernel.tar.xz -C "${temp_dir}"
 
