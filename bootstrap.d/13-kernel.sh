@@ -594,15 +594,15 @@ else # BUILD_KERNEL=false
     chown -R root:root "${R}/lib/modules"
   fi
 
-  # Install Kernel from hypriot comptabile with all Raspberry PI
-  if [ "$SET_ARCH" = 32 ] ; then
+  # Install Kernel from hypriot comptabile with all Raspberry PI (dunno if its compatible with RPI4 - better compile your own kernel)
+  if [ "$SET_ARCH" = 32 ] && [ "$RPI_MODEL" != 4 ] ; then
     # Create temporary directory for dl
     temp_dir=$(as_nobody mktemp -d)
 
     # Fetch kernel
     as_nobody wget -O "${temp_dir}"/kernel.deb -c "$RPI_32_KERNEL_URL"
 
-    # Copy downloaded U-Boot sources
+    # Copy downloaded kernel package
     mv "${temp_dir}"/kernel.deb "${R}"/tmp/kernel.deb
 
     # Set permissions
