@@ -128,7 +128,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	    set_kernel_config CONFIG_LZO_COMPRESS y
 	  fi
 	  
-	  if [ RPI_MODEL = 4 ] ; then
+	  if [ "$RPI_MODEL" = 4 ] ; then
 	  # Following are set in current 32-bit LPAE kernel
 	    set_kernel_config CONFIG_CGROUP_PIDS y
 	    set_kernel_config CONFIG_NET_IPVTI m
@@ -347,6 +347,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	    set_kernel_config CONFIG_CEPH_FSCACHE y
 	    set_kernel_config CONFIG_CEPH_FS_POSIX_ACL y
 	    set_kernel_config CONFIG_BLK_DEV_RBD m
+	  fi
 
       # enable basic KVM support; see https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=210546&start=25#p1300453
 	  if [ "$KERNEL_VIRT" = true ] && { [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ]; } ; then
