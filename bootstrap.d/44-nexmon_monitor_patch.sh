@@ -74,7 +74,7 @@ if [ "$ENABLE_NEXMON" = true ] && [ "$ENABLE_WIRELESS" = true ]; then
     cp -f "${NEXMON_ROOT}"/patches/bcm43430a1/7_45_41_46/nexmon/brcmfmac43430-sdio.bin "${WLAN_FIRMWARE_DIR}"/brcmfmac43430-sdio.bin
   fi
   
-  if [ "$RPI_MODEL" = 3P ] ; then
+  if [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ] ; then
     cd "${NEXMON_ROOT}"/patches/bcm43455c0/7_45_154/nexmon || exit
 	sed -i -e 's/all:.*/all: $(RAM_FILE)/g' ${NEXMON_ROOT}/patches/bcm43455c0/7_45_154/nexmon/Makefile
     make clean
