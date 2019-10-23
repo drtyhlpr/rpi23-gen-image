@@ -108,10 +108,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	    # Mask this temporarily during switch to rpi-4.19.y
 	    #Fix SD_DRIVER upstream and downstream mess in 64bit RPIdeb_config
 	    # use correct driver MMC_BCM2835_MMC instead of MMC_BCM2835_SDHOST - see https://www.raspberrypi.org/forums/viewtopic.php?t=210225
-	    set_kernel_config CONFIG_MMC_BCM2835 n
-	    set_kernel_config CONFIG_MMC_SDHCI_IPROC n
-	    set_kernel_config CONFIG_USB_DWC2 n
-	    sed -i "s|depends on MMC_BCM2835_MMC && MMC_BCM2835_DMA|depends on MMC_BCM2835_MMC|" "${KERNEL_DIR}"/drivers/mmc/host/Kconfig
+	    #set_kernel_config CONFIG_MMC_BCM2835 n
+	    #set_kernel_config CONFIG_MMC_SDHCI_IPROC n
+	    #set_kernel_config CONFIG_USB_DWC2 n
+	    #sed -i "s|depends on MMC_BCM2835_MMC && MMC_BCM2835_DMA|depends on MMC_BCM2835_MMC|" "${KERNEL_DIR}"/drivers/mmc/host/Kconfig
 	  
 	    #VLAN got disabled without reason in arm64bit
 	    set_kernel_config CONFIG_IPVLAN m
@@ -600,10 +600,10 @@ if [ "$BUILD_KERNEL" = true ] ; then
 
 	    case "$KERNEL_DEFAULT_GOV" in
           performance)
-	        set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE y
+	            set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE y
             ;;
           userspace)
-            set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE y
+            	    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE y
             ;;
           ondemand)
 		    set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND y
