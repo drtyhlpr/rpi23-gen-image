@@ -198,6 +198,10 @@ KERNEL_BPF=${KERNEL_BPF:=false}
 KERNEL_DEFAULT_GOV=${KERNEL_DEFAULT_GOV:=ondemand}
 KERNEL_SECURITY=${KERNEL_SECURITY:=false}
 KERNEL_NF=${KERNEL_NF:=false}
+KERNEL_DHKEY=${KERNEL_DHKEY:=true}
+KERNEL_BTRFS=${KERNEL_BTRFS:=false}
+KERNEL_NSPAN=${KERNEL_NSPAN:=false}
+KERNEL_POEHAT=${KERNEL_POEHAT:=false}
 
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}
@@ -219,7 +223,8 @@ REDUCE_LOCALE=${REDUCE_LOCALE:=true}
 ENABLE_CRYPTFS=${ENABLE_CRYPTFS:=false}
 CRYPTFS_PASSWORD=${CRYPTFS_PASSWORD:=""}
 CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
-CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
+CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64"}
+CRYPTFS_HASH=${CRYPTFS_HASH:="sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
 #Dropbear-initramfs supports unlocking encrypted filesystem via SSH on bootup
 CRYPTFS_DROPBEAR=${CRYPTFS_DROPBEAR:=false}
@@ -410,7 +415,7 @@ fi
 # Add cryptsetup package to enable filesystem encryption
 if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
-  APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup"
+  APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup,cryptsetup-initramfs"
 
   # If cryptfs,dropbear and initramfs are enabled include dropbear-initramfs package
   if [ "$CRYPTFS_DROPBEAR" = true ] && [ "$ENABLE_INITRAMFS" = true ]; then
@@ -831,7 +836,7 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   echo -n ${CRYPTFS_PASSWORD} > .password
 
   # Initialize encrypted partition
-  echo "YES" | cryptsetup luksFormat "${ROOT_LOOP}" -c "${CRYPTFS_CIPHER}" -s "${CRYPTFS_XTSKEYSIZE}" .password
+  cryptsetup --verbose --debug -q luksFormat "${ROOT_LOOP}" -c "${CRYPTFS_CIPHER}" -h "${CRYPTFS_HASH}" -s "${CRYPTFS_XTSKEYSIZE}" .password
 
   # Open encrypted partition and setup mapping
   cryptsetup luksOpen "${ROOT_LOOP}" -d .password "${CRYPTFS_MAPPING}"

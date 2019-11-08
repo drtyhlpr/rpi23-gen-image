@@ -103,7 +103,30 @@ if [ "$BUILD_KERNEL" = true ] ; then
       #Switch to KERNELSRC_DIR so we can use set_kernel_config
       cd "${KERNEL_DIR}" || exit
 	  
-	  if [ "$KERNEL_ARCH" = arm64 ] ; then
+	  # Enable RPI POE HAT fan
+	  if [ "$KERNEL_POEHAT" = true ]; then
+	  set_kernel_config CONFIG_SENSORS_RPI_POE_FAN m
+	  fi
+
+	  # Enable per-interface network priority control
+	  # (for systemd-nspawn)
+	  if [ "$KERNEL_NSPAN" = true ]; then
+	  set_kernel_config CONFIG_CGROUP_NET_PRIO y
+	  fi
+	  
+	  # Compile in BTRFS
+	  if [ "$KERNEL_BTRFS" = true ]; then
+	  set_kernel_config CONFIG_BTRFS_FS y
+	  set_kernel_config CONFIG_BTRFS_FS_POSIX_ACL y
+	  set_kernel_config CONFIG_BTRFS_FS_REF_VERIFY y
+	  fi
+	  
+	  # Diffie-Hellman operations on retained keys
+	  # (required for >keyutils-1.6)
+	  if [ "$KERNEL_DHKEY" = true ]; then
+		set_kernel_config CONFIG_KEY_DH_OPERATIONS y
+	  fi 
+	  
 	  if [ "$KERNEL_ARCH" = arm64 ] && [ "$ENABLE_QEMU" = false ]; then
 	    # Mask this temporarily during switch to rpi-4.19.y
 	    #Fix SD_DRIVER upstream and downstream mess in 64bit RPIdeb_config
