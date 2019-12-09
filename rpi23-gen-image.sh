@@ -230,7 +230,7 @@ APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debi
 APT_EXCLUDES=${APT_EXCLUDES:=""}
 
 # Packages required for bootstrapping
-REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus bison flex sudo"
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus bison flex libssl-dev sudo"
 MISSING_PACKAGES=""
 
 # Packages installed for c/c++ build environment in chroot (keep empty)
