@@ -14,6 +14,14 @@ if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
   cp "${RPI_FIRMWARE_DIR}"/boot/start.elf "${BOOT_DIR}"/start.elf
   cp "${RPI_FIRMWARE_DIR}"/boot/start_cd.elf "${BOOT_DIR}"/start_cd.elf
   cp "${RPI_FIRMWARE_DIR}"/boot/start_x.elf "${BOOT_DIR}"/start_x.elf
+  cp "${RPI_FIRMWARE_DIR}"/boot/fixup4cd.dat "${BOOT_DIR}"/fixup4cd.dat
+  cp "${RPI_FIRMWARE_DIR}"/boot/fixup4.dat "${BOOT_DIR}"/fixup4.dat
+  cp "${RPI_FIRMWARE_DIR}"/boot/fixup4db.dat "${BOOT_DIR}"/fixup4db.dat
+  cp "${RPI_FIRMWARE_DIR}"/boot/fixup4x.dat "${BOOT_DIR}"/fixup4x.dat
+  cp "${RPI_FIRMWARE_DIR}"/boot/start4cd.elf "${BOOT_DIR}"/start4cd.elf
+  cp "${RPI_FIRMWARE_DIR}"/boot/start4db.elf "${BOOT_DIR}"/start4db.elf
+  cp "${RPI_FIRMWARE_DIR}"/boot/start4.elf "${BOOT_DIR}"/start4x.elf
+  cp "${RPI_FIRMWARE_DIR}"/boot/start4x.elf "${BOOT_DIR}"/start4x.elf
 else
   # Create temporary directory for boot binaries
   temp_dir=$(as_nobody mktemp -d)
@@ -26,6 +34,14 @@ else
   as_nobody wget -q -O "${temp_dir}/start.elf" "${FIRMWARE_URL}/start.elf"
   as_nobody wget -q -O "${temp_dir}/start_cd.elf" "${FIRMWARE_URL}/start_cd.elf"
   as_nobody wget -q -O "${temp_dir}/start_x.elf" "${FIRMWARE_URL}/start_x.elf"
+  as_nobody wget -q -O "${temp_dir}/fixup4cd.dat" "${FIRMWARE_URL}/fixup4cd.dat"
+  as_nobody wget -q -O "${temp_dir}/fixup4.dat" "${FIRMWARE_URL}/fixup4.dat"
+  as_nobody wget -q -O "${temp_dir}/fixup4db.dat" "${FIRMWARE_URL}/fixup4db.dat"
+  as_nobody wget -q -O "${temp_dir}/fixup4x.dat" "${FIRMWARE_URL}/fixup4x.dat"
+  as_nobody wget -q -O "${temp_dir}/start4cd.elf" "${FIRMWARE_URL}/start4cd.elf"
+  as_nobody wget -q -O "${temp_dir}/start4db.elf" "${FIRMWARE_URL}/start4db.elf"
+  as_nobody wget -q -O "${temp_dir}/start4x.elf" "${FIRMWARE_URL}/start4x.elf"
+  as_nobody wget -q -O "${temp_dir}/start4x.elf" "${FIRMWARE_URL}/start4x.elf"
 
   # Move downloaded boot binaries
   mv "${temp_dir}/"* "${BOOT_DIR}/"
