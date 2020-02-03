@@ -1,5 +1,5 @@
 #
-# Setup RPi2/3 config and cmdline
+# Setup RPi2/3/4 config and cmdline
 #
 
 # Load utility functions
