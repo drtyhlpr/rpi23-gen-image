@@ -19,13 +19,13 @@ sed -i "s/\/ftp.debian.org\//\/${APT_SERVER}\//" "${ETC_DIR}/apt/sources.list"
 
 #Fix for changing path for security updates in testing/bullseye
 if [ "$RELEASE" = "testing" ] ; then
-sed -i "s,stretch\\/updates,testing-security," "${ETC_DIR}/apt/sources.list"
-sed -i "s/ stretch/ ${RELEASE}/" "${ETC_DIR}/apt/sources.list"
+sed -i "s,buster\\/updates,testing-security," "${ETC_DIR}/apt/sources.list"
+sed -i "s/ buster/ ${RELEASE}/" "${ETC_DIR}/apt/sources.list"
 fi
 
 if [ -z "$RELEASE" ] ; then
 # Change release in sources list
-sed -i "s/ stretch/ ${RELEASE}/" "${ETC_DIR}/apt/sources.list"
+sed -i "s/ buster/ ${RELEASE}/" "${ETC_DIR}/apt/sources.list"
 fi
 
 # Upgrade package index and update all installed packages and changed dependencies
