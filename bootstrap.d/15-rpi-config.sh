@@ -112,7 +112,7 @@ if [ "$ENABLE_TURBO" = true ] ; then
   echo "boot_delay=1" >> "${BOOT_DIR}/config.txt"
 fi
 
-if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
+if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ]; then
 
   # Bluetooth enabled
   if [ "$ENABLE_BLUETOOTH" = true ] ; then
@@ -125,12 +125,12 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] ; then
     # Copy downloaded sources
     mv "${temp_dir}/pi-bluetooth" "${R}/tmp/"
 
-    # Bluetooth firmware from arch aur https://aur.archlinux.org/packages/pi-bluetooth/
-    as_nobody wget -q -O "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" https://aur.archlinux.org/cgit/aur.git/plain/LICENCE.broadcom_bcm43xx?h=pi-bluetooth
-    as_nobody wget -q -O "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" https://raw.githubusercontent.com/RPi-Distro/bluez-firmware/master/broadcom/BCM43430A1.hcd
-
     # Set permissions
     chown -R root:root "${R}/tmp/pi-bluetooth"
+    
+    # Bluetooth firmware from arch aur https://aur.archlinux.org/packages/pi-bluetooth/
+    wget -q -O "${R}/tmp/pi-bluetooth/LICENCE.broadcom_bcm43xx" https://aur.archlinux.org/cgit/aur.git/plain/LICENCE.broadcom_bcm43xx?h=pi-bluetooth
+    wget -q -O "${R}/tmp/pi-bluetooth/BCM43430A1.hcd" https://raw.githubusercontent.com/RPi-Distro/bluez-firmware/master/broadcom/BCM43430A1.hcd
 
     # Install tools
     install_readonly "${R}/tmp/pi-bluetooth/usr/bin/btuart" "${R}/usr/bin/btuart"
@@ -210,7 +210,11 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
 
   # Change into downloaded src dir
   cd "${R}/tmp/systemd-swap" || exit
-
+  
+  # Get Verion
+  VERSION=$(git tag | tail -n 1)
+  #sed -i "s/DEB_NAME=.*/DEB_NAME=systemd-swap_all/g" "${R}/tmp/systemd-swap/package.sh"
+  
   # Build package
   bash ./package.sh debian
   
@@ -221,7 +225,7 @@ if [ "$ENABLE_SYSTEMDSWAP" = true ] ; then
   chown -R root:root "${R}/tmp/systemd-swap"
 
   # Install package - IMPROVE AND MAKE IT POSSIBLE WITHOUT VERSION NR.
-  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap_4.0.1_any.deb
+  chroot_exec dpkg -i /tmp/systemd-swap/systemd-swap_"$VERSION"_all.deb
 
   # Enable service
   chroot_exec systemctl enable systemd-swap

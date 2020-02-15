@@ -44,6 +44,9 @@ RPI_MODEL=${RPI_MODEL:=2}
 
 # Debian release
 RELEASE=${RELEASE:=buster}
+if [ $RELEASE = "bullseye" ] ; then
+ RELEASE=testing
+fi
 
 # Kernel Branch
 KERNEL_BRANCH=${KERNEL_BRANCH:=""}
@@ -52,7 +55,6 @@ KERNEL_BRANCH=${KERNEL_BRANCH:=""}
 KERNEL_URL=${KERNEL_URL:=https://github.com/raspberrypi/linux}
 FIRMWARE_URL=${FIRMWARE_URL:=https://github.com/raspberrypi/firmware/raw/master/boot}
 WLAN_FIRMWARE_URL=${WLAN_FIRMWARE_URL:=https://github.com/RPi-Distro/firmware-nonfree/raw/master/brcm}
-COLLABORA_URL=${COLLABORA_URL:=https://repositories.collabora.co.uk/debian}
 FBTURBO_URL=${FBTURBO_URL:=https://github.com/ssvb/xf86-video-fbturbo.git}
 UBOOT_URL=${UBOOT_URL:=https://git.denx.de/u-boot.git}
 VIDEOCORE_URL=${VIDEOCORE_URL:=https://github.com/raspberrypi/userland}
@@ -64,11 +66,16 @@ SYSTEMDSWAP_URL=${SYSTEMDSWAP_URL:=https://github.com/Nefelim4ag/systemd-swap.gi
 RPI_32_KERNEL_URL=${RPI_32_KERNEL_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel_20180422-141901_armhf.deb}
 RPI_32_KERNELHEADER_URL=${RPI_32_KERNELHEADER_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel-headers_20180422-141901_armhf.deb}
 # Kernel has KVM and zswap enabled - use if KERNEL_* parameters and precompiled kernel are used 
-RPI3_64_BIS_KERNEL_URL=${RPI3_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel-bis/releases/download/4.14.80.20181113/bcmrpi3-kernel-bis-4.14.80.20181113.tar.xz}
+RPI3_64_BIS_KERNEL_URL=${RPI3_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel-bis/releases/download/4.19.80.20191022/bcmrpi3-kernel-bis-4.19.80.20191022.tar.xz}
 # Default precompiled 64bit kernel
-RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel/releases/download/4.14.80.20181113/bcmrpi3-kernel-4.14.80.20181113.tar.xz}
+RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel/releases/download/4.19.80.20191022/bcmrpi3-kernel-4.19.80.20191022.tar.xz}
+# Sakaki BIS Kernel RPI4 - https://github.com/sakaki-/bcm2711-kernel-bis
+RPI4_64_BIS_KERNEL_URL=${RPI4_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcm2711-kernel-bis/releases/download/4.19.59.20190724/bcm2711-kernel-bis-4.19.59.20190724.tar.xz}
+# Default precompiled 64bit kernel - https://github.com/sakaki-/bcm2711-kernel
+RPI4_64_DEF_KERNEL_URL=${RPI4_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcm2711-kernel-bis/releases/download/4.19.59.20190724/bcm2711-kernel-bis-4.19.59.20190724.tar.xz}
 # Generic 
 RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_DEF_KERNEL_URL}
+RPI4_64_KERNEL_URL=${RPI4_64_KERNEL_URL:=$RPI4_64_DEF_KERNEL_URL}
 # Kali kernel src - used if ENABLE_NEXMON=true (they patch the wlan kernel modul)
 KALI_KERNEL_URL=${KALI_KERNEL_URL:=https://github.com/Re4son/re4son-raspberrypi-linux.git}
 
@@ -191,6 +198,10 @@ KERNEL_BPF=${KERNEL_BPF:=false}
 KERNEL_DEFAULT_GOV=${KERNEL_DEFAULT_GOV:=ondemand}
 KERNEL_SECURITY=${KERNEL_SECURITY:=false}
 KERNEL_NF=${KERNEL_NF:=false}
+KERNEL_DHKEY=${KERNEL_DHKEY:=true}
+KERNEL_BTRFS=${KERNEL_BTRFS:=false}
+KERNEL_NSPAN=${KERNEL_NSPAN:=false}
+KERNEL_POEHAT=${KERNEL_POEHAT:=false}
 
 # Kernel compilation from source directory settings
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}
@@ -212,7 +223,8 @@ REDUCE_LOCALE=${REDUCE_LOCALE:=true}
 ENABLE_CRYPTFS=${ENABLE_CRYPTFS:=false}
 CRYPTFS_PASSWORD=${CRYPTFS_PASSWORD:=""}
 CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
-CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64:sha512"}
+CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64"}
+CRYPTFS_HASH=${CRYPTFS_HASH:="sha512"}
 CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
 #Dropbear-initramfs supports unlocking encrypted filesystem via SSH on bootup
 CRYPTFS_DROPBEAR=${CRYPTFS_DROPBEAR:=false}
@@ -224,13 +236,13 @@ CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
 
 # Packages required in the chroot build environment
 APT_INCLUDES=${APT_INCLUDES:=""}
-APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup,libnss-systemd"
+APT_INCLUDES="${APT_INCLUDES},flex,bison,libssl-dev,apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup,libnss-systemd"
 
 # Packages to exclude from chroot build environment
 APT_EXCLUDES=${APT_EXCLUDES:=""}
 
 # Packages required for bootstrapping
-REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus sudo"
+REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus bison flex libssl-dev sudo"
 MISSING_PACKAGES=""
 
 # Packages installed for c/c++ build environment in chroot (keep empty)
@@ -289,13 +301,15 @@ if [ -n "$SET_ARCH" ] ; then
     if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ] ; then
       if [ "$RPI_MODEL" != 4 ] ; then
         KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
+		KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
       else
         KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2711_defconfig}
+		KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7l.img}
       fi
       
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armhf"
       RELEASE_ARCH=${RELEASE_ARCH:=armhf}
-      KERNEL_IMAGE=${KERNEL_IMAGE:=kernel7.img}
+      
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabihf-}
     fi
   fi
@@ -385,7 +399,7 @@ fi
 
 # Add deps for nexmon
 if [ "$ENABLE_NEXMON" = true ] ; then
-  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libgmp3-dev gawk qpdf bison flex make autoconf automake build-essential libtool"
+  REQUIRED_PACKAGES="${REQUIRED_PACKAGES} libgmp3-dev gawk qpdf make autoconf automake build-essential libtool"
 fi
 
 # Add libncurses5 to enable kernel menuconfig
@@ -401,7 +415,7 @@ fi
 # Add cryptsetup package to enable filesystem encryption
 if [ "$ENABLE_CRYPTFS" = true ]  && [ "$BUILD_KERNEL" = true ] ; then
   REQUIRED_PACKAGES="${REQUIRED_PACKAGES} cryptsetup"
-  APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup"
+  APT_INCLUDES="${APT_INCLUDES},cryptsetup,busybox,console-setup,cryptsetup-initramfs"
 
   # If cryptfs,dropbear and initramfs are enabled include dropbear-initramfs package
   if [ "$CRYPTFS_DROPBEAR" = true ] && [ "$ENABLE_INITRAMFS" = true ]; then
@@ -470,7 +484,7 @@ if [ -n "$MISSING_PACKAGES" ] ; then
   [ "$confirm" != "y" ] && exit 1
 
   # Make sure all missing required packages are installed
-  apt-get -qq -y install `echo "${MISSING_PACKAGES}" | sed "s/ //"`
+  apt-get update && apt-get -qq -y install `echo "${MISSING_PACKAGES}" | sed "s/ //"`
 fi
 
 # Check if ./bootstrap.d directory exists
@@ -822,7 +836,7 @@ if [ "$ENABLE_CRYPTFS" = true ] ; then
   echo -n ${CRYPTFS_PASSWORD} > .password
 
   # Initialize encrypted partition
-  echo "YES" | cryptsetup luksFormat "${ROOT_LOOP}" -c "${CRYPTFS_CIPHER}" -s "${CRYPTFS_XTSKEYSIZE}" .password
+  cryptsetup --verbose --debug -q luksFormat "${ROOT_LOOP}" -c "${CRYPTFS_CIPHER}" -h "${CRYPTFS_HASH}" -s "${CRYPTFS_XTSKEYSIZE}" .password
 
   # Open encrypted partition and setup mapping
   cryptsetup luksOpen "${ROOT_LOOP}" -d .password "${CRYPTFS_MAPPING}"
