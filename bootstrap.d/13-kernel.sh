@@ -49,9 +49,15 @@ if [ "$BUILD_KERNEL" = true ] ; then
   fi
 
   # Calculate optimal number of kernel building threads
-  if [ "$KERNEL_THREADS" = "1" ] && [ -r /proc/cpuinfo ] ; then
+  if [ -n "$KERNEL_THREADS" ] && [ -r /proc/cpuinfo ] ; then
     KERNEL_THREADS=$(grep -c processor /proc/cpuinfo)
   fi
+  
+# TODO: Check if defined Threadcount is higher than actual cores  
+#  if [ "$KERNEL_THREADS" > grep -c processor /proc/cpuinfo] ; then
+#	  echo "Defined more Threads than core assigned to this system"
+#	  exit 1
+#  fi
   
   #Copy 32bit config to 64bit
   if [ "$ENABLE_QEMU" = true ] && [ "$KERNEL_ARCH" = arm64 ]; then
@@ -61,7 +67,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
   # Configure and build kernel
   if [ "$KERNELSRC_PREBUILT" = false ] ; then
     # Remove device, network and filesystem drivers from kernel configuration
-    if [ "$KERNEL_REDUCE" = true ] ; then
+    if [ "$REDUCE_KERNEL" = true ] ; then
       make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" "${KERNEL_DEFCONFIG}"
       sed -i\
       -e "s/\(^CONFIG_SND.*\=\).*/\1n/"\
@@ -464,8 +470,24 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY n
 		set_kernel_config CONFIG_SYSTEM_TRUSTED_KEYS m
 		set_kernel_config CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE 4096
-
-        set_kernel_config CONFIG_ARM64_CRYPTO y
+      fi
+	  
+	  if [ "$ENABLE_CRYPTFS" = true ] ; then
+		set_kernel_config CONFIG_EMBEDDED y
+		set_kernel_config CONFIG_EXPERT y
+		set_kernel_config CONFIG_DAX y
+		set_kernel_config CONFIG_MD y
+		set_kernel_config CONFIG_BLK_DEV_MD y
+		set_kernel_config CONFIG_MD_AUTODETECT y
+		set_kernel_config CONFIG_BLK_DEV_DM y
+		set_kernel_config CONFIG_BLK_DEV_DM_BUILTIN y
+		set_kernel_config CONFIG_DM_CRYPT y
+		set_kernel_config CONFIG_CRYPTO_BLKCIPHER y
+		set_kernel_config CONFIG_CRYPTO_CBC y
+		set_kernel_config CONFIG_CRYPTO_XTS y
+		set_kernel_config CONFIG_CRYPTO_SHA512 y
+		set_kernel_config CONFIG_CRYPTO_MANAGER y
+		set_kernel_config CONFIG_ARM64_CRYPTO y
         set_kernel_config CONFIG_CRYPTO_SHA256_ARM64 m
         set_kernel_config CONFIG_CRYPTO_SHA512_ARM64 m
         set_kernel_config CONFIG_CRYPTO_SHA1_ARM64_CE m
@@ -620,8 +642,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
 	  fi
 
 	  # KERNEL_DEFAULT_GOV was set by user 
-	  if [ "$KERNEL_DEFAULT_GOV" != powersave ] && [ -n "$KERNEL_DEFAULT_GOV" ] ; then
-
+	  if [ "$KERNEL_DEFAULT_GOV" != ondemand ] && [ -n "$KERNEL_DEFAULT_GOV" ] ; then
 	    case "$KERNEL_DEFAULT_GOV" in
           performance)
 	            set_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE y
@@ -643,9 +664,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
             exit 1
             ;;
         esac
-
-            # unset previous default governor
-	    unset_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
+        # unset previous default governor
+	    unset_kernel_config CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
 	  fi
 
 	  #Revert to previous directory
@@ -655,25 +675,6 @@ if [ "$BUILD_KERNEL" = true ] ; then
       if [ "$ENABLE_QEMU" = true ] ; then
         echo "CONFIG_FHANDLE=y" >> "${KERNEL_DIR}"/.config
         echo "CONFIG_LBDAF=y" >> "${KERNEL_DIR}"/.config
-
-        if [ "$ENABLE_CRYPTFS" = true ] ; then
-          {
-            echo "CONFIG_EMBEDDED=y"
-            echo "CONFIG_EXPERT=y"
-            echo "CONFIG_DAX=y"
-            echo "CONFIG_MD=y"
-            echo "CONFIG_BLK_DEV_MD=y"
-            echo "CONFIG_MD_AUTODETECT=y"
-            echo "CONFIG_BLK_DEV_DM=y"
-            echo "CONFIG_BLK_DEV_DM_BUILTIN=y"
-            echo "CONFIG_DM_CRYPT=y"
-            echo "CONFIG_CRYPTO_BLKCIPHER=y"
-            echo "CONFIG_CRYPTO_CBC=y"
-            echo "CONFIG_CRYPTO_XTS=y"
-            echo "CONFIG_CRYPTO_SHA512=y"
-            echo "CONFIG_CRYPTO_MANAGER=y"
-          } >> "${KERNEL_DIR}"/.config
-        fi
       fi
 
       # Copy custom kernel configuration file
@@ -734,7 +735,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
   fi
 
   # Install kernel headers
-  if [ "$KERNEL_HEADERS" = true ] && [ "$KERNEL_REDUCE" = false ] ; then
+  if [ "$KERNEL_HEADERS" = true ] && [ "$REDUCE_KERNEL" = false ] ; then
     make -C "${KERNEL_DIR}" ARCH="${KERNEL_ARCH}" CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_HDR_PATH=../.. headers_install
   fi
 

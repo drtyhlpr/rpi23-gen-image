@@ -36,11 +36,11 @@ fi
 
 # Introduce settings
 set -e
-echo -n -e "\n#\n# RPi 0/1/2/3 Bootstrap Settings\n#\n"
+echo -n -e "\n#\n# RPi 0/1/2/3/4 Bootstrap Settings\n#\n"
 set -x
 
 # Raspberry Pi model configuration
-RPI_MODEL=${RPI_MODEL:=2}
+RPI_MODEL=${RPI_MODEL:=3P}
 
 # Debian release
 RELEASE=${RELEASE:=buster}
@@ -66,13 +66,13 @@ SYSTEMDSWAP_URL=${SYSTEMDSWAP_URL:=https://github.com/Nefelim4ag/systemd-swap.gi
 RPI_32_KERNEL_URL=${RPI_32_KERNEL_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel_20180422-141901_armhf.deb}
 RPI_32_KERNELHEADER_URL=${RPI_32_KERNELHEADER_URL:=https://github.com/hypriot/rpi-kernel/releases/download/v4.14.34/raspberrypi-kernel-headers_20180422-141901_armhf.deb}
 # Kernel has KVM and zswap enabled - use if KERNEL_* parameters and precompiled kernel are used 
-RPI3_64_BIS_KERNEL_URL=${RPI3_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel-bis/releases/download/4.19.80.20191022/bcmrpi3-kernel-bis-4.19.80.20191022.tar.xz}
+RPI3_64_BIS_KERNEL_URL=${RPI3_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel-bis/releases/download/4.19.102.20200211/bcmrpi3-kernel-bis-4.19.102.20200211.tar.xz}
 # Default precompiled 64bit kernel
-RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel/releases/download/4.19.80.20191022/bcmrpi3-kernel-4.19.80.20191022.tar.xz}
+RPI3_64_DEF_KERNEL_URL=${RPI3_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcmrpi3-kernel/releases/download/4.19.102.20200211/bcmrpi3-kernel-4.19.102.20200211.tar.xz}
 # Sakaki BIS Kernel RPI4 - https://github.com/sakaki-/bcm2711-kernel-bis
-RPI4_64_BIS_KERNEL_URL=${RPI4_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcm2711-kernel-bis/releases/download/4.19.59.20190724/bcm2711-kernel-bis-4.19.59.20190724.tar.xz}
+RPI4_64_BIS_KERNEL_URL=${RPI4_64_BIS_KERNEL_URL:=https://github.com/sakaki-/bcm2711-kernel-bis/releases/download/4.19.102.20200211/bcm2711-kernel-bis-4.19.102.20200211.tar.xz}
 # Default precompiled 64bit kernel - https://github.com/sakaki-/bcm2711-kernel
-RPI4_64_DEF_KERNEL_URL=${RPI4_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcm2711-kernel-bis/releases/download/4.19.59.20190724/bcm2711-kernel-bis-4.19.59.20190724.tar.xz}
+RPI4_64_DEF_KERNEL_URL=${RPI4_64_DEF_KERNEL_URL:=https://github.com/sakaki-/bcm2711-kernel-bis/releases/download/4.19.102.20200211/bcm2711-kernel-bis-4.19.102.20200211.tar.xz}
 # Generic 
 RPI3_64_KERNEL_URL=${RPI3_64_KERNEL_URL:=$RPI3_64_DEF_KERNEL_URL}
 RPI4_64_KERNEL_URL=${RPI4_64_KERNEL_URL:=$RPI4_64_DEF_KERNEL_URL}
@@ -93,18 +93,28 @@ KERNEL_DIR="${R}/usr/src/linux"
 WLAN_FIRMWARE_DIR="${LIB_DIR}/firmware/brcm"
 BLUETOOTH_FIRMWARE_DIR="${ETC_DIR}/firmware/bt"
 
-# Firmware directory: Blank if download from github
-RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
+# APT settings
+APT_SERVER=${APT_SERVER:="ftp.debian.org"}
+APT_PROXY=${APT_PROXY:=""}
+KEEP_APT_PROXY=${KEEP_APT_PROXY:=false}
+# Packages required in the chroot build environment
+APT_INCLUDES=${APT_INCLUDES:=""}
+APT_INCLUDES="${APT_INCLUDES},apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup,libnss-systemd"
+# Packages to exclude from chroot build environment
+APT_EXCLUDES=${APT_EXCLUDES:=""}
 
 # General settings
 SET_ARCH=${SET_ARCH:=32}
 HOSTNAME=${HOSTNAME:=rpi${RPI_MODEL}-${RELEASE}}
-PASSWORD=${PASSWORD:=raspberry}
-USER_PASSWORD=${USER_PASSWORD:=raspberry}
 DEFLOCAL=${DEFLOCAL:="en_US.UTF-8"}
 TIMEZONE=${TIMEZONE:="Europe/Berlin"}
 EXPANDROOT=${EXPANDROOT:=true}
-ENABLE_DPHYSSWAP=${ENABLE_DPHYSSWAP:=true}
+
+ENABLE_ROOT=${ENABLE_ROOT:=false}
+ROOT_PASSWORD=${ROOT_PASSWORD:=raspberry}
+ENABLE_USER=${ENABLE_USER:=true}
+USER_NAME=${USER_NAME:="pi"}
+USER_PASSWORD=${USER_PASSWORD:=raspberry}
 
 # Keyboard settings
 XKB_MODEL=${XKB_MODEL:=""}
@@ -112,134 +122,138 @@ XKB_LAYOUT=${XKB_LAYOUT:=""}
 XKB_VARIANT=${XKB_VARIANT:=""}
 XKB_OPTIONS=${XKB_OPTIONS:=""}
 
+# Networking settings:
+ENABLE_IPV6=${ENABLE_IPV6:=true}
+ENABLE_WIRELESS=${ENABLE_WIRELESS:=false}
+ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
+ENABLE_HARDNET=${ENABLE_HARDNET:=false}
+ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
+
 # Network settings (DHCP)
-ENABLE_DHCP=${ENABLE_DHCP:=true}
+ENABLE_ETH_DHCP=${ENABLE_ETH_DHCP:=true}
+ENABLE_WIFI_DHCP=${ENABLE_ETH_DHCP:=true}
 
 # Network settings (static)
-NET_ADDRESS=${NET_ADDRESS:=""}
-NET_GATEWAY=${NET_GATEWAY:=""}
-NET_DNS_1=${NET_DNS_1:=""}
-NET_DNS_2=${NET_DNS_2:=""}
-NET_DNS_DOMAINS=${NET_DNS_DOMAINS:=""}
-NET_NTP_1=${NET_NTP_1:=""}
-NET_NTP_2=${NET_NTP_2:=""}
+NET_ETH_ADDRESS=${NET_ETH_ADDRESS:=""}
+NET_ETH_GATEWAY=${NET_ETH_GATEWAY:=""}
+NET_ETH_DNS_1=${NET_ETH_DNS_1:=""}
+NET_ETH_DNS_2=${NET_ETH_DNS_2:=""}
+NET_ETH_DNS_DOMAINS=${NET_ETH_DNS_DOMAINS:=""}
+NET_ETH_NTP_1=${NET_ETH_NTP_1:=""}
+NET_ETH_NTP_2=${NET_ETH_NTP_2:=""}
 
-# APT settings
-APT_PROXY=${APT_PROXY:=""}
-APT_SERVER=${APT_SERVER:="ftp.debian.org"}
-KEEP_APT_PROXY=${KEEP_APT_PROXY:=false}
+# Networking settings (WIFI):
+NET_WIFI_SSID=${NET_WIFI_SSID:=""}
+NET_WIFI_PSK=${NET_WIFI_PSK:=""}
+
+# Network settings (static)
+NET_WIFI_ADDRESS=${NET_WIFI_ADDRESS:=""}
+NET_WIFI_GATEWAY=${NET_WIFI_GATEWAY:=""}
+NET_WIFI_DNS_1=${NET_WIFI_DNS_1:=""}
+NET_WIFI_DNS_2=${NET_WIFI_DNS_2:=""}
+NET_WIFI_DNS_DOMAINS=${NET_WIFI_DNS_DOMAINS:=""}
+NET_WIFI_NTP_1=${NET_WIFI_NTP_1:=""}
+NET_WIFI_NTP_2=${NET_WIFI_NTP_2:=""}
 
 # Feature settings
+ENABLE_CONSOLE=${ENABLE_CONSOLE:=false}
 ENABLE_PRINTK=${ENABLE_PRINTK:=false}
 ENABLE_BLUETOOTH=${ENABLE_BLUETOOTH:=false}
 ENABLE_MINIUART_OVERLAY=${ENABLE_MINIUART_OVERLAY:=false}
-ENABLE_CONSOLE=${ENABLE_CONSOLE:=true}
+ENABLE_TURBO=${ENABLE_TURBO:=false}
 ENABLE_I2C=${ENABLE_I2C:=false}
 ENABLE_SPI=${ENABLE_SPI:=false}
-ENABLE_IPV6=${ENABLE_IPV6:=true}
-ENABLE_SSHD=${ENABLE_SSHD:=true}
+
 ENABLE_NONFREE=${ENABLE_NONFREE:=false}
-ENABLE_WIRELESS=${ENABLE_WIRELESS:=false}
-ENABLE_SOUND=${ENABLE_SOUND:=true}
-ENABLE_DBUS=${ENABLE_DBUS:=true}
+ENABLE_RSYSLOG=${ENABLE_RSYSLOG:=true}
+ENABLE_SOUND=${ENABLE_SOUND:=false}
 ENABLE_HWRANDOM=${ENABLE_HWRANDOM:=true}
 ENABLE_MINGPU=${ENABLE_MINGPU:=false}
 ENABLE_XORG=${ENABLE_XORG:=false}
 ENABLE_WM=${ENABLE_WM:=""}
-ENABLE_RSYSLOG=${ENABLE_RSYSLOG:=true}
-ENABLE_USER=${ENABLE_USER:=true}
-USER_NAME=${USER_NAME:="pi"}
-ENABLE_ROOT=${ENABLE_ROOT:=false}
-ENABLE_QEMU=${ENABLE_QEMU:=false}
 ENABLE_SYSVINIT=${ENABLE_SYSVINIT:=false}
+ENABLE_SPLASH=${ENABLE_SPLASH:=true}
+ENABLE_LOGO=${ENABLE_LOGO:=true}
+ENABLE_SILENT_BOOT=${ENABLE_SILENT_BOOT=false}
+DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS:=}
+
+# Advanced settings
+ENABLE_DPHYSSWAP=${ENABLE_DPHYSSWAP:=true}
+ENABLE_SYSTEMDSWAP=${ENABLE_SYSTEMDSWAP:=false}
+ENABLE_QEMU=${ENABLE_QEMU:=false}
+ENABLE_KEYGEN=${ENABLE_KEYGEN:=false}
+ENABLE_MINBASE=${ENABLE_MINBASE:=false}
+ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
+ENABLE_INITRAMFS=${ENABLE_INITRAMFS:=false}
+ENABLE_DBUS=${ENABLE_DBUS:=true}
+ENABLE_USBBOOT=${ENABLE_USBBOOT=false}
+CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
+ENABLE_UBOOT=${ENABLE_UBOOT:=false}
+UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
+ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
+FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
+ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=false}
+VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
+ENABLE_NEXMON=${ENABLE_NEXMON:=false}
+NEXMONSRC_DIR=${NEXMONSRC_DIR:=""}
 
 # SSH settings
+SSH_ENABLE=${SSH_ENABLE:=true}
 SSH_ENABLE_ROOT=${SSH_ENABLE_ROOT:=false}
 SSH_DISABLE_PASSWORD_AUTH=${SSH_DISABLE_PASSWORD_AUTH:=false}
 SSH_LIMIT_USERS=${SSH_LIMIT_USERS:=false}
 SSH_ROOT_PUB_KEY=${SSH_ROOT_PUB_KEY:=""}
 SSH_USER_PUB_KEY=${SSH_USER_PUB_KEY:=""}
 
-# Advanced settings
-ENABLE_SYSTEMDSWAP=${ENABLE_SYSTEMDSWAP:=false}
-ENABLE_MINBASE=${ENABLE_MINBASE:=false}
-ENABLE_REDUCE=${ENABLE_REDUCE:=false}
-ENABLE_UBOOT=${ENABLE_UBOOT:=false}
-UBOOTSRC_DIR=${UBOOTSRC_DIR:=""}
-ENABLE_USBBOOT=${ENABLE_USBBOOT=false}
-ENABLE_FBTURBO=${ENABLE_FBTURBO:=false}
-ENABLE_VIDEOCORE=${ENABLE_VIDEOCORE:=false}
-ENABLE_NEXMON=${ENABLE_NEXMON:=false}
-VIDEOCORESRC_DIR=${VIDEOCORESRC_DIR:=""}
-FBTURBOSRC_DIR=${FBTURBOSRC_DIR:=""}
-NEXMONSRC_DIR=${NEXMONSRC_DIR:=""}
-ENABLE_HARDNET=${ENABLE_HARDNET:=false}
-ENABLE_IPTABLES=${ENABLE_IPTABLES:=false}
-ENABLE_SPLITFS=${ENABLE_SPLITFS:=false}
-ENABLE_INITRAMFS=${ENABLE_INITRAMFS:=false}
-ENABLE_IFNAMES=${ENABLE_IFNAMES:=true}
-ENABLE_SPLASH=${ENABLE_SPLASH:=true}
-ENABLE_LOGO=${ENABLE_LOGO:=true}
-ENABLE_SILENT_BOOT=${ENABLE_SILENT_BOOT=false}
-DISABLE_UNDERVOLT_WARNINGS=${DISABLE_UNDERVOLT_WARNINGS:=}
-
 # Kernel compilation settings
 BUILD_KERNEL=${BUILD_KERNEL:=true}
-KERNEL_REDUCE=${KERNEL_REDUCE:=false}
 KERNEL_THREADS=${KERNEL_THREADS:=1}
 KERNEL_HEADERS=${KERNEL_HEADERS:=true}
 KERNEL_MENUCONFIG=${KERNEL_MENUCONFIG:=false}
-KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
 KERNEL_OLDDEFCONFIG=${KERNEL_OLDDEFCONFIG:=false}
 KERNEL_CCACHE=${KERNEL_CCACHE:=false}
-KERNEL_ZSWAP=${KERNEL_ZSWAP:=false}
-KERNEL_VIRT=${KERNEL_VIRT:=false}
-KERNEL_BPF=${KERNEL_BPF:=false}
-KERNEL_DEFAULT_GOV=${KERNEL_DEFAULT_GOV:=ondemand}
-KERNEL_SECURITY=${KERNEL_SECURITY:=false}
-KERNEL_NF=${KERNEL_NF:=false}
-KERNEL_DHKEY=${KERNEL_DHKEY:=true}
-KERNEL_BTRFS=${KERNEL_BTRFS:=false}
-KERNEL_NSPAN=${KERNEL_NSPAN:=false}
-KERNEL_POEHAT=${KERNEL_POEHAT:=false}
-
-# Kernel compilation from source directory settings
+KERNEL_REMOVESRC=${KERNEL_REMOVESRC:=true}
 KERNELSRC_DIR=${KERNELSRC_DIR:=""}
 KERNELSRC_CLEAN=${KERNELSRC_CLEAN:=false}
 KERNELSRC_CONFIG=${KERNELSRC_CONFIG:=true}
+KERNELSRC_USRCONFIG=${KERNELSRC_USRCONFIG:=""}
 KERNELSRC_PREBUILT=${KERNELSRC_PREBUILT:=false}
+# Firmware directory: Blank if download from github
+RPI_FIRMWARE_DIR=${RPI_FIRMWARE_DIR:=""}
+KERNEL_DEFAULT_GOV=${KERNEL_DEFAULT_GOV:=ondemand}
+KERNEL_NF=${KERNEL_NF:=false}
+KERNEL_VIRT=${KERNEL_VIRT:=false}
+KERNEL_ZSWAP=${KERNEL_ZSWAP:=false}
+KERNEL_BPF=${KERNEL_BPF:=false}
+KERNEL_SECURITY=${KERNEL_SECURITY:=false}
+KERNEL_BTRFS=${KERNEL_BTRFS:=false}
+KERNEL_POEHAT=${KERNEL_POEHAT:=false}
+KERNEL_NSPAN=${KERNEL_NSPAN:=false}
+KERNEL_DHKEY=${KERNEL_DHKEY:=true}
 
 # Reduce disk usage settings
+ENABLE_REDUCE=${ENABLE_REDUCE:=false}
 REDUCE_APT=${REDUCE_APT:=true}
-REDUCE_DOC=${REDUCE_DOC:=true}
-REDUCE_MAN=${REDUCE_MAN:=true}
+REDUCE_DOC=${REDUCE_DOC:=false}
+REDUCE_MAN=${REDUCE_MAN:=false}
 REDUCE_VIM=${REDUCE_VIM:=false}
 REDUCE_BASH=${REDUCE_BASH:=false}
-REDUCE_HWDB=${REDUCE_HWDB:=true}
-REDUCE_SSHD=${REDUCE_SSHD:=true}
-REDUCE_LOCALE=${REDUCE_LOCALE:=true}
+REDUCE_HWDB=${REDUCE_HWDB:=false}
+REDUCE_SSHD=${REDUCE_SSHD:=false}
+REDUCE_LOCALE=${REDUCE_LOCALE:=false}
+REDUCE_KERNEL=${REDUCE_KERNEL:=false}
 
 # Encrypted filesystem settings
 ENABLE_CRYPTFS=${ENABLE_CRYPTFS:=false}
 CRYPTFS_PASSWORD=${CRYPTFS_PASSWORD:=""}
 CRYPTFS_MAPPING=${CRYPTFS_MAPPING:="secure"}
 CRYPTFS_CIPHER=${CRYPTFS_CIPHER:="aes-xts-plain64"}
-CRYPTFS_HASH=${CRYPTFS_HASH:="sha512"}
-CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=512}
+CRYPTFS_HASH=${CRYPTFS_HASH:="sha256"}
+CRYPTFS_XTSKEYSIZE=${CRYPTFS_XTSKEYSIZE:=256}
 #Dropbear-initramfs supports unlocking encrypted filesystem via SSH on bootup
 CRYPTFS_DROPBEAR=${CRYPTFS_DROPBEAR:=false}
 #Provide your own Dropbear Public RSA-OpenSSH Key otherwise it will be generated
 CRYPTFS_DROPBEAR_PUBKEY=${CRYPTFS_DROPBEAR_PUBKEY:=""}
-
-# Chroot scripts directory
-CHROOT_SCRIPTS=${CHROOT_SCRIPTS:=""}
-
-# Packages required in the chroot build environment
-APT_INCLUDES=${APT_INCLUDES:=""}
-APT_INCLUDES="${APT_INCLUDES},flex,bison,libssl-dev,apt-transport-https,apt-utils,ca-certificates,debian-archive-keyring,dialog,sudo,systemd,sysvinit-utils,locales,keyboard-configuration,console-setup,libnss-systemd"
-
-# Packages to exclude from chroot build environment
-APT_EXCLUDES=${APT_EXCLUDES:=""}
 
 # Packages required for bootstrapping
 REQUIRED_PACKAGES="debootstrap debian-archive-keyring qemu-user-static binfmt-support dosfstools rsync bmap-tools whois git bc psmisc dbus bison flex libssl-dev sudo"
@@ -295,8 +309,17 @@ if [ -n "$SET_ARCH" ] ; then
       RELEASE_ARCH=${RELEASE_ARCH:=armel}
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel.img}
       CROSS_COMPILE=${CROSS_COMPILE:=arm-linux-gnueabi-}
+	  
+	  if [ $ENABLE_XORG = true ] ; then
+	    if [$RELEASE = "stretch" ] || [$RELEASE = "oldstable" ] ; then
+	      printf "\nBest support for armel architecture is provided under Debian stretch/oldstable. Choose yes to change release to Debian stretch[y/n] "
+	      read -r confirm
+          if [ "$confirm" = "y" ] ; then
+		    $RELEASE = "stretch"
+		  fi
+	    fi
+	  fi
     fi
-
     # Raspberry Pi model specific settings
     if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ] ; then
       if [ "$RPI_MODEL" != 4 ] ; then
@@ -361,7 +384,7 @@ if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$
     APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
   fi
   if [ "$ENABLE_WIRELESS" = true ] ; then
-    APT_INCLUDES="${APT_INCLUDES},wireless-tools,crda,wireless-regdb"
+    APT_INCLUDES="${APT_INCLUDES},wireless-tools,crda,wireless-regdb,wpasupplicant"
   fi
 else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
   # Check if the internal wireless interface is not supported by the RPi model
@@ -436,7 +459,7 @@ fi
 
 # Add device-tree-compiler required for building the U-Boot bootloader
 if [ "$ENABLE_UBOOT" = true ] ; then
-  APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bison,flex,bc"
+  APT_INCLUDES="${APT_INCLUDES},device-tree-compiler,bc"
 fi
 
 if [ "$ENABLE_USBBOOT" = true ] ; then 
@@ -591,7 +614,7 @@ if [ "$KERNEL_SECURITY" = true ] ; then
 fi
 
 # Add openssh server package
-if [ "$ENABLE_SSHD" = true ] ; then
+if [ "$SSH_ENABLE" = true ] ; then
   APT_INCLUDES="${APT_INCLUDES},openssh-server"
 fi
 

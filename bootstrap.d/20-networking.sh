@@ -14,8 +14,8 @@ install_readonly files/network/hosts "${ETC_DIR}/hosts"
 sed -i "s/RaspberryPI/${HOSTNAME}/" "${ETC_DIR}/hosts"
 
 # Setup hostname entry with static IP
-if [ "$NET_ADDRESS" != "" ] ; then
-  NET_IP=$(echo "${NET_ADDRESS}" | cut -f 1 -d'/')
+if [ "$NET_ETH_ADDRESS" != "" ] ; then
+  NET_IP=$(echo "${NET_ETH_ADDRESS}" | cut -f 1 -d'/')
   sed -i "s/^127.0.1.1/${NET_IP}/" "${ETC_DIR}/hosts"
 fi
 
@@ -28,52 +28,102 @@ fi
 install_readonly files/network/interfaces "${ETC_DIR}/network/interfaces"
 
 # Install configuration for interface eth0
-install_readonly files/network/eth.network "${ETC_DIR}/systemd/network/eth.network"
+install_readonly files/network/eth0.network "${ETC_DIR}/systemd/network/eth0.network"
 
 if [ "$RPI_MODEL" = 3P ] ; then
-printf "\n[Link]\nGenericReceiveOffload=off\nTCPSegmentationOffload=off\nGenericSegmentationOffload=off" >> "${ETC_DIR}/systemd/network/eth.network"
+printf "\n[Link]\nGenericReceiveOffload=off\nTCPSegmentationOffload=off\nGenericSegmentationOffload=off" >> "${ETC_DIR}/systemd/network/eth0.network"
 fi
 
 # Install configuration for interface wl*
-install_readonly files/network/wlan.network "${ETC_DIR}/systemd/network/wlan.network"
+install_readonly files/network/wlan0.network "${ETC_DIR}/systemd/network/wlan0.network"
 
 #always with dhcp since wpa_supplicant integration is missing
-sed -i -e "s/DHCP=.*/DHCP=yes/" -e "/DHCP/q" "${ETC_DIR}/systemd/network/wlan.network"
+sed -i -e "s/DHCP=.*/DHCP=yes/" -e "/DHCP/q" "${ETC_DIR}/systemd/network/wlan0.network"
 
-if [ "$ENABLE_DHCP" = true ] ; then
+if [ "$ENABLE_ETH_DHCP" = true ] ; then
   # Enable DHCP configuration for interface eth0
-  sed -i -e "s/DHCP=.*/DHCP=yes/" -e "/DHCP/q" "${ETC_DIR}/systemd/network/eth.network"
+  sed -i -e "s/DHCP=.*/DHCP=yes/" -e "/DHCP/q" "${ETC_DIR}/systemd/network/eth0.network"
   
   # Set DHCP configuration to IPv4 only
   if [ "$ENABLE_IPV6" = false ] ; then
-    sed -i "s/DHCP=.*/DHCP=v4/" "${ETC_DIR}/systemd/network/eth.network"
+    sed -i "s/DHCP=.*/DHCP=v4/" "${ETC_DIR}/systemd/network/eth0.network"
+	sed '/IPv6PrivacyExtensions=true/d' "${ETC_DIR}/systemd/network/eth0.network"
   fi
 
-else # ENABLE_DHCP=false
+else # ENABLE_ETH_DHCP=false
   # Set static network configuration for interface eth0
-  sed -i\
-  -e "s|DHCP=.*|DHCP=no|"\
-  -e "s|Address=\$|Address=${NET_ADDRESS}|"\
-  -e "s|Gateway=\$|Gateway=${NET_GATEWAY}|"\
-  -e "0,/DNS=\$/ s|DNS=\$|DNS=${NET_DNS_1}|"\
-  -e "0,/DNS=\$/ s|DNS=\$|DNS=${NET_DNS_2}|"\
-  -e "s|Domains=\$|Domains=${NET_DNS_DOMAINS}|"\
-  -e "0,/NTP=\$/ s|NTP=\$|NTP=${NET_NTP_1}|"\
-  -e "0,/NTP=\$/ s|NTP=\$|NTP=${NET_NTP_2}|"\
-  "${ETC_DIR}/systemd/network/eth.network"
+  if [ -n NET_ETH_ADDRESS ] && [ -n NET_ETH_GATEWAY ] && [ -n NET_ETH_DNS_1 ] ; then
+    sed -i\
+    -e "s|DHCP=.*|DHCP=no|"\
+    -e "s|Address=\$|Address=${NET_ETH_ADDRESS}|"\
+    -e "s|Gateway=\$|Gateway=${NET_ETH_GATEWAY}|"\
+    -e "0,/DNS=\$/ s|DNS=\$|DNS=${NET_ETH_DNS_1}|"\
+    -e "0,/DNS=\$/ s|DNS=\$|DNS=${NET_ETH_DNS_2}|"\
+    -e "s|Domains=\$|Domains=${NET_ETH_DNS_DOMAINS}|"\
+    -e "0,/NTP=\$/ s|NTP=\$|NTP=${NET_ETH_NTP_1}|"\
+    -e "0,/NTP=\$/ s|NTP=\$|NTP=${NET_ETH_NTP_2}|"\
+    "${ETC_DIR}/systemd/network/eth0.network"
+  fi
+fi
+
+
+if [ "$ENABLE_WIRELESS" = true ] ; then
+  if [ "$ENABLE_WIFI_DHCP" = true ] ; then
+    # Enable DHCP configuration for interface eth0
+    sed -i -e "s/DHCP=.*/DHCP=yes/" -e "/DHCP/q" "${ETC_DIR}/systemd/network/wlan0.network"
+
+    # Set DHCP configuration to IPv4 only
+    if [ "$ENABLE_IPV6" = false ] ; then
+      sed -i "s/DHCP=.*/DHCP=v4/" "${ETC_DIR}/systemd/network/wlan0.network"
+	  sed '/IPv6PrivacyExtensions=true/d' "${ETC_DIR}/systemd/network/wlan0.network"
+    fi
+
+  else # ENABLE_WIFI_DHCP=false
+    # Set static network configuration for interface eth0
+	if [ -n NET_WIFI_ADDRESS ] && [ -n NET_WIFI_GATEWAY ] && [ -n NET_WIFI_DNS_1 ] ; then
+      sed -i\
+      -e "s|DHCP=.*|DHCP=no|"\
+      -e "s|Address=\$|Address=${NET_WIFI_ADDRESS}|"\
+      -e "s|Gateway=\$|Gateway=${NET_WIFI_GATEWAY}|"\
+      -e "0,/DNS=\$/ s|DNS=\$|DNS=${NET_WIFI_DNS_1}|"\
+      -e "0,/DNS=\$/ s|DNS=\$|DNS=${NET_WIFI_DNS_2}|"\
+      -e "s|Domains=\$|Domains=${NET_WIFI_DNS_DOMAINS}|"\
+      -e "0,/NTP=\$/ s|NTP=\$|NTP=${NET_WIFI_NTP_1}|"\
+      -e "0,/NTP=\$/ s|NTP=\$|NTP=${NET_WIFI_NTP_2}|"\
+      "${ETC_DIR}/systemd/network/wlan0.network"
+	fi
+  fi
+  
+  if [ -z "$NET_WIFI_SSID" ] && [ -z "$NET_WIFI_PSK" ] ; then
+  printf "
+  ctrl_interface=/run/wpa_supplicant
+  ctrl_interface_group=wheel
+  update_config=1
+  eapol_version=1
+  ap_scan=1
+  fast_reauth=1
+
+  " > /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+
+  #Configure WPA_supplicant
+  chroot_exec wpa_passphrase "$NET_SSID" "$NET_WPAPSK" >> /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+
+  chroot_exec systemctl enable wpa_supplicant.service
+  chroot_exec systemctl enable wpa_supplicant@wlan0.service 
+  fi
+  # Remove empty settings from wlan configuration
+  sed -i "/.*=\$/d" "${ETC_DIR}/systemd/network/wlan0.network"
+  # If WLAN is enabled copy wlan configuration too
+  mv -v "${ETC_DIR}/systemd/network/wlan0.network" "${LIB_DIR}/systemd/network/11-wlan0.network"
 fi
 
 # Remove empty settings from network configuration
-sed -i "/.*=\$/d" "${ETC_DIR}/systemd/network/eth.network"
-# Remove empty settings from wlan configuration
-sed -i "/.*=\$/d" "${ETC_DIR}/systemd/network/wlan.network"
+sed -i "/.*=\$/d" "${ETC_DIR}/systemd/network/eth0.network"
 
 # Move systemd network configuration if required by Debian release
-mv -v "${ETC_DIR}/systemd/network/eth.network" "${LIB_DIR}/systemd/network/10-eth.network"
-# If WLAN is enabled copy wlan configuration too
-if [ "$ENABLE_WIRELESS" = true ] ; then
-  mv -v "${ETC_DIR}/systemd/network/wlan.network" "${LIB_DIR}/systemd/network/11-wlan.network"
-fi
+mv -v "${ETC_DIR}/systemd/network/eth0.network" "${LIB_DIR}/systemd/network/10-eth0.network"
+
+#Clean up
 rm -fr "${ETC_DIR}/systemd/network"
 
 # Enable systemd-networkd service

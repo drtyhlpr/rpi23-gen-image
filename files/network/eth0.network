@@ -1,0 +1,14 @@
+[Match]
+Name=eth0
+
+[Network]
+RouteMetric=10
+IPv6PrivacyExtensions=true
+DHCP=no
+Address=
+Gateway=
+DNS=
+DNS=
+Domains=
+NTP=
+NTP=
