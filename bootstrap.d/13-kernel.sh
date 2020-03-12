@@ -607,12 +607,8 @@ if [ "$BUILD_KERNEL" = true ] ; then
         set_kernel_config CONFIG_NF_REJECT_IPV4 m
         set_kernel_config CONFIG_NF_REJECT_IPV6 m
         set_kernel_config CONFIG_NF_TABLES m
-        set_kernel_config CONFIG_NF_TABLES_ARP m
-        set_kernel_config CONFIG_NF_TABLES_BRIDGE m
-        set_kernel_config CONFIG_NF_TABLES_INET m
         set_kernel_config CONFIG_NF_TABLES_IPV4 y
         set_kernel_config CONFIG_NF_TABLES_IPV6 y
-        set_kernel_config CONFIG_NF_TABLES_NETDEV m
         set_kernel_config CONFIG_NF_TABLES_SET m
         set_kernel_config CONFIG_NF_TABLES_INET y
         set_kernel_config CONFIG_NF_TABLES_NETDEV y
