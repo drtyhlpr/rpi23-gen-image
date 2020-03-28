@@ -192,7 +192,10 @@ fi
 
 # may need sudo systemctl disable hciuart
 if [ "$ENABLE_CONSOLE" = true ] ; then
-  echo "enable_uart=1"  >> "${BOOT_DIR}/config.txt" 
+  echo "enable_uart=1"  >> "${BOOT_DIR}/config.txt"
+  #More debug output on early but with serial console
+  echo "uart_2ndstage=1"  >> "${BOOT_DIR}/config.txt" 
+  
   # add string to cmdline
   CMDLINE="${CMDLINE} console=serial0,115200"
   

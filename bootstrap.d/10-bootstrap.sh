@@ -9,7 +9,8 @@ VARIANT=""
 COMPONENTS="main"
 
 # Use non-free Debian packages if needed
-if [ "$ENABLE_NONFREE" = true ] ; then
+# One use variable which is only needed by wifi firmware blob => reworked to use non free in /etc/apt/sources.list - we could just use ENABLE_WIRELESS here
+if [ "$ENABLE_WIRELESS" = true ] ; then
   COMPONENTS="main,non-free,contrib"
 fi
 

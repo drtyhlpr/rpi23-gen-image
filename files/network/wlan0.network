@@ -1,0 +1,14 @@
+[Match]
+Name=wlan0
+
+[Network]
+RouteMetric=20
+IPv6PrivacyExtensions=true
+DHCP=no
+Address=
+Gateway=
+DNS=
+DNS=
+Domains=
+NTP=
+NTP=

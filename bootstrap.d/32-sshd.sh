@@ -5,7 +5,7 @@
 # Load utility functions
 . ./functions.sh
 
-if [ "$ENABLE_SSHD" = true ] ; then
+if [ "$SSH_ENABLE" = true ] ; then
   DROPBEAR_ARGS=""
 
   if [ "$SSH_ENABLE_ROOT" = false ] ; then

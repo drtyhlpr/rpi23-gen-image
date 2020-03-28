@@ -24,12 +24,14 @@ if [ "$EXPANDROOT" = true ] ; then
 fi
 
 # Ensure openssh server host keys are regenerated on first boot
-if [ "$ENABLE_SSHD" = true ] ; then
+if [ "$SSH_ENABLE" = true ] ; then
   cat files/firstboot/30-generate-ssh-keys.sh >> "${ETC_DIR}/rc.firstboot"
 fi
 
+if [ "$ENABLE_DBUS" = true ] ; then
 # Ensure that dbus machine-id exists
 cat files/firstboot/40-generate-machineid.sh >> "${ETC_DIR}/rc.firstboot"
+fi
 
 # Create /etc/resolv.conf symlink
 cat files/firstboot/41-create-resolv-symlink.sh >> "${ETC_DIR}/rc.firstboot"

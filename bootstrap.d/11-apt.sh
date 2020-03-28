@@ -23,6 +23,10 @@ sed -i "s,buster\\/updates,testing-security," "${ETC_DIR}/apt/sources.list"
 sed -i "s/ buster/ ${RELEASE}/" "${ETC_DIR}/apt/sources.list"
 fi
 
+if [ "$ENABLE_NONFREE" = "true" ] ; then
+sed -i "s,main contrib,main contrib non-free," "${ETC_DIR}/apt/sources.list"
+fi
+
 if [ -z "$RELEASE" ] ; then
 # Change release in sources list
 sed -i "s/ buster/ ${RELEASE}/" "${ETC_DIR}/apt/sources.list"
