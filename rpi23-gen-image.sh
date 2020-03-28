@@ -36,7 +36,7 @@ fi
 
 # Introduce settings
 set -e
-echo -n -e "\n#\n# RPi 0/1/2/3 Bootstrap Settings\n#\n"
+echo -n -e "\n#\n# RPi 0/1/2/3/4 Bootstrap Settings\n#\n"
 set -x
 
 # Raspberry Pi model configuration
