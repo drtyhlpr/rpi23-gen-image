@@ -41,6 +41,13 @@ if [ "$ENABLE_IFNAMES" = true ] ; then
   cat files/firstboot/42-config-ifnames.sh >> "${ETC_DIR}/rc.firstboot"
 fi
 
+# Execute custom firstboot scripts
+if [ -d "custom.d/firstboot" ] ; then
+  for SCRIPT in custom.d/firstboot/*.sh; do
+    . "$SCRIPT"
+  done
+fi
+
 # Finalize rc.firstboot script
 cat files/firstboot/99-finish.sh >> "${ETC_DIR}/rc.firstboot"
 chmod +x "${ETC_DIR}/rc.firstboot"
