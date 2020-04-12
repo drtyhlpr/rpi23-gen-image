@@ -117,7 +117,7 @@ fi
 install_readonly files/boot/config.txt "${BOOT_DIR}/config.txt"
 
 # Disable Raspberry Pi console logo
-if [ "$ENABLE_SLASH" = false ] ; then
+if [ "$ENABLE_SPLASH" = false ] ; then
   echo "disable_splash=1" >> "${BOOT_DIR}/config.txt"
 fi
 
