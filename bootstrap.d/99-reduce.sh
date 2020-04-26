@@ -75,7 +75,11 @@ if [ "$ENABLE_REDUCE" = true ] ; then
 
   # Remove sound utils and libraries
   if [ "$ENABLE_SOUND" = false ] ; then
-    chroot_exec apt-get -qq -y purge alsa-utils libsamplerate0 libasound2 libasound2-data
+	if [ "$ENABLE_BLUETOOTH" = false ] ; then
+		chroot_exec apt-get -qq -y purge alsa-utils libsamplerate0 libasound2 libasound2-data
+	else
+		chroot_exec apt-get -qq -y purge alsa-utils libsamplerate0
+	fi
   fi
 
   # Remove GPU kernels
@@ -91,6 +95,9 @@ if [ "$ENABLE_REDUCE" = true ] ; then
     rm -f "${R}/boot/vmlinuz-*"
     rm -f "${R}/boot/initrd.img-*"
   fi
+  
+  #Reduce BOOT
+  #Only necessary files for my gen pi   
 
   # Clean APT list of repositories
   rm -fr "${R}/var/lib/apt/lists/*"
