@@ -94,8 +94,8 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
 	fi
   fi
   
-  if [ -z "$NET_WIFI_SSID" ] && [ -z "$NET_WIFI_PSK" ] ; then
-  printf "
+  if [ ! -z "$NET_WIFI_SSID" ] && [ ! -z "$NET_WIFI_PSK" ] ; then
+  chroot_exec printf "
   ctrl_interface=/run/wpa_supplicant
   ctrl_interface_group=wheel
   update_config=1
