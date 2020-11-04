@@ -803,7 +803,7 @@ CHROOT_SIZE=$(expr "$(du -s "${R}" | awk '{ print $1 }')")
 
 # Calculate the amount of needed 512 Byte sectors
 TABLE_SECTORS=$(expr 1 \* 1024 \* 1024 \/ 512)
-FRMW_SECTORS=$(expr 64 \* 1024 \* 1024 \/ 512)
+FRMW_SECTORS=$(expr 128 \* 1024 \* 1024 \/ 512)
 ROOT_OFFSET=$(expr "${TABLE_SECTORS}" + "${FRMW_SECTORS}")
 
 # The root partition is EXT4
@@ -832,7 +832,7 @@ ${TABLE_SECTORS},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show "$IMAGE_NAME"-frmw.img)"
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 128M -f --show "$IMAGE_NAME"-frmw.img)"
   ROOT_LOOP="$(losetup -o 1M -f --show "$IMAGE_NAME"-root.img)"
 else # ENABLE_SPLITFS=false
   dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count="${TABLE_SECTORS}"
@@ -845,8 +845,8 @@ ${ROOT_OFFSET},${ROOT_SECTORS},83
 EOM
 
   # Setup temporary loop devices
-  FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show "$IMAGE_NAME".img)"
-  ROOT_LOOP="$(losetup -o 65M -f --show "$IMAGE_NAME".img)"
+  FRMW_LOOP="$(losetup -o 1M --sizelimit 128M -f --show "$IMAGE_NAME".img)"
+  ROOT_LOOP="$(losetup -o 129M -f --show "$IMAGE_NAME".img)"
 fi
 
 if [ "$ENABLE_CRYPTFS" = true ] ; then
