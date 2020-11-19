@@ -266,7 +266,12 @@ echo "${CMDLINE}" > "${BOOT_DIR}/cmdline.txt"
 
 # Setup minimal GPU memory allocation size: 16MB (no X)
 if [ "$ENABLE_MINGPU" = true ] ; then
-  echo "gpu_mem=16" >> "${BOOT_DIR}/config.txt"
+  if [ "$ENABLE_GR_ACCEL" = false ]  ; then
+    echo "gpu_mem=16" >> "${BOOT_DIR}/config.txt"
+  else 
+    ### Cannot reduce memory if graphics acceleration is requested
+    echo "gpu_mem=128" >> "${BOOT_DIR}/config.txt"
+  fi
 fi
 
 # Setup boot with initramfs
@@ -314,6 +319,19 @@ fi
 if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
   echo "avoid_warnings=${DISABLE_UNDERVOLT_WARNINGS}" >> "${BOOT_DIR}/config.txt"
 fi
+
+#Enable graphics acceleration for Model 4
+if [ "$RPI_MODEL" = 4 ] && [ "$ENABLE_GR_ACCEL" = true ] ; then
+  echo "max_framebuffers=2" >> "${BOOT_DIR}/config.txt"
+  echo "arm_64bit=1" >> "${BOOT_DIR}/config.txt"
+  echo "cmdline=cmdline.txt" >> "${BOOT_DIR}/config.txt"
+  echo "dtparam=audio=on" >> "${BOOT_DIR}/config.txt"
+  if [ "$ENABLE_MINGPU" = false ] ; then
+    echo "gpu_mem=128" >> "${BOOT_DIR}/config.txt"
+  fi
+  echo "dtoverlay=vc4-fkms-v3d, cma-128" >> "${BOOT_DIR}/config.txt"
+fi
+
 
 # Install kernel modules blacklist
 mkdir -p "${ETC_DIR}/modprobe.d/"
