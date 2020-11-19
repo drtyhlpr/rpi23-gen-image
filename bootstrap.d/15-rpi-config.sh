@@ -20,7 +20,7 @@ if [ -n "$RPI_FIRMWARE_DIR" ] && [ -d "$RPI_FIRMWARE_DIR" ] ; then
   cp "${RPI_FIRMWARE_DIR}"/boot/fixup4x.dat "${BOOT_DIR}"/fixup4x.dat
   cp "${RPI_FIRMWARE_DIR}"/boot/start4cd.elf "${BOOT_DIR}"/start4cd.elf
   cp "${RPI_FIRMWARE_DIR}"/boot/start4db.elf "${BOOT_DIR}"/start4db.elf
-  cp "${RPI_FIRMWARE_DIR}"/boot/start4.elf "${BOOT_DIR}"/start4x.elf
+  cp "${RPI_FIRMWARE_DIR}"/boot/start4.elf "${BOOT_DIR}"/start4.elf
   cp "${RPI_FIRMWARE_DIR}"/boot/start4x.elf "${BOOT_DIR}"/start4x.elf
 else
   # Create temporary directory for boot binaries
@@ -40,7 +40,7 @@ else
   as_nobody wget -q -O "${temp_dir}/fixup4x.dat" "${FIRMWARE_URL}/fixup4x.dat"
   as_nobody wget -q -O "${temp_dir}/start4cd.elf" "${FIRMWARE_URL}/start4cd.elf"
   as_nobody wget -q -O "${temp_dir}/start4db.elf" "${FIRMWARE_URL}/start4db.elf"
-  as_nobody wget -q -O "${temp_dir}/start4x.elf" "${FIRMWARE_URL}/start4x.elf"
+  as_nobody wget -q -O "${temp_dir}/start4.elf" "${FIRMWARE_URL}/start4.elf"
   as_nobody wget -q -O "${temp_dir}/start4x.elf" "${FIRMWARE_URL}/start4x.elf"
 
   # Move downloaded boot binaries
@@ -266,7 +266,12 @@ echo "${CMDLINE}" > "${BOOT_DIR}/cmdline.txt"
 
 # Setup minimal GPU memory allocation size: 16MB (no X)
 if [ "$ENABLE_MINGPU" = true ] ; then
-  echo "gpu_mem=16" >> "${BOOT_DIR}/config.txt"
+  if [ "$ENABLE_GR_ACCEL" = false ]  ; then
+    echo "gpu_mem=16" >> "${BOOT_DIR}/config.txt"
+  else 
+    ### Cannot reduce memory if graphics acceleration is requested
+    echo "gpu_mem=128" >> "${BOOT_DIR}/config.txt"
+  fi
 fi
 
 # Setup boot with initramfs
@@ -314,6 +319,19 @@ fi
 if [ -n "$DISABLE_UNDERVOLT_WARNINGS" ] ; then
   echo "avoid_warnings=${DISABLE_UNDERVOLT_WARNINGS}" >> "${BOOT_DIR}/config.txt"
 fi
+
+#Enable graphics acceleration for Model 4
+if [ "$RPI_MODEL" = 4 ] && [ "$ENABLE_GR_ACCEL" = true ] ; then
+  echo "max_framebuffers=2" >> "${BOOT_DIR}/config.txt"
+  echo "arm_64bit=1" >> "${BOOT_DIR}/config.txt"
+  echo "cmdline=cmdline.txt" >> "${BOOT_DIR}/config.txt"
+  echo "dtparam=audio=on" >> "${BOOT_DIR}/config.txt"
+  if [ "$ENABLE_MINGPU" = false ] ; then
+    echo "gpu_mem=128" >> "${BOOT_DIR}/config.txt"
+  fi
+  echo "dtoverlay=vc4-fkms-v3d, cma-128" >> "${BOOT_DIR}/config.txt"
+fi
+
 
 # Install kernel modules blacklist
 mkdir -p "${ETC_DIR}/modprobe.d/"
