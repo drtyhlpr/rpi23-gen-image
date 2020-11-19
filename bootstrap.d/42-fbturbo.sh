@@ -5,7 +5,7 @@
 # Load utility functions
 . ./functions.sh
 
-if [ "$ENABLE_FBTURBO" = true ] ; then
+if [ "$ENABLE_FBTURBO" = true ] && [ "$ENABLE_GR_ACCEL" = false ] ; then
   # Install c/c++ build environment inside the chroot
   chroot_install_cc
 
