@@ -31,7 +31,7 @@ if [ "$BUILD_KERNEL" = true ] ; then
     # Create temporary directory for kernel sources
     temp_dir=$(as_nobody mktemp -d)
 
-    # Fetch current RPi2/3 kernel sources
+    # Fetch current RPi2/3/4 kernel sources
     if [ -z "${KERNEL_BRANCH}" ] ; then
       as_nobody -H git -C "${temp_dir}" clone --depth=1 "${KERNEL_URL}" linux
     else

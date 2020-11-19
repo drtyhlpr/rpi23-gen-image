@@ -45,7 +45,7 @@ RPI_MODEL=${RPI_MODEL:=3P}
 # Debian release
 RELEASE=${RELEASE:=buster}
 if [ $RELEASE = "bullseye" ] ; then
- RELEASE=testing
+  RELEASE=testing
 fi
 
 # Kernel Branch
@@ -270,14 +270,14 @@ fi
 
 # Setup architecture specific settings
 if [ -n "$SET_ARCH" ] ; then
-  # 64-bit configuration
+  ## 64-bit configuration
   if [ "$SET_ARCH" = 64 ] ; then
-    # General 64-bit depended settings
+    ### General 64-bit depended settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-aarch64-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm64}
     KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="Image"}
 
-    # Raspberry Pi model specific settings
+    ### Raspberry Pi model specific settings
     if [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ] ; then
       if [ "$RPI_MODEL" != 4 ] ; then
         KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi3_defconfig}
@@ -289,20 +289,21 @@ if [ -n "$SET_ARCH" ] ; then
       RELEASE_ARCH=${RELEASE_ARCH:=arm64}
       KERNEL_IMAGE=${KERNEL_IMAGE:=kernel8.img}
       CROSS_COMPILE=${CROSS_COMPILE:=aarch64-linux-gnu-}
+      
     else
       echo "error: Only Raspberry PI 3, 3B+ and 4 support 64-bit"
       exit 1
     fi
   fi
 
-  # 32-bit configuration
+  ## 32-bit configuration
   if [ "$SET_ARCH" = 32 ] ; then
-    # General 32-bit dependend settings
+    ### General 32-bit dependend settings
     QEMU_BINARY=${QEMU_BINARY:=/usr/bin/qemu-arm-static}
     KERNEL_ARCH=${KERNEL_ARCH:=arm}
     KERNEL_BIN_IMAGE=${KERNEL_BIN_IMAGE:="zImage"}
 
-    # Raspberry Pi model specific settings
+    ### Raspberry Pi (0-1P) model specific settings
     if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 1 ] || [ "$RPI_MODEL" = 1P ] ; then
       REQUIRED_PACKAGES="${REQUIRED_PACKAGES} crossbuild-essential-armel"
       KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcmrpi_defconfig}
@@ -320,7 +321,7 @@ if [ -n "$SET_ARCH" ] ; then
 	    fi
 	  fi
     fi
-    # Raspberry Pi model specific settings
+    ### Raspberry Pi (2-4) model specific settings
     if [ "$RPI_MODEL" = 2 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ] ; then
       if [ "$RPI_MODEL" != 4 ] ; then
         KERNEL_DEFCONFIG=${KERNEL_DEFCONFIG:=bcm2709_defconfig}
@@ -377,17 +378,18 @@ case "$RPI_MODEL" in
     ;;
 esac
 
-# Raspberry PI 0,3,3P with Bluetooth and Wifi onboard
+# Raspberry PI 0,3,3P,4 with Bluetooth and Wifi onboard
 if [ "$RPI_MODEL" = 0 ] || [ "$RPI_MODEL" = 3 ] || [ "$RPI_MODEL" = 3P ] || [ "$RPI_MODEL" = 4 ] ; then
-  # Include bluetooth packages on supported boards
+  ## Include bluetooth packages on supported boards
   if [ "$ENABLE_BLUETOOTH" = true ] ; then
     APT_INCLUDES="${APT_INCLUDES},bluetooth,bluez"
   fi
   if [ "$ENABLE_WIRELESS" = true ] ; then
     APT_INCLUDES="${APT_INCLUDES},wireless-tools,crda,wireless-regdb,wpasupplicant"
   fi
-else # Raspberry PI 1,1P,2 without Wifi and bluetooth onboard
-  # Check if the internal wireless interface is not supported by the RPi model
+# Raspberry PI 1,1P,2 without Wifi and bluetooth onboard 
+else 
+  ## Check if the internal wireless interface is not supported by the RPi model
   if [ "$ENABLE_WIRELESS" = true ] || [ "$ENABLE_BLUETOOTH" = true ]; then
     echo "error: The selected Raspberry Pi model has no integrated interface for wireless or bluetooth"
     exit 1
@@ -506,7 +508,7 @@ if [ -n "$MISSING_PACKAGES" ] ; then
   read -r confirm
   [ "$confirm" != "y" ] && exit 1
 
-  # Make sure all missing required packages are installed
+  ## Make sure all missing required packages are installed
   apt-get update && apt-get -qq -y install `echo "${MISSING_PACKAGES}" | sed "s/ //"`
 fi
 
@@ -554,8 +556,8 @@ fi
 
 # Check if specified CHROOT_SCRIPTS directory exists
 if [ -n "$CHROOT_SCRIPTS" ] && [ ! -d "$CHROOT_SCRIPTS" ] ; then
-   echo "error: ${CHROOT_SCRIPTS} specified directory not found (CHROOT_SCRIPTS)!"
-   exit 1
+  echo "error: ${CHROOT_SCRIPTS} specified directory not found (CHROOT_SCRIPTS)!"
+  exit 1
 fi
 
 # Check if specified device mapping already exists (will be used by cryptsetup)
@@ -649,12 +651,12 @@ fi
 
 # Replace selected packages with smaller clones
 if [ "$ENABLE_REDUCE" = true ] ; then
-  # Add levee package instead of vim-tiny
+  ## Add levee package instead of vim-tiny
   if [ "$REDUCE_VIM" = true ] ; then
     APT_INCLUDES="$(echo ${APT_INCLUDES} | sed "s/vim-tiny/levee/")"
   fi
 
-  # Add dropbear package instead of openssh-server
+  ## Add dropbear package instead of openssh-server
   if [ "$REDUCE_SSHD" = true ] ; then
     APT_INCLUDES="$(echo "${APT_INCLUDES}" | sed "s/openssh-server/dropbear/")"
   fi
@@ -821,20 +823,21 @@ if [ "$ENABLE_SPLITFS" = true ] ; then
   dd if=/dev/zero of="$IMAGE_NAME-root.img" bs=512 count="${TABLE_SECTORS}"
   dd if=/dev/zero of="$IMAGE_NAME-root.img" bs=512 count=0 seek="${ROOT_SECTORS}"
 
-  # Write firmware/boot partition tables
+  ## Write firmware/boot partition tables
   sfdisk -q -L -uS -f "$IMAGE_NAME-frmw.img" 2> /dev/null <<EOM
 ${TABLE_SECTORS},${FRMW_SECTORS},c,*
 EOM
 
-  # Write root partition table
+  ## Write root partition table
   sfdisk -q -L -uS -f "$IMAGE_NAME-root.img" 2> /dev/null <<EOM
 ${TABLE_SECTORS},${ROOT_SECTORS},83
 EOM
 
-  # Setup temporary loop devices
+  ## Setup temporary loop devices
   FRMW_LOOP="$(losetup -o 1M --sizelimit 64M -f --show "$IMAGE_NAME"-frmw.img)"
   ROOT_LOOP="$(losetup -o 1M -f --show "$IMAGE_NAME"-root.img)"
-else # ENABLE_SPLITFS=false
+# ENABLE_SPLITFS=false
+else 
   dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count="${TABLE_SECTORS}"
   dd if=/dev/zero of="$IMAGE_NAME.img" bs=512 count=0 seek="${IMAGE_SECTORS}"
 
