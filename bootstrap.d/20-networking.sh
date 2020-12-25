@@ -13,6 +13,9 @@ sed -i "s/^RaspberryPI/${HOSTNAME}/" "${ETC_DIR}/hostname"
 install_readonly files/network/hosts "${ETC_DIR}/hosts"
 sed -i "s/RaspberryPI/${HOSTNAME}/" "${ETC_DIR}/hosts"
 
+# Ensure /etc/systemd/network directory is available
+mkdir -p "${ETC_DIR}/systemd/network"
+
 # Setup hostname entry with static IP
 if [ "$NET_ETH_ADDRESS" != "" ] ; then
   NET_IP=$(echo "${NET_ETH_ADDRESS}" | cut -f 1 -d'/')
@@ -68,6 +71,7 @@ fi
 
 
 if [ "$ENABLE_WIRELESS" = true ] ; then
+  mkdir -p "${ETC_DIR}/wpa_supplicant"
   if [ "$ENABLE_WIFI_DHCP" = true ] ; then
     # Enable DHCP configuration for interface eth0
     sed -i -e "s/DHCP=.*/DHCP=yes/" -e "/DHCP/q" "${ETC_DIR}/systemd/network/wlan0.network"
@@ -94,19 +98,18 @@ if [ "$ENABLE_WIRELESS" = true ] ; then
 	fi
   fi
   
-  if [ -z "$NET_WIFI_SSID" ] && [ -z "$NET_WIFI_PSK" ] ; then
-  printf "
+  if [ ! -z "$NET_WIFI_SSID" ] && [ ! -z "$NET_WIFI_PSK" ] ; then
+  chroot_exec printf "
   ctrl_interface=/run/wpa_supplicant
-  ctrl_interface_group=wheel
   update_config=1
   eapol_version=1
   ap_scan=1
   fast_reauth=1
 
-  " > /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+  " > "${ETC_DIR}/wpa_supplicant/wpa_supplicant-wlan0.conf"
 
   #Configure WPA_supplicant
-  chroot_exec wpa_passphrase "$NET_SSID" "$NET_WPAPSK" >> /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+  chroot_exec wpa_passphrase "$NET_WIFI_SSID" "$NET_WIFI_PSK" >> "${ETC_DIR}/wpa_supplicant/wpa_supplicant-wlan0.conf"
 
   chroot_exec systemctl enable wpa_supplicant.service
   chroot_exec systemctl enable wpa_supplicant@wlan0.service 
